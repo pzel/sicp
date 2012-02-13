@@ -72,27 +72,33 @@
    
 (define golden-mean 1.61803)
 
-(define (cont-frac n d k)
+(define (cont-frac n d d-operation k)
   (define (iter i)
       (if (= k i)
         (/ (n i) (d i))
-        (/ (n i) (+ (d i)
+        (/ (n i) (d-operation (d i)
                      (iter (+ 1 i))))))
   (iter 1))
 
 
-(define (cont-fracc n d k)
+(define (cont-fracc n d d-operation k)
   (define (iter i res)
     (if (= 1 i)
         res
         (iter (decr i) 
               (/ (n i) 
-                 (+ (d i) res)))))
+                 (d-operation (d i) res)))))
   (iter k (/ (n k) 
              (d k))))
 
 
 (define E 2.71828)
+;ii:         1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21
+;ii/3        0  0  1  1  1  2  2  2  3  3  3  4  4  4  5  5  5  6  6  6  7
+;(ii/3)-2         -1        0        1        2        3        4        5  
+;ii/3 * 3          3        6        9        12       15       18       21 
+;want:       1  1  4  1  1  6  1  1  8  1  1  10 1  1  12 1  1  14 1  1  16
+
 (define (euler-denom i)
   (if (<= i 2) 
       i
@@ -104,11 +110,13 @@
             (- (* 3 div3)
                (- div3 2))))))
 
-;ii:         1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21
-;ii/3        0  0  1  1  1  2  2  2  3  3  3  4  4  4  5  5  5  6  6  6  7
-;(ii/3)-2         -1        0        1        2        3        4        5  
-;ii/3 * 3          3        6        9        12       15       18       21 
-;want:       1  1  4  1  1  6  1  1  8  1  1  10 1  1  12 1  1  14 1  1  16
+(define (tan-cf x k)
+  (define (n i)
+    (if (= i 1) x (* x x)))
+  (define (d i)
+    (- (* 2 i) 1))
+  (cont-frac n d - k))
+
 
 ; Tests
 (load "./test.scm")
@@ -128,7 +136,11 @@
    (=?~ '(fixed-point (lambda(y) (+ 1 (/ 1 y))) 0.1) golden-mean)
    (=?~ '(f136-damp) 4.55554)   ; Thanks, Wolfram Alpha!
    (=?~ '(f136-nodamp) 4.55554) 
-   (=?~ '(cont-frac (lambda(i) 1.0) (lambda(i) 1.0) 8) (/ 1 golden-mean))
-   (=?~ '(cont-fracc (lambda(i) 1.0) (lambda(i) 1.0) 8) (/ 1 golden-mean))
-   (=?~ '(cont-frac (lambda(i) 1.0) euler-denom 8) (- E 2))
+   (=?~ '(cont-frac (lambda(i) 1.0) (lambda(i) 1.0) + 8) (/ 1 golden-mean))
+   (=?~ '(cont-fracc (lambda(i) 1.0) (lambda(i) 1.0) + 8) (/ 1 golden-mean))
+   (=?~ '(cont-frac (lambda(i) 1.0) euler-denom + 8) (- E 2))
+   (=?~ '(tan-cf 1 5) 1.5574)
+   (=?~ '(tan-cf 2 10) -2.185)
+   (=?~ '(tan-cf 3 15) -0.1425)
+   
    ))
