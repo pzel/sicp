@@ -5,6 +5,9 @@
 (define (incr x)
   (+ x 1))
 
+(define (square x)
+  (* x x))
+
 (define (/= a b)
   (not (= a b)))
 
@@ -146,8 +149,23 @@
     (+ (* x x x)
        (* a (* x x))
        (* b x)
-       c))
-    )
+       c)))
+
+(define (double f)
+  (lambda(x)
+    (f (f x))))
+
+(define (compose f g)
+  (lambda(x)
+    (f (g x))))
+
+(define (repeated f times)
+  (cond ((< times 1) (lambda(x) x))
+        ((= times 1) (lambda(x) (f x)))
+        (#t
+         (lambda(x) ((compose f
+                              (repeated f (decr times))) 
+                     x)))))
 
 ; Tests
 (load "./test.scm")
@@ -175,4 +193,11 @@
    (=?~ '(tan-cf 3 15) -0.1425)
    (=?~ '(newtons-method (cubic 1 2 3) 0.1) -1.27568)
    (=?~ '(newtons-method (cubic 3 7 11) 0.1)  -2.13473) 
+   (=?  '((double incr) 0) 2)
+   (=?  '(((double (double double)) incr) 0) 16)
+   (=?  '(((double (double (double double))) incr) 0) 256)
+   (=?  '((compose square incr) 2) 9)
+   (=?  '((repeated square 0) 5) 5)
+   (=?  '((repeated square 1) 5) 25)
+   (=?  '((repeated square 3) 2) 256)
    ))
