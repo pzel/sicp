@@ -17,8 +17,14 @@
 ;    (=?   '(which-power? 64 2) 6)
 ;    (=?   '(cdr3 (cons3 23 56)) 56)
 ;    (=?~  '(sqrt 3) 1.732))))
-(use fmt fmt-color)
+; 
+; Tested in:
+; * Gauche scheme shell, version 0.9.1 [utf-8,pthreads], i686-pc-linux-gnu
+; * CHICKEN Version 4.6.0 linux-unix-gnu-x86 [ manyargs dload ptables ]
 
+
+(define (test-eval exp)
+  (eval exp (interaction-environment)))
 
 (define (=? is should)
   (test-compare is should equal?))
@@ -31,10 +37,10 @@
   (< (abs (- a b)) 0.001))
 
 (define (test-compare is should matcher)
-  (let ((result (eval is)))
+  (let ((result (test-eval is)))
     `(,(matcher result should)
       ,result
-      ,(eval should)
+      ,(test-eval should)
       ,is)))
 
 (define (filter_ p l)
@@ -46,23 +52,17 @@
 	    (iter p (cdr l) res))))
   (iter p l '()))
 
-(define (show-red s)
-  (fmt #t (fmt-red s)))
-
-(define (show-bold s)
-  (fmt #t (fmt-bold (fmt-red s))))
-
 (define (display-failure l)
-  (display "In expression: ")
-  (show-red (cadddr l))  (newline)
-  (display "Expected:\t")
-  (show-red (caddr l))  (newline)  
-  (display "Got:\t\t")
-  (show-bold (cadr l))   (newline)
+  (display " * In expression:\t")
+  (display (cadddr l))  (newline)
+  (display "   Expected:\t\t")
+  (display (caddr l))  (newline)  
+  (display "   Got:\t\t\t")
+  (display (cadr l)) (newline) (newline)
 )
 
 (define (results l)
-  (map eval l))
+  (map test-eval l))
 
 (define (test l)
   (if (null? 
@@ -71,7 +71,5 @@
         (filter_ 
          (lambda (x)(not (equal? (car x) #t))) 
          (results l))))
-      (begin (fmt #t (fmt-blue  (dsp "All tests OK.")) nl) 
-             #t)
+      (begin (display " * All tests OK." ) (newline) #t)
       #f))
-

@@ -58,10 +58,6 @@
         (try next (+ steps 1)))))
   (try first-guess 0))
 
-(define (sqrt x)
-  (fixed-point (lambda(y) (average (/ x y) y))
-               1.0))
-
 (define log1000 (log 1000))                                
 
 (define (f136-nodamp)
@@ -118,6 +114,41 @@
   (cont-frac n d - k))
 
 
+(define (average-damp f)
+  (lambda (x) (average x (f x))))
+
+(define (deriv g)
+  (lambda(x)
+    (/ (- (g (+ x dx)) (g x))
+       dx)))
+
+(define dx 0.0001)
+
+
+(define (newton-transform g)
+  (lambda(x)
+    (- x (/ (g x)
+            ((deriv g) x)))))
+
+(define (newtons-method g guess)
+  (fixed-point (newton-transform g) guess))
+
+(define (fixed-point-of-transform g transform guess)
+  (fixed-point (transform g) guess))
+
+(define (sqrt x)
+  (fixed-point-of-transform (lambda(y) (- (* y y) x))
+                            newton-transform
+                            1))
+
+(define (cubic a b c)
+  (lambda(x) 
+    (+ (* x x x)
+       (* a (* x x))
+       (* b x)
+       c))
+    )
+
 ; Tests
 (load "./test.scm")
 (test '(
@@ -142,5 +173,6 @@
    (=?~ '(tan-cf 1 5) 1.5574)
    (=?~ '(tan-cf 2 10) -2.185)
    (=?~ '(tan-cf 3 15) -0.1425)
-   
+   (=?~ '(newtons-method (cubic 1 2 3) 0.1) -1.27568)
+   (=?~ '(newtons-method (cubic 3 7 11) 0.1)  -2.13473) 
    ))
