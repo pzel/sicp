@@ -7,6 +7,12 @@
   (if (<  x 0)
       (* -1 x)
       x))
+(define (pow x n)
+  (cond ((= n 0) 1)
+        ((= n 1) x)
+        (#t
+         (* x
+            (pow x (- n 1))))))
 
 ; 2.2
 (define (make-point x y)
@@ -90,6 +96,41 @@
 (define (area-rect r)
   (* (len-rect r) (hei-rect r)))
 
+; 2.4
+(define (kons x y)
+  (lambda(m) (m x y)))
+(define (kar m)
+  (m (lambda(x y) x)))
+(define (kdr m)
+  (m (lambda(x y) y)))
+
+; 2.5
+(define (divisible? n m)
+  (if (or (= n 0))
+      #f
+      (= 0
+         (remainder n m))))
+
+(define (which-power? n m)
+  (define (iter n m acc)
+    (if (divisible? n m)
+        (iter (/ n m) m (+ 1 acc))
+        acc))
+  (iter n m 0))
+  
+(define (qons x y)
+  (* (pow 2 x)
+     (pow 3 y)))
+
+(define (qdr m)
+  (which-power? m 3))
+
+(define (qar m)
+  (let ((x (/ m (pow 3 (qdr m)))))
+    (which-power? x 2)))
+
+
+;==================================================================
 (load "./test.scm")
 (define t-rect1 (make-rect (make-point 0 2) (make-point 2 0)))
 
@@ -111,9 +152,32 @@
         (=? '(showsegment (vert-rect  t-rect1)) "0,2:0,0")
         (=? '(len-rect t-rect1) 2)
         (=? '(hei-rect t-rect1) 2)
-        (=? '(hei-rect(make-rect (make-point 0 4)(make-point 4 0))) 4)
+        (=? '(hei-rect (make-rect (make-point 1 5)(make-point 5 1))) 4)
         (=?~ '(area-rect (make-rect 
                           (make-point 0 2)(make-point 5 0)))
              10.0)
         (=?~  '(perim-rect (make-rect (make-point 0 2)(make-point 5 0))) 14.0)
+
+        ;ex 2.4
+        (=? '(kar (kons 1 2)) 1)
+        (=? '(kdr (kons 1 2)) 2)
+
+        ;ex 2.5
+        (=? '(which-power? 3 3) 1)
+        (=? '(which-power? 9 3) 2)
+        (=? '(which-power? 27 3) 3)
+        (=? '(which-power? 2 2) 1)
+        (=? '(which-power? 4 2) 2)
+        (=? '(which-power? 32 2) 5)
+        (=? '(which-power? 64 2) 6)
+
+        (=? '(qar (qons 1 2)) 1)
+        (=? '(qdr (qons 1 2)) 2)
+
+        (=? '(qar (qons 2 3)) 2)
+        (=? '(qdr (qons 2 3)) 3)
+
+        (=? '(qar (qons 5 8)) 5)
+        (=? '(qdr (qons 5 8)) 8)
+
         ))
