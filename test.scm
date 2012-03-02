@@ -38,18 +38,18 @@
 
 (define (test-compare is should matcher)
   (let ((result (test-eval is)))
-    `(,(matcher result should)
-      ,result
-      ,(test-eval should)
-      ,is)))
+    (list (matcher result should)
+          result
+          should
+          is)))
 
 (define (filter_ p l)
   (define (iter p l res)
     (if (null? l) 
-	res 
-	(if (p (car l))
-	    (iter p (cdr l) (cons (car l) res))
-	    (iter p (cdr l) res))))
+        res 
+        (if (p (car l))
+            (iter p (cdr l) (cons (car l) res))
+            (iter p (cdr l) res))))
   (iter p l '()))
 
 (define (display-failure l)
@@ -58,8 +58,7 @@
   (display "   Expected:\t\t")
   (display (caddr l))  (newline)  
   (display "   Got:\t\t\t")
-  (display (cadr l)) (newline) (newline)
-)
+  (display (cadr l)) (newline) (newline))
 
 (define (results l)
   (map test-eval l))

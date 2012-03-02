@@ -129,6 +129,26 @@
   (let ((x (/ m (pow 3 (qdr m)))))
     (which-power? x 2)))
 
+; 2.17
+(define (last-pair l)
+  (cond ((null? l) '())
+        ((null? (cdr l)) (car l))
+        (#t (last-pair (cdr l)))))
+
+; 2.18
+(define (reverse_ l)
+  (define (iter l1 acc)
+    (if (null? l1) 
+        acc
+        (iter (cdr l1) 
+              (cons (car l1) acc))))
+  (iter l '()))
+
+(define (reverse__ l)
+  (if (null? l)
+      l
+      (append (reverse__ (cdr l))
+              (list (car l)))))
 
 ;==================================================================
 (load "./test.scm")
@@ -179,5 +199,16 @@
 
         (=? '(qar (qons 5 8)) 5)
         (=? '(qdr (qons 5 8)) 8)
+        
+        ; ex 2.17
+        (=? '(last-pair (list 4 5 6 7)) 7)
+        (=? '(last-pair (list 1)) 1)
+        (=? '(last-pair '()) '())
+
+        ;ext 2.18
+        (=? '(reverse_ (list 1 2 3 4)) '(4 3 2 1))
+        (=? '(reverse_ '()) '()) 
+        (=? '(reverse__ (list 1 2 3 4)) '(4 3 2 1))
+        (=? '(reverse__ '()) '())
 
         ))
