@@ -1,5 +1,6 @@
 ;; SICP chapter 2
-(use srfi-13) ; strings
+(use srfi-13) ; string methods (for displaying objects)
+
 (define (avg x y)
   (/ (+ x y)
      2.0))
@@ -150,6 +151,93 @@
       (append (reverse__ (cdr l))
               (list (car l)))))
 
+; 2.19
+(define us-coins (list 50 25 10 5 1))
+(define us-rev-coins  (list 1 5 10 25 50))
+(define uk-coins (list 100 50 20 10 5 2 1 0.5))
+
+(define (cc amount coins)
+  (let ((no-more? null?)
+        (except-first-demonination cdr)
+        (first-denomination car))
+    (cond ((= amount 0) 1)
+          ((or (< amount 0) (no-more? coins)) 0)
+          (#t
+           (+ (cc amount 
+                  (except-first-demonination coins))
+              (cc (- amount (first-denomination coins)) 
+                  coins))))))
+  
+
+; 2.20
+(define (filter_ pred list)
+  (define (iter list acc)
+    (if (null? list)
+        (reverse_ acc)
+        (if (pred (car list))
+            (iter (cdr list) 
+                  (cons (car list) acc))
+            (iter (cdr list) 
+                  acc))))
+  (iter list '()))
+
+(define (same-parity x . rest)
+  (if (even? x)
+      (cons x (filter_ even? rest))
+      (cons x (filter_ odd? rest))))
+
+; 2.21
+(define (square-list_ l)
+  (map (lambda(x) (* x x))
+       l))
+(define (square-list__ l)
+  (if (null? l)
+      '()
+      (cons (* (car l) (car l))
+            (square-list__ (cdr l)))))
+
+; 2.22
+(define (square-list3-broken l)
+  (let ((square (lambda(x) (* x x))))
+    (define (iter l answer)
+      (if (null? l)
+          answer
+          (iter (cdr l)
+                (cons (square (car l))
+                      answer))))
+    (iter l '())))
+
+(define (square-list3-fixed l)
+  (let ((square (lambda(x) (* x x))))
+    (define (iter l answer)
+      (if (null? l)
+          (reverse_  answer)
+          (iter (cdr l)
+                (cons (square (car l))
+                      answer))))
+    (iter l '())))
+
+(define (square-list3-fixed_ l)
+  (let ((square (lambda(x) (* x x))))
+    (define (iter l acc)
+      (if (null? l)
+          acc
+          (iter (cdr l)
+                (append acc 
+                        (list (square (car l)))))))
+
+    (iter l '())))
+
+; 2.23
+(define (for-each_ pred l)
+  (cond ((null? l) '())
+        (#t
+         (pred (car l))
+         (for-each_ pred (cdr l)))))
+               
+
+
+
 ;==================================================================
 (load "./test.scm")
 (define t-rect1 (make-rect (make-point 0 2) (make-point 2 0)))
@@ -205,10 +293,34 @@
         (=? '(last-pair (list 1)) 1)
         (=? '(last-pair '()) '())
 
-        ;ext 2.18
+        ; ex 2.18
         (=? '(reverse_ (list 1 2 3 4)) '(4 3 2 1))
         (=? '(reverse_ '()) '()) 
         (=? '(reverse__ (list 1 2 3 4)) '(4 3 2 1))
         (=? '(reverse__ '()) '())
+
+        ; ex 2.19
+        (=? '(cc 100 us-coins) 292)
+        (=? '(cc 100 us-rev-coins) 292)
+        
+        ; ex 2.20
+        (=? '(filter_ even? (list 2 4 6 7)) '(2 4 6))
+        (=? '(filter_ odd? (list 1 2 4 6 7)) '(1 7))
+
+        (=? '(same-parity 1 2 3 4 5 6 7) '(1 3 5 7))
+        (=? '(same-parity 2 3 4 5 6 7) '(2 4 6))
+
+        ; ex 2.21
+        (=? '(square-list_ (list 1 2 3 4)) '(1 4 9 16))
+        (=? '(square-list__ (list 1 2 3 4)) '(1 4 9 16))
+        
+
+        ; ex 2.22
+        (=? '(square-list3-broken (list 1 2 3 4)) '(16 9 4 1))
+        (=? '(square-list3-fixed (list 1 2 3 4)) '(1 4 9 16))
+        (=? '(square-list3-fixed_ (list 1 2 3 4)) '(1 4 9 16))
+
+        ; ex 2.23
+        (=? '(for-each_ (lambda(x) (* x x)) (list 1 2 3)) '())
 
         ))

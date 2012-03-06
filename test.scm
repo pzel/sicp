@@ -43,7 +43,7 @@
           should
           is)))
 
-(define (filter_ p l)
+(define (test-philter p l)
   (define (iter p l res)
     (if (null? l) 
         res 
@@ -67,7 +67,7 @@
   (if (null? 
        (map 
         display-failure 
-        (filter_ 
+        (test-philter 
          (lambda (x)(not (equal? (car x) #t))) 
          (results l))))
       (begin (display " * All tests OK." ) (newline) #t)
