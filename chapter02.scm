@@ -55,7 +55,6 @@
     (string-join (list start end) ":")))
 
 ;2.3
-
 ;; (define (make-rect p1 p2 p3 p4)
 ;;   (cons (make-segment p1 p2)
 ;;         (make-segment p3 p4)))
@@ -67,6 +66,8 @@
 
 (define (make-rect p1 p2)
   (cons p1 p2))
+
+(define t-rect1 (make-rect (make-point 0 2) (make-point 2 0)))
 
 (define (horiz-rect r)
   (let ((p1x (x-point (car r)))
@@ -273,7 +274,7 @@
 
 ;==================================================================
 (load "./test.scm")
-(define t-rect1 (make-rect (make-point 0 2) (make-point 2 0)))
+
 
 (test '(
         ; ex. 2.2
