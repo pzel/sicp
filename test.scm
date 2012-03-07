@@ -46,19 +46,20 @@
 (define (test-philter p l)
   (define (iter p l res)
     (if (null? l) 
-        res 
+        (reverse res)
         (if (p (car l))
             (iter p (cdr l) (cons (car l) res))
             (iter p (cdr l) res))))
   (iter p l '()))
 
 (define (display-failure l)
+  (newline)
   (display " * In expression:\t")
   (display (cadddr l))  (newline)
   (display "   Expected:\t\t")
   (display (caddr l))  (newline)  
   (display "   Got:\t\t\t")
-  (display (cadr l)) (newline) (newline))
+  (display (cadr l)) (newline))
 
 (define (results l)
   (map test-eval l))

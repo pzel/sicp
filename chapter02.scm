@@ -236,6 +236,39 @@
          (for-each_ pred (cdr l)))))
                
 
+; 2.25
+(define (expr1 w) (car (cdr (car (cdr (cdr w))))))
+(define (expr2 w) (car (car w)))
+(define (expr3 w) (car (cdr (car (cdr (car (cdr (car (cdr (car (cdr (car (cdr w)))))))))))))
+
+; 2.26 
+(define x26 (list 1 2 3))
+(define y26 (list 4 5 6))
+
+
+; 2.27
+(define x27 (list (list 1 2) (list 3 4)))
+(define (deep-reverse l)
+  (cond ((null? l) 
+         '())
+        ((list? (car l))
+         (append (deep-reverse (cdr l)) 
+                 (list (deep-reverse (car l)))))
+        (else
+         (append (deep-reverse (cdr l)) 
+                 (list (car l))))))
+
+2.28
+(define x28 (list (list 1 2) (list 3 4)))
+(define (fringe l)
+  (cond ((null? l)
+         '())
+        ((list? (car l))
+         (append (fringe (car l))
+                 (fringe (cdr l))))
+        (else
+         (append (list (car l))
+                 (fringe (cdr l))))))
 
 
 ;==================================================================
@@ -314,7 +347,6 @@
         (=? '(square-list_ (list 1 2 3 4)) '(1 4 9 16))
         (=? '(square-list__ (list 1 2 3 4)) '(1 4 9 16))
         
-
         ; ex 2.22
         (=? '(square-list3-broken (list 1 2 3 4)) '(16 9 4 1))
         (=? '(square-list3-fixed (list 1 2 3 4)) '(1 4 9 16))
@@ -322,5 +354,23 @@
 
         ; ex 2.23
         (=? '(for-each_ (lambda(x) (* x x)) (list 1 2 3)) '())
+        
+        ; ex 2.25
+        (=? '(expr1 (list 1 2 (list 5 7) 9)) 7)
+        (=? '(expr2 (list (list 7))) 7)
+        (=? '(expr3 (list 1 (list 2 (list 3 (list 4 (list 5 (list 6 7))))))) 7)
+
+        ; ex 2.26
+        (=? '(append x26 y26) (list 1 2 3 4 5 6))
+        (=? '(cons x26 y26) (list (list 1 2 3) 4 5 6))
+        (=? '(list x26 y26) (list (list 1 2 3) (list 4 5 6)))
+
+        ; ex 2.27
+        (=? '(reverse_ x27) (list (list 3 4) (list 1 2)))
+        (=? '(deep-reverse x27) (list (list 4 3) (list 2 1)))
+
+        ; ex 2.28
+        (=? '(fringe x28) (list 1 2 3 4))
+        (=? '(fringe (list x28 x28)) (list 1 2 3 4 1 2 3 4))
 
         ))
