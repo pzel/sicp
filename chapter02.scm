@@ -327,7 +327,34 @@
          (is-balanced? (branch-structure s)))
         (else 
          #f)))
-       
+
+; 2.30
+(define (square x) (* x x))
+(define (skuare-tree t)
+  (cond ((null? t) '())
+        ((not-pair? t) (square t))
+        (else
+         (cons (skuare-tree (car t))
+               (skuare-tree (cdr t))))))
+
+(define (scuare-tree t)
+  (map (lambda(x)
+         (if (not-pair? x) 
+             (square x)
+             (scuare-tree x)))
+       t))
+
+; 2.31
+(define (m-square-tree t)
+  (tree-map square t))
+
+(define (tree-map f t)
+  (map (lambda(element)
+         (if (not-pair? element)
+             (f element)
+             (tree-map f element)))
+       t))
+
 
 ;==================================================================
 (load "./test.scm")
@@ -466,5 +493,21 @@
                                         (make-branch 10 10)))
             #f)
 
+        ; ex 2.30
+        (=? '(skuare-tree (list 1
+                                (list 2 (list 3 4) 5)
+                                (list 6 7)))
+            '(1 (4 (9 16) 25) (36 49)))
+
+        (=? '(scuare-tree (list 1
+                                (list 2 (list 3 4) 5)
+                                (list 6 7)))
+            '(1 (4 (9 16) 25) (36 49)))
+
+        (=? '(m-square-tree (list 1
+                                  (list 2 (list 3 4) 5)
+                                  (list 6 7)))
+            '(1 (4 (9 16) 25) (36 49)))
+        
 
         ))
