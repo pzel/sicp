@@ -356,6 +356,15 @@
        t))
 
 
+; 2.32
+(define (subsets s)
+  (if (null? s)
+      (list '())
+      (let ((rest (subsets (cdr s))))
+        (append rest (map (lambda(x)(cons (car s) x))
+                          rest)))))
+
+
 ;==================================================================
 (load "./test.scm")
 
@@ -504,10 +513,15 @@
                                 (list 6 7)))
             '(1 (4 (9 16) 25) (36 49)))
 
+        ; ex 2.31
         (=? '(m-square-tree (list 1
                                   (list 2 (list 3 4) 5)
                                   (list 6 7)))
             '(1 (4 (9 16) 25) (36 49)))
         
+
+        ; ex 2.32
+        (=? '(subsets '(1 2 3))
+            '(() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3)))
 
         ))
