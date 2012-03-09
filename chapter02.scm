@@ -1,6 +1,9 @@
 ;; SICP chapter 2
 (use srfi-13) ; string methods (for displaying objects)
 
+(define (not-pair? x)
+  (not (pair? x)))
+
 (define (avg x y)
   (/ (+ x y)
      2.0))
@@ -259,7 +262,7 @@
          (append (deep-reverse (cdr l)) 
                  (list (car l))))))
 
-2.28
+; 2.28
 (define x28 (list (list 1 2) (list 3 4)))
 (define (fringe l)
   (cond ((null? l)
@@ -271,10 +274,63 @@
          (append (list (car l))
                  (fringe (cdr l))))))
 
+; 2.29
+(define (make-mobile left right)
+  (cons left right))
+
+(define (make-branch length structure)
+  (list length structure))
+
+(define (left-branch s)
+  (car s))
+(define (right-branch s)
+  (cdr s))
+(define (branch-length s)
+  (car s))
+(define (branch-structure s)
+  (cadr s))
+
+(define (is-branch? s)
+  (if (null? s) 
+      #f
+      (not (pair? (car s)))))
+
+(define (is-structure? s)
+  (cond ((null? s) #f)
+        ((not (pair? s)) #t)
+        ((and (pair? s)
+              (not (is-branch? s))) #t)
+        (else 
+         #f)))
+
+(define (total-weight s)
+  (cond ((null? s) '())
+        ((not (pair? s)) s)
+        ((is-branch? s)
+         (total-weight (branch-structure s)))
+        (else (+ (total-weight (left-branch s))
+                 (total-weight (right-branch s))))))
+
+(define (even-forces? s)
+  (= (* (branch-length (left-branch s))
+        (total-weight  (left-branch s)))
+     (* (branch-length (right-branch s))
+        (total-weight  (right-branch s)))))
+
+(define (is-balanced? s)
+  (cond ((not-pair? s) #t)
+        ((is-structure? s)
+         (and (even-forces? s)
+              (and (is-balanced? (right-branch s))
+                   (is-balanced? (left-branch s)))))
+        ((is-branch? s)
+         (is-balanced? (branch-structure s)))
+        (else 
+         #f)))
+       
 
 ;==================================================================
 (load "./test.scm")
-
 
 (test '(
         ; ex. 2.2
@@ -373,5 +429,42 @@
         ; ex 2.28
         (=? '(fringe x28) (list 1 2 3 4))
         (=? '(fringe (list x28 x28)) (list 1 2 3 4 1 2 3 4))
+
+        ; ex 2.29
+
+        (=? '(right-branch (make-mobile 1 2)) 2)
+        (=? '(left-branch (make-mobile 1 2)) 1)
+        (=? '(is-branch? (make-branch 1 (make-mobile (make-branch 1 1)
+                                                    (make-branch 1 1)))) #t)
+        (=? '(is-branch? '()) #f)
+        (=? '(is-branch? (make-mobile (make-branch 1 1) (make-branch 1 1))) #f)
+
+        (=? '(is-structure? '()) #f)
+        (=? '(is-structure? (make-mobile (make-branch 1 1) (make-branch 1 1))) #t)
+        (=? '(is-structure? (make-branch 1 (make-mobile (make-branch 1 1)
+                                                     (make-branch 1 1)))) #f)
+
+        (=? '(total-weight (make-mobile (make-branch 1 3)
+                                        (make-branch 5 (make-mobile (make-branch 3 7)
+                                                                    (make-branch 6 11))))) 21)
+
+        (=? '(is-balanced? (make-mobile (make-branch 4 8)
+                                        (make-branch 16 2))) 
+            #t)
+
+        (=? '(is-balanced? (make-mobile (make-branch 4 8)
+                                        (make-branch 16 1))) 
+            #f)
+
+        (=? '(is-balanced? (make-mobile (make-branch 5 (make-mobile (make-branch 2 10)
+                                                                    (make-branch 2 10)))
+                                        (make-branch 10 10)))
+            #t)
+
+        (=? '(is-balanced? (make-mobile (make-branch 5 (make-mobile (make-branch 3 10)
+                                                                    (make-branch 1 10)))
+                                        (make-branch 10 10)))
+            #f)
+
 
         ))
