@@ -373,7 +373,7 @@
           (accumulate op acc (cdr seq)))))
 
 
-; 2.32
+; 2.33
 (define (map32 f xs)
   (accumulate (lambda(y ys) (cons (f y) ys)) 
               '() 
@@ -550,7 +550,7 @@
         (=? '(accumulate * 1 '(1 2 3 4 5)) 120)
         (=? '(accumulate cons '() '(1 2 3 4 5)) '(1 2 3 4 5))
 
-        ; ex 2.32
+        ; ex 2.33
         (=? '(map32 square '(1 2 3)) '(1 4 9))
         (=? '(append32 '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
         (=? '(length32 '(1 2 3)) 3)
