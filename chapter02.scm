@@ -365,6 +365,27 @@
                           rest)))))
 
 
+; Needed for subsequent exercises
+(define (accumulate op acc seq)
+  (if (null? seq)
+      acc
+      (op (car seq)
+          (accumulate op acc (cdr seq)))))
+
+
+; 2.32
+(define (map32 f xs)
+  (accumulate (lambda(y ys) (cons (f y) ys)) 
+              '() 
+              xs))
+
+(define (append32 xs ys) 
+  (accumulate cons ys xs))
+
+(define (length32 xs)
+  (accumulate (lambda(_ y) (+ 1 y)) 0 xs))
+
+
 ;==================================================================
 (load "./test.scm")
 
@@ -524,4 +545,14 @@
         (=? '(subsets '(1 2 3))
             '(() (3) (2) (2 3) (1) (1 3) (1 2) (1 2 3)))
 
+        ; accumulate (fold) test
+        (=? '(accumulate + 0 '(1 2 3 4 5)) 15)
+        (=? '(accumulate * 1 '(1 2 3 4 5)) 120)
+        (=? '(accumulate cons '() '(1 2 3 4 5)) '(1 2 3 4 5))
+
+        ; ex 2.32
+        (=? '(map32 square '(1 2 3)) '(1 4 9))
+        (=? '(append32 '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
+        (=? '(length32 '(1 2 3)) 3)
+        
         ))
