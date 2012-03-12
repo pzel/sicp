@@ -383,7 +383,16 @@
   (accumulate cons ys xs))
 
 (define (length32 xs)
-  (accumulate (lambda(_ y) (+ 1 y)) 0 xs))
+  (accumulate (lambda(_ y) (+ 1 y))
+              0 xs))
+
+; 2.34
+(define (horner-eval x coefficients)
+  (accumulate (lambda(this-coeff higher-terms) 
+                (+ (* x higher-terms)
+                      this-coeff))
+              0
+              coefficients))
 
 
 ;==================================================================
@@ -555,4 +564,7 @@
         (=? '(append32 '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
         (=? '(length32 '(1 2 3)) 3)
         
+
+        ; ex 2.43
+        (=? '(horner-eval 2 '(1 3 0 5 0 1)) 79)
         ))
