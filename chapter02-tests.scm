@@ -36,13 +36,10 @@
         (=? '(which-power? 4 2) 2)
         (=? '(which-power? 32 2) 5)
         (=? '(which-power? 64 2) 6)
-
         (=? '(qar (qons 1 2)) 1)
         (=? '(qdr (qons 1 2)) 2)
-
         (=? '(qar (qons 2 3)) 2)
         (=? '(qdr (qons 2 3)) 3)
-
         (=? '(qar (qons 5 8)) 5)
         (=? '(qdr (qons 5 8)) 8)
         
@@ -150,7 +147,6 @@
                                   (list 2 (list 3 4) 5)
                                   (list 6 7)))
             '(1 (4 (9 16) 25) (36 49)))
-        
 
         ; ex 2.32
         (=? '(subsets '(1 2 3))
@@ -165,8 +161,15 @@
         (=? '(map32 square '(1 2 3)) '(1 4 9))
         (=? '(append32 '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
         (=? '(length32 '(1 2 3)) 3)
-        
 
         ; ex 2.43
         (=? '(horner-eval 2 '(1 3 0 5 0 1)) 79)
-        ))
+
+        ; ex 2.35
+        (=? '(count-leaves-acc (list (list 1 2) (list 3 4) (list 5 6))) 
+            6)
+        (=? '(count-leaves-acc (list (list 1 (list 11 12)) 2 (list 3 4) (list 5 6))) 
+            8)
+        
+
+))

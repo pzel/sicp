@@ -364,13 +364,22 @@
         (append rest (map (lambda(x)(cons (car s) x))
                           rest)))))
 
-
-; Needed for subsequent exercises
 (define (accumulate op acc seq)
   (if (null? seq)
       acc
       (op (car seq)
           (accumulate op acc (cdr seq)))))
+
+
+(define (accumulate-debug op acc seq)
+  (if (null? seq)
+      (begin (newline)(display "Returning ")(display acc) acc)
+      (begin ;debug
+        (newline)
+        (display (car seq))(display ": ")
+        (display (cdr seq))
+        (op (car seq)
+            (accumulate-debug op acc (cdr seq))))))
 
 
 ; 2.33
@@ -394,6 +403,12 @@
               0
               coefficients))
 
+; 2.35
+(define (count-leaves-acc t)
+  (accumulate (lambda(x rest)
+                (+ (length (fringe x)) 
+                   rest))
+              0
+              (map list t)))
 
-
-
+                    
