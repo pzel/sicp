@@ -410,5 +410,11 @@
                    rest))
               0
               (map list t)))
-
                     
+; 2.36
+(define (accumulate-n op acc seqs)
+  (if (null? (car seqs))
+      '()
+      (cons (accumulate op acc (map car seqs))
+            (accumulate-n op acc (map cdr seqs)))))
+             
