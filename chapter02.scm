@@ -421,7 +421,6 @@
 
 
 ; 2.38
-
 (define (foldr f acc seq)
   (if (null? seq)
       acc
@@ -437,3 +436,14 @@
              (f acc (car seq)) 
              (cdr seq))))
 
+
+; 2.39
+(define (fr-rev seq)
+  (foldr (lambda(x xs) (append xs (list x))) 
+         '() 
+         seq))
+
+(define (fl-rev seq)
+  (foldl (lambda(x xs) (cons xs x))
+         '()
+         seq))
