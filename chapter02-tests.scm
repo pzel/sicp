@@ -171,9 +171,18 @@
         (=? '(count-leaves-acc (list (list 1 (list 11 12)) 2 (list 3 4) (list 5 6))) 
             8)
         
-
         ; ex 2.36
         (=? '(accumulate-n + 0 (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
             (list 22 26 30))
+        
+        ; ex 2.37
+        (=? '(dot-product (list 1 2 3) (list 3 4 5)) 26)
 
+        ; ex 2.38
+        (=? '(accumulate + 0 '(1 2 3)) (foldr + 0 '(1 2 3)))
+        (=? '(foldl + 0 '(1 2 3)) (foldr + 0 '(1 2 3)))
+        (=?~ '(foldr / 1 '(1 2 3)) 1.5)
+        (=?~ '(foldl / 1 '(1 2 3)) 0.166)
+        (=? '(foldr list '() '(1 2 3)) (list 1 (list 2 (list 3 '()))))
+        (=? '(foldl list '() '(1 2 3)) (list (list (list '() 1) 2) 3))
 ))

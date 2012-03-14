@@ -171,7 +171,6 @@
                   (except-first-demonination coins))
               (cc (- amount (first-denomination coins)) 
                   coins))))))
-  
 
 ; 2.20
 (define (filter_ pred list)
@@ -238,7 +237,6 @@
         (#t
          (pred (car l))
          (for-each_ pred (cdr l)))))
-               
 
 ; 2.25
 (define (expr1 w) (car (cdr (car (cdr (cdr w))))))
@@ -355,7 +353,6 @@
              (tree-map f element)))
        t))
 
-
 ; 2.32
 (define (subsets s)
   (if (null? s)
@@ -370,7 +367,6 @@
       (op (car seq)
           (accumulate op acc (cdr seq)))))
 
-
 (define (accumulate-debug op acc seq)
   (if (null? seq)
       (begin (newline)(display "Returning ")(display acc) acc)
@@ -380,7 +376,6 @@
         (display (cdr seq))
         (op (car seq)
             (accumulate-debug op acc (cdr seq))))))
-
 
 ; 2.33
 (define (map32 f xs)
@@ -418,3 +413,27 @@
       (cons (accumulate op acc (map car seqs))
             (accumulate-n op acc (map cdr seqs)))))
              
+; 2.37
+; TODO: Learn matrix math, write tests,
+;       implement the functions. 
+(define (dot-product v w)
+  (accumulate + 0 (map * w v)))
+
+
+; 2.38
+
+(define (foldr f acc seq)
+  (if (null? seq)
+      acc
+      (f (car seq)
+          (foldr f 
+                 acc 
+                 (cdr seq)))))
+
+(define (foldl f acc seq)
+  (if (null? seq)
+      acc
+      (foldl f 
+             (f acc (car seq)) 
+             (cdr seq))))
+
