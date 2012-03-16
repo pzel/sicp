@@ -502,10 +502,24 @@
       (flatmap (lambda(x)
                  (map (lambda(el) (cons x el))
                       (permutations (remove x s))))
-
                s)))
+
 (define (unique-pairs n)
   (flatmap (lambda(i)
              (map (lambda(j) (list i j))
                   (enumerate-interval 1 (- i 1))))
            (enumerate-interval 1 n)))
+
+; ex 2.41
+(define (unique-3-tuples n)
+  (flatmap (lambda(i)
+             (map (lambda(y) (append i (list y)))
+                  (enumerate-interval 1 (- (cadr i) 1))))
+           (unique-pairs n)))
+
+(define (sum-equal? list n)
+  (= (foldr + 0 list) n))
+
+(define (triple-sums n s)
+  (filter_ (lambda(x) (sum-equal? x s))
+          (unique-3-tuples n)))
