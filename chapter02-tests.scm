@@ -191,8 +191,24 @@
         (=? '(fl-rev '(1 2 3 4)) '(4 3 2 1))
 
         ; ex 2.40
+        ; needed functions
         (=? '(prime? 2) #t)
         (=? '(prime? 3) #t)
         (=? '(prime? 23) #t)
         (=? '(prime? 24) #f)
+        (=? '(flatmap (lambda(list)(map 
+                                    (lambda(y) (+ y 1))
+                                    list))
+                             (list (list 1 2)(list 3 4)))
+            '(2 3 4 5))
+        (=? '(enumerate-interval 0 0) '(0))
+        (=? '(enumerate-interval 0 1) '(0 1))
+        (=? '(enumerate-interval 0 5) '(0 1 2 3 4 5))
+        (=? '(enumerate-interval -2 2) '(-2 -1 0 1 2))
+        (=? '(prime-sum? (list 1 2)) #t)
+        (=? '(prime-sum? (list 2 2)) #f)
+        (=? '(make-pair-sum (list 1 2)) '(1 2 3))
+        (=? '(prime-sum-pairs 2) '((2 1 3)))
+        (=? '(remove 1 '(1 2 3)) '(2 3))
+        (=? '(permutations '(1 2 3)) '((1 2 3) (1 3 2) (2 1 3) (2 3 1) (3 1 2) (3 2 1)))
 ))

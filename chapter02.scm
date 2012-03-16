@@ -449,6 +449,7 @@
          seq))
 
 ; 2.40
+; prerequisites
 (define (expmod base exp m)
   (cond ((= exp 0) 1)
         ((even? exp)
@@ -471,4 +472,38 @@
 (define (prime? n)
   (fast-prime? n 10))
 
+(define (flatmap f seq)
+  (foldr append '() (map f seq)))
 
+(define (enumerate-interval from to)
+  (if (> from to)
+      '()
+      (cons from (enumerate-interval (+ 1 from) to))))
+
+(define (prime-sum? p)
+  (prime? (+ (car p) (cadr p))))
+
+(define (make-pair-sum p)
+  (let ((a (car p))
+        (b (cadr p)))
+  (list a b (+ a b))))
+
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter_ prime-sum?
+               (flatmap (lambda(i)
+                          (map (lambda(j) (list i j))
+                               (enumerate-interval 1 (- i 1))))
+                        (enumerate-interval 1 n)))))
+
+(define (remove el seq)
+  (filter_ (lambda(x) (not (= x el))) seq))
+
+(define (permutations s)
+  (if (null? s)
+      (list '())
+      (flatmap (lambda(x)
+                 (map (lambda(el) (cons x el))
+                      (permutations (remove x s))))
+
+               s)))
