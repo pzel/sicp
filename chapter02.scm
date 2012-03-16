@@ -93,7 +93,7 @@
 
 (define (hei-rect r)
   (hei-segment (vert-rect r)))
-                   
+
 (define (perim-rect r)
   (* 2
      (+ (len-rect r) (hei-rect r))))
@@ -122,7 +122,7 @@
         (iter (/ n m) m (+ 1 acc))
         acc))
   (iter n m 0))
-  
+
 (define (qons x y)
   (* (pow 2 x)
      (pow 3 y)))
@@ -143,9 +143,9 @@
 ; 2.18
 (define (reverse_ l)
   (define (iter l1 acc)
-    (if (null? l1) 
+    (if (null? l1)
         acc
-        (iter (cdr l1) 
+        (iter (cdr l1)
               (cons (car l1) acc))))
   (iter l '()))
 
@@ -167,9 +167,9 @@
     (cond ((= amount 0) 1)
           ((or (< amount 0) (no-more? coins)) 0)
           (#t
-           (+ (cc amount 
+           (+ (cc amount
                   (except-first-demonination coins))
-              (cc (- amount (first-denomination coins)) 
+              (cc (- amount (first-denomination coins))
                   coins))))))
 
 ; 2.20
@@ -178,9 +178,9 @@
     (if (null? list)
         (reverse_ acc)
         (if (pred (car list))
-            (iter (cdr list) 
+            (iter (cdr list)
                   (cons (car list) acc))
-            (iter (cdr list) 
+            (iter (cdr list)
                   acc))))
   (iter list '()))
 
@@ -226,7 +226,7 @@
       (if (null? l)
           acc
           (iter (cdr l)
-                (append acc 
+                (append acc
                         (list (square (car l)))))))
 
     (iter l '())))
@@ -243,7 +243,7 @@
 (define (expr2 w) (car (car w)))
 (define (expr3 w) (car (cdr (car (cdr (car (cdr (car (cdr (car (cdr (car (cdr w)))))))))))))
 
-; 2.26 
+; 2.26
 (define x26 (list 1 2 3))
 (define y26 (list 4 5 6))
 
@@ -251,13 +251,13 @@
 ; 2.27
 (define x27 (list (list 1 2) (list 3 4)))
 (define (deep-reverse l)
-  (cond ((null? l) 
+  (cond ((null? l)
          '())
         ((list? (car l))
-         (append (deep-reverse (cdr l)) 
+         (append (deep-reverse (cdr l))
                  (list (deep-reverse (car l)))))
         (else
-         (append (deep-reverse (cdr l)) 
+         (append (deep-reverse (cdr l))
                  (list (car l))))))
 
 ; 2.28
@@ -289,7 +289,7 @@
   (cadr s))
 
 (define (is-branch? s)
-  (if (null? s) 
+  (if (null? s)
       #f
       (not (pair? (car s)))))
 
@@ -298,7 +298,7 @@
         ((not (pair? s)) #t)
         ((and (pair? s)
               (not (is-branch? s))) #t)
-        (else 
+        (else
          #f)))
 
 (define (total-weight s)
@@ -323,7 +323,7 @@
                    (is-balanced? (left-branch s)))))
         ((is-branch? s)
          (is-balanced? (branch-structure s)))
-        (else 
+        (else
          #f)))
 
 ; 2.30
@@ -337,7 +337,7 @@
 
 (define (scuare-tree t)
   (map (lambda(x)
-         (if (not-pair? x) 
+         (if (not-pair? x)
              (square x)
              (scuare-tree x)))
        t))
@@ -379,11 +379,11 @@
 
 ; 2.33
 (define (map32 f xs)
-  (accumulate (lambda(y ys) (cons (f y) ys)) 
-              '() 
+  (accumulate (lambda(y ys) (cons (f y) ys))
+              '()
               xs))
 
-(define (append32 xs ys) 
+(define (append32 xs ys)
   (accumulate cons ys xs))
 
 (define (length32 xs)
@@ -392,7 +392,7 @@
 
 ; 2.34
 (define (horner-eval x coefficients)
-  (accumulate (lambda(this-coeff higher-terms) 
+  (accumulate (lambda(this-coeff higher-terms)
                 (+ (* x higher-terms)
                       this-coeff))
               0
@@ -401,21 +401,21 @@
 ; 2.35
 (define (count-leaves-acc t)
   (accumulate (lambda(x rest)
-                (+ (length (fringe x)) 
+                (+ (length (fringe x))
                    rest))
               0
               (map list t)))
-                    
+
 ; 2.36
 (define (accumulate-n op acc seqs)
   (if (null? (car seqs))
       '()
       (cons (accumulate op acc (map car seqs))
             (accumulate-n op acc (map cdr seqs)))))
-             
+
 ; 2.37
 ; TODO: Learn matrix math, write tests,
-;       implement the functions. 
+;       implement the functions.
 (define (dot-product v w)
   (accumulate + 0 (map * w v)))
 
@@ -425,22 +425,22 @@
   (if (null? seq)
       acc
       (f (car seq)
-          (foldr f 
-                 acc 
+          (foldr f
+                 acc
                  (cdr seq)))))
 
 (define (foldl f acc seq)
   (if (null? seq)
       acc
-      (foldl f 
-             (f acc (car seq)) 
+      (foldl f
+             (f acc (car seq))
              (cdr seq))))
 
 
 ; 2.39
 (define (fr-rev seq)
-  (foldr (lambda(x xs) (append xs (list x))) 
-         '() 
+  (foldr (lambda(x xs) (append xs (list x)))
+         '()
          seq))
 
 (define (fl-rev seq)
@@ -490,11 +490,8 @@
 
 (define (prime-sum-pairs n)
   (map make-pair-sum
-       (filter_ prime-sum?
-               (flatmap (lambda(i)
-                          (map (lambda(j) (list i j))
-                               (enumerate-interval 1 (- i 1))))
-                        (enumerate-interval 1 n)))))
+       (filter_ prime-sum? (unique-pairs n))))
+
 
 (define (remove el seq)
   (filter_ (lambda(x) (not (= x el))) seq))
@@ -507,3 +504,8 @@
                       (permutations (remove x s))))
 
                s)))
+(define (unique-pairs n)
+  (flatmap (lambda(i)
+             (map (lambda(j) (list i j))
+                  (enumerate-interval 1 (- i 1))))
+           (enumerate-interval 1 n)))

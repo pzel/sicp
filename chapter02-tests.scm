@@ -5,7 +5,7 @@
         (=? '(y-point (make-point 1 9)) 9)
         (=? '(x-point (make-point 1 9)) 1)
         (=? '(showpoint (make-point 5 7)) "5,7")
-        (=? '(showsegment (make-segment (make-point 0 0)(make-point 2 2))) 
+        (=? '(showsegment (make-segment (make-point 0 0)(make-point 2 2)))
             "0,0:2,2")
         (=? '(showpoint (midpoint-segment (make-segment (make-point 0 0)(make-point 2 2))))
             "1.0,1.0")
@@ -19,7 +19,7 @@
         (=? '(len-rect t-rect1) 2)
         (=? '(hei-rect t-rect1) 2)
         (=? '(hei-rect (make-rect (make-point 1 5)(make-point 5 1))) 4)
-        (=?~ '(area-rect (make-rect 
+        (=?~ '(area-rect (make-rect
                           (make-point 0 2)(make-point 5 0)))
              10.0)
         (=?~  '(perim-rect (make-rect (make-point 0 2)(make-point 5 0))) 14.0)
@@ -42,7 +42,7 @@
         (=? '(qdr (qons 2 3)) 3)
         (=? '(qar (qons 5 8)) 5)
         (=? '(qdr (qons 5 8)) 8)
-        
+
         ; ex 2.17
         (=? '(last-pair (list 4 5 6 7)) 7)
         (=? '(last-pair (list 1)) 1)
@@ -50,14 +50,14 @@
 
         ; ex 2.18
         (=? '(reverse_ (list 1 2 3 4)) '(4 3 2 1))
-        (=? '(reverse_ '()) '()) 
+        (=? '(reverse_ '()) '())
         (=? '(reverse__ (list 1 2 3 4)) '(4 3 2 1))
         (=? '(reverse__ '()) '())
 
         ; ex 2.19
         (=? '(cc 100 us-coins) 292)
         (=? '(cc 100 us-rev-coins) 292)
-        
+
         ; ex 2.20
         (=? '(filter_ even? (list 2 4 6 7)) '(2 4 6))
         (=? '(filter_ odd? (list 1 2 4 6 7)) '(1 7))
@@ -68,7 +68,7 @@
         ; ex 2.21
         (=? '(square-list_ (list 1 2 3 4)) '(1 4 9 16))
         (=? '(square-list__ (list 1 2 3 4)) '(1 4 9 16))
-        
+
         ; ex 2.22
         (=? '(square-list3-broken (list 1 2 3 4)) '(16 9 4 1))
         (=? '(square-list3-fixed (list 1 2 3 4)) '(1 4 9 16))
@@ -76,7 +76,7 @@
 
         ; ex 2.23
         (=? '(for-each_ (lambda(x) (* x x)) (list 1 2 3)) '())
-        
+
         ; ex 2.25
         (=? '(expr1 (list 1 2 (list 5 7) 9)) 7)
         (=? '(expr2 (list (list 7))) 7)
@@ -114,11 +114,11 @@
                                                                     (make-branch 6 11))))) 21)
 
         (=? '(is-balanced? (make-mobile (make-branch 4 8)
-                                        (make-branch 16 2))) 
+                                        (make-branch 16 2)))
             #t)
 
         (=? '(is-balanced? (make-mobile (make-branch 4 8)
-                                        (make-branch 16 1))) 
+                                        (make-branch 16 1)))
             #f)
 
         (=? '(is-balanced? (make-mobile (make-branch 5 (make-mobile (make-branch 2 10)
@@ -166,15 +166,15 @@
         (=? '(horner-eval 2 '(1 3 0 5 0 1)) 79)
 
         ; ex 2.35
-        (=? '(count-leaves-acc (list (list 1 2) (list 3 4) (list 5 6))) 
+        (=? '(count-leaves-acc (list (list 1 2) (list 3 4) (list 5 6)))
             6)
-        (=? '(count-leaves-acc (list (list 1 (list 11 12)) 2 (list 3 4) (list 5 6))) 
+        (=? '(count-leaves-acc (list (list 1 (list 11 12)) 2 (list 3 4) (list 5 6)))
             8)
-        
+
         ; ex 2.36
         (=? '(accumulate-n + 0 (list (list 1 2 3) (list 4 5 6) (list 7 8 9) (list 10 11 12)))
             (list 22 26 30))
-        
+
         ; ex 2.37
         (=? '(dot-product (list 1 2 3) (list 3 4 5)) 26)
 
@@ -196,7 +196,7 @@
         (=? '(prime? 3) #t)
         (=? '(prime? 23) #t)
         (=? '(prime? 24) #f)
-        (=? '(flatmap (lambda(list)(map 
+        (=? '(flatmap (lambda(list)(map
                                     (lambda(y) (+ y 1))
                                     list))
                              (list (list 1 2)(list 3 4)))
@@ -211,4 +211,6 @@
         (=? '(prime-sum-pairs 2) '((2 1 3)))
         (=? '(remove 1 '(1 2 3)) '(2 3))
         (=? '(permutations '(1 2 3)) '((1 2 3) (1 3 2) (2 1 3) (2 3 1) (3 1 2) (3 2 1)))
+        ; 2.40
+        (=? '(unique-pairs 3) '((2 1) (3 1) (3 2)))
 ))
