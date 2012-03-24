@@ -65,11 +65,20 @@
   (map test-eval l))
 
 (define (test l)
-  (if (null? 
-       (map 
-        display-failure 
-        (test-philter 
-         (lambda (x)(not (equal? (car x) #t))) 
-         (results l))))
-      (begin (display " * All tests OK." ) (newline) #t)
-      #f))
+  (letrec ((total (length l))
+           (r (results l))
+           (errors (test-philter (lambda(x) (not (equal? (car x) #t))) r)))
+    (if (null? errors)
+        (show-success total)
+        (show-errors errors total))))
+
+(define (show-success n)
+  (display  (format " * All tests OK (~s)~n" n))
+  #t)
+
+(define (show-errors errors total)
+  (map display-failure errors)
+  (letrec ((err (length errors))
+           (ok (- total err)))
+    (display (format "~n * Failed: ~s\tPassed: ~s\t Total: ~s.~n" err ok total))
+  #f))

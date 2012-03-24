@@ -587,13 +587,13 @@
              (next-down (car ps))
              ps))
 
-(define (safe-next col next ps)
+(define (safe-next count next ps)
   (if (last? ps)
       #t
       (let ((head (car ps))
             (tail (cdr ps)))
-        (and (not (member (next col) tail))
-             (safe-next (+ col 1) next tail)))))
+        (and (not (member (next count) tail))
+             (safe-next (+ count 1) next tail)))))
 
 (define (queens board-size)
   (define (queen-cols k)
@@ -610,9 +610,6 @@
   (define (adjoin-position row col rest)
     (cons (mk-p row col) rest))
   (queen-cols board-size))
-
-
-
 
 (define (draw-board board)
   (define (draw-col y)
