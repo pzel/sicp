@@ -1,5 +1,7 @@
 ;; SICP chapter 2
 (use srfi-13) ; string methods (for displaying objects)
+(define dsp (lambda(x) (display x)(display " ")))
+(define nl newline)
 
 (define (not-pair? x)
   (not (pair? x)))
@@ -517,9 +519,128 @@
                   (enumerate-interval 1 (- (cadr i) 1))))
            (unique-pairs n)))
 
-(define (sum-equal? list n)
-  (= (foldr + 0 list) n))
+(define (sum-equal? seq n)
+  (= (foldr + 0 seq) n))
 
 (define (triple-sums n s)
   (filter_ (lambda(x) (sum-equal? x s))
           (unique-3-tuples n)))
+
+; 2.42
+(define (all pred seq)
+  (if (= (length seq) 
+         (length (filter_ pred seq)))
+      #t
+      #f))
+
+(define (uniques seq)
+  (foldr (lambda(x xs)
+           (if (not (member x xs))
+               (cons x xs)
+               xs))
+         '()
+         seq))
+
+(define empty-board '())      
+(define (mk-p row col) (cons row col))
+(define p-row car)
+(define p-col cdr)
+
+(define (next-up p)
+  (lambda(n)
+    (mk-p (- (p-row p) n)
+          (- (p-col p) n))))
+
+(define (next-down p)
+  (lambda(n)
+    (mk-p (+ (p-row p) n)
+          (- (p-col p) n))))
+
+(define (all-rows ps)
+  (foldr (lambda(x xs) (cons (p-row x) xs))
+         '()
+         ps))
+
+(define (last? l)
+  (or (null? l)
+      (< (length l)
+         2)))
+
+(define (safe? col ps)
+  (if (last? ps)
+      #t
+      (and (safe-row? ps)
+           (safe-up?   1 ps)
+           (safe-down? 1 ps))))
+
+(define (safe-row? ps)
+  (not (member (p-row (car ps))
+               (all-rows (cdr ps)))))
+
+(define (safe-up? col ps)
+  (safe-next col 
+             (next-up (car ps))
+             ps))
+
+(define (safe-down? col ps)
+  (safe-next col 
+             (next-down (car ps))
+             ps))
+
+(define (safe-next col next ps)
+  (if (last? ps)
+      #t
+      (let ((head (car ps))
+            (tail (cdr ps)))
+        (and (not (member (next col) tail))
+             (safe-next (+ col 1) next tail)))))
+
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+        (list empty-board)
+        (filter_
+         (lambda(positions) (safe? k positions))
+         (flatmap
+          (lambda(rest-of-queens)
+            (map (lambda(new-row)
+                   (adjoin-position new-row k rest-of-queens))
+                 (enumerate-interval 1 board-size)))
+          (queen-cols (- k 1))))))
+  (define (adjoin-position row col rest)
+    (cons (mk-p row col) rest))
+  (queen-cols board-size))
+
+
+
+
+(define (draw-board board)
+  (define (draw-col y)
+    (cond 
+     ((= y 1) (display "X⬝⬝⬝⬝⬝⬝⬝"))
+     ((= y 2) (display "⬝X⬝⬝⬝⬝⬝⬝"))
+     ((= y 3) (display "⬝⬝X⬝⬝⬝⬝⬝"))
+     ((= y 4) (display "⬝⬝⬝X⬝⬝⬝⬝"))
+     ((= y 5) (display "⬝⬝⬝⬝X⬝⬝⬝"))
+     ((= y 6) (display "⬝⬝⬝⬝⬝X⬝⬝"))
+     ((= y 7) (display "⬝⬝⬝⬝⬝⬝X⬝"))
+     ((= y 8) (display "⬝⬝⬝⬝⬝⬝⬝X"))))
+  
+  (for-each_ (lambda(y) (draw-col (p-col y))(nl))
+             (sort board (lambda (p q) (< (p-row p) 
+                                          (p-row q)))))
+  (nl))
+
+(define (see x)
+  (let ((solutions (queens x)))
+    (map (lambda(board n) (dsp n)(nl)(draw-board board))
+         solutions
+         (enumerate-interval 1 (length solutions) )))
+  #t)
+
+(define (dbg x)
+  (let ((solutions (queens x)))
+    (map (lambda(sol n) (dsp n) (dsp sol) (nl))
+         solutions
+         (enumerate-interval 1 (length solutions))))
+  #t)
