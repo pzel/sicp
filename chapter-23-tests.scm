@@ -14,9 +14,12 @@
 
    ; 2.3.2 Symbolic differatiation
 
+   ;; ex 2.56
    (=? '(deriv '(+ x 3) 'x) 1)
    (=? '(deriv '(* x y) 'x) 'y)
    (=? '(deriv '(** x 3) 'x) '(* 3 (** x 2)))
+
+   ;; ex 2.57
    (=? '(deriv '(+ x 1 2) 'x) 1)
    (=? '(deriv '(* (* x y) (+ x 3)) 'x)  '(+ (* x y) (* (+ x 3) y)))
    (=? '(deriv '(* x y (+ x 3)) 'x) '(+ (* x y) (* y (+ x 3))))
