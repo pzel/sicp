@@ -104,3 +104,55 @@
 (define (expt? e) (and (pair? e) (eq? (car e) '**)))
 (define (base e) (cadr e))
 (define (exponent e) (caddr e))
+
+
+;; Buildup to 2.59
+(define (element-of-set? x set)
+  (cond ((null? set) #f)
+        ((equal? x (car set)) set)
+        (else
+         (element-of-set? x (cdr set)))))
+
+(define (adjoin-set x set)
+  (if (element-of-set? x set) 
+      set
+      (cons x set)))
+
+(define (intersection-set s1 s2)
+  (cond ((or (null? s1) (null? s2)) '())
+        ((element-of-set? (car s1) s2)
+          (cons (car s1)
+                (intersection-set (cdr s1) s2)))
+        (else
+         (intersection-set (cdr s1) s2))))
+                     
+;; ex. 2.59
+(define (union-set s1 s2)
+  (cond ((null? s1) s2)
+        ((null? s2) s1)
+        ((element-of-set? (car s1) s2)
+         (union-set (cdr s1) s2))
+        (else
+         (cons (car s1)
+               (union-set (cdr s1) s2)))))
+
+;; ex 2.60
+(define (elem-of-dset? x dset)
+  (cond ((null? dset) #f)
+        ((equal? x (car dset)) #t)
+        (else
+         (elem-of-dset? x (cdr dset)))))
+
+(define (adjoin-dset x dset)
+  (cons x dset))
+
+(define (intersection-dset s1 s2)
+  (cond ((or (null? s1) (null? s2)) '())
+        ((elem-of-dset? (car s1) s2)
+          (cons (car s1)
+                (intersection-dset (cdr s1) s2)))
+        (else
+         (intersection-dset (cdr s1) s2))))
+
+(define (union-dset s1 s2)
+  (append s1 s2))

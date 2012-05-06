@@ -1,6 +1,6 @@
 MKSHELL=/bin/bash
-test%:
+test%:Q:
    csi -qnb ./chapter-$stem-tests.scm
 
-all:
+all:Q:
    echo; for f in `ls chapter*tests.scm`; do echo -n "$f : " && csi -qnb $f; done
