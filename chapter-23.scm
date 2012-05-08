@@ -156,3 +156,53 @@
 
 (define (union-dset s1 s2)
   (append s1 s2))
+
+
+; buildup to 2.61
+(define (oset . xs)
+  (sort xs <))
+
+(define (elem-of-oset? x oset)
+  (cond ((null? oset) #f)
+        ((< x (car oset)) #f)
+        ((= x (car oset)) #t)
+        (else
+         (elem-of-oset? x (cdr oset)))))
+
+
+(define (intersection-oset s1 s2)
+  (cond ((or (null? s1) (null? s2)) '())
+        ((< (car s1) (car s2))
+         (intersection-oset (cdr s1) s2))
+        ((> (car s1) (car s2))
+         (intersection-oset s1 (cdr s2)))
+        ((= (car s1) (car s2))
+         (cons (car s1)
+               (intersection-oset (cdr s1) (cdr s2))))))
+
+
+;; ex. 2.61
+(define (adjoin-oset x s)
+  (cond ((null? s) (list x))
+        ((< (car s) x)
+         (cons (car s)
+               (adjoin-oset x (cdr s))))
+        ((> (car s) x)
+         (cons x s))
+        ((= (car s) x) s)
+        (else (error "adjoin-oset failed for set: " s))))
+
+
+;; ex. 2.62
+(define (union-oset s1 s2)
+  (cond ((null? s1) s2)
+        ((null? s2) s1)
+        ((> (car s2) (car s1))
+         (cons (car s1)
+               (union-oset (cdr s1) s2)))
+        ((< (car s2) (car s1))
+         (cons (car s2)
+               (union-set s1 (cdr s2))))
+        ((= (car s1) (car s2))
+         (cons (car s1)
+               (union-oset (cdr s1) (cdr s2))))))

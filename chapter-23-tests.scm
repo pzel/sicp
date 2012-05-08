@@ -49,4 +49,21 @@
    (=? '(union-dset (list 1 2) '()) '(1 2))
    (=? '(union-dset (list 1 2) (list 3 4)) '(1 2 3 4))
 
+
+
+   ; buildup to 2.61
+   (=? '(oset 4 2 1 3) (list 1 2 3 4))
+   (=? '(elem-of-oset? 3 (oset 8 74 3)) #t)
+   (=? '(intersection-oset (oset 1 2 3 4 5 6) (oset 4 5 6 7 8)) (oset 4 5 6))
+   (=? '(intersection-oset '() (oset 1 2 3)) '())
+   (=? '(intersection-oset (oset 7 8 9) (oset 1 2 3)) '())
+   (=? '(adjoin-oset 2 '()) (oset 2))
+   (=? '(adjoin-oset 2 (oset 1 3)) (oset 1 2 3))
+   (=? '(union-oset '() '()) '())
+   (=? '(union-oset '() (oset 1 2)) '(1 2))
+   (=? '(union-oset (oset 1 2) '()) '(1 2))
+   (=? '(union-oset (oset 1 2) (oset 8 9)) (oset 1 2 8 9))
+
+
+
 ))
