@@ -49,8 +49,6 @@
    (=? '(union-dset (list 1 2) '()) '(1 2))
    (=? '(union-dset (list 1 2) (list 3 4)) '(1 2 3 4))
 
-
-
    ; buildup to 2.61
    (=? '(oset 4 2 1 3) (list 1 2 3 4))
    (=? '(elem-of-oset? 3 (oset 8 74 3)) #t)
@@ -64,6 +62,14 @@
    (=? '(union-oset (oset 1 2) '()) '(1 2))
    (=? '(union-oset (oset 1 2) (oset 8 9)) (oset 1 2 8 9))
 
+   ; 2. 65
+   (=? '(union-bset (bset '()) (bset '())) (bset '()))
+   (=? '(union-bset (bset '()) (bset '(1 2))) (bset '(1 2)))
+   (=? '(union-bset (bset '(1 2)) (bset '())) (bset '(1 2)))
+   (=? '(union-bset (bset '(1 2)) (bset '(8 9))) (bset '(1 2 8 9)))
 
-
+   (=? '(intersection-bset (bset '(1 2 3 4 5 6)) (bset '(5 4 6 7 8))) (bset '( 4 5 6)))
+   (=? '(intersection-bset (bset '()) (bset '(1 2 3))) (bset '()))
+   (=? '(intersection-bset (bset '(7 8 9)) (bset '(1 2 3))) (bset '()))
 ))
+
