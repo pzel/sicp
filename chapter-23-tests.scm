@@ -71,5 +71,10 @@
    (=? '(intersection-bset (bset '(1 2 3 4 5 6)) (bset '(5 4 6 7 8))) (bset '( 4 5 6)))
    (=? '(intersection-bset (bset '()) (bset '(1 2 3))) (bset '()))
    (=? '(intersection-bset (bset '(7 8 9)) (bset '(1 2 3))) (bset '()))
+
+   ; 2.67
+   (=? '(lookup 2 (bset '())) #f)
+   (=? '(lookup 2 (bset '(1 2 3))) 2)
+   (=? '(lookup 99 (bset '(1 2 3 4 5 6 77 88 99 100 122))) 99)
 ))
 

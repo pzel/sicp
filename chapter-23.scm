@@ -1,13 +1,5 @@
+;; (use-modules (srfi srfi-1)) ;; for use with guile-2.0
 (use srfi-1)
-;; Older stuff
-(define (tree-map f t)
-  (map (lambda(element)
-         (if (not-pair? element)
-             (f element)
-             (tree-map f element)))
-       t))
-;;;;;;;;;;;;;;;;;;;;;;;
-
 
 (define (memq? sym x)
   (cond ((null? x) #f)
@@ -324,3 +316,16 @@
 (define (intersection-bset t1 t2)
   (bset (intersection-oset (tree->list1 t1)
                            (tree->list1 t2))))
+
+; 2.67
+(define (key x) x)
+(define (lookup given-key btree)
+  (cond ((null? btree) #f)
+        ((< given-key (key (entry btree)))
+         (lookup given-key (left-branch btree)))
+        ((> given-key (key (entry btree)))
+         (lookup given-key (right-branch btree)))
+        ((eq? given-key (key (entry btree)))
+         (entry btree))
+        (else
+         (error "could not complete lookup"))))
