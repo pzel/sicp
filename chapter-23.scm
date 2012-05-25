@@ -437,3 +437,28 @@
     (B 2)
     (D 1)
     (C 1)))
+
+
+;; ex. 2.70
+(define song-pairs
+  '((a 2)
+    (na 16)
+    (boom 1)
+    (sha 3)
+    (get 2)
+    (yip 9)
+    (job 2)
+    (wah 1)))
+
+(define song-tree (generate-h-tree song-pairs))
+
+(define song-symbols
+  '( get a job 
+     sha na na na na na na na na
+     get a job
+     sha na na na na na na na na
+     wah yip yip yip yip yip yip yip yip yip
+     sha boom ))
+
+;; answer: huffman-encoding took 87 bits
+;;         fixed-length encoding would take (lg 8 = 3) * (36 symbols in song) == 108 bits

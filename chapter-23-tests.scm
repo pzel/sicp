@@ -80,10 +80,12 @@
    (=? '(h-encode '(A D A B B C A) sample-tree) sample-message)
    (=? '(h-encode (h-decode sample-message sample-tree) sample-tree) sample-message)
 
-   ;; 2 .69
+   ;; 2.69
    (=? '(generate-h-tree sample-pairs) sample-tree)
    (=? '(h-encode '(A D A B B C A) (generate-h-tree sample-pairs)) sample-message)
    (=? '(h-encode (h-decode sample-message sample-tree) (generate-h-tree sample-pairs)) sample-message)
 
+   ;; 2.70
 
+   
 ))
