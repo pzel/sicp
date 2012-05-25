@@ -391,7 +391,7 @@
                                    (cadr pair))
                       (h-make-leaf-set (cdr pairs))))))
 
-; ex 2.67
+;; ex 2.67
 (define sample-tree
   (h-make-tree (h-make-leaf 'A 4)
                (h-make-tree
@@ -402,7 +402,7 @@
 (define sample-message
   '(0 1 1 0 0 1 0 1 0 1 1 1 0))
 
-; ex 2.68
+;; ex 2.68
 (define (h-encode message tree)
   (if (null? message)
       '()
@@ -418,5 +418,22 @@
          (cons 1 (h-encode-symbol sym (h-right-branch tree))))
         (else
          (error sym " is not a member of the tree."))))
-                     
-              
+
+
+;; ex 2.69
+(define (generate-h-tree pairs)
+  (successive-merge (h-make-leaf-set pairs)))
+
+(define (successive-merge xs)
+  (cond ((null? xs) '())
+        ((= 1 (length xs)) (car xs))
+        ((= 2 (length xs))
+         (h-make-tree (cadr xs) (car xs)))
+        (else
+         (successive-merge (cons (h-make-tree (cadr xs) (car xs)) (cddr xs))))))
+                                              
+(define sample-pairs
+  '((A 4)
+    (B 2)
+    (D 1)
+    (C 1)))
