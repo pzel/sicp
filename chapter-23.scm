@@ -329,3 +329,94 @@
          (entry btree))
         (else
          (error "could not complete lookup"))))
+
+
+;; 2.3.4 Huffman trees
+
+(define (h-make-leaf symbol weight)
+  (list 'h-leaf symbol weight))
+
+(define (h-leaf? object)
+  (and (pair? object)
+       (eq? (car object) 'h-leaf)))
+
+(define (h-symbol-leaf o) (cadr o))
+(define (h-weight-leaf o) (caddr o))
+
+(define (h-make-tree left right)
+  (list left
+        right
+        (append (h-symbols left) (h-symbols right))
+        (+ (h-weight left) (h-weight right))))
+
+(define (h-left-branch tree) (car tree))
+(define (h-right-branch tree) (cadr tree))
+(define (h-symbols tree)
+  (if (h-leaf? tree) 
+      (list (h-symbol-leaf tree))
+      (caddr tree)))
+(define (h-weight tree)
+  (if (h-leaf? tree) 
+      (h-weight-leaf tree)
+      (cadddr tree)))
+(define (h-decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+        '()
+        (let ((next-branch (choose-next-branch (car bits) current-branch)))
+          (if (h-leaf? next-branch)
+              (cons (h-symbol-leaf next-branch)
+                    (decode-1 (cdr bits) tree))
+              (decode-1 (cdr bits) next-branch)))))
+  (decode-1 bits tree))
+
+(define (choose-next-branch bit branch)
+  (cond ((= 0 bit) (h-left-branch branch))
+        ((= 1 bit) (h-right-branch branch))
+        (else (error "could not decode bit " bit))))
+
+(define (h-adjoin-set x set)
+  (cond ((null? set) (list x))
+        ((< (h-weight x) (h-weight (car set)))
+         (cons x set))
+        (else
+         (cons (car set)
+               (h-adjoin-set x (cdr set))))))
+
+(define (h-make-leaf-set pairs)
+  (if (null? pairs)
+      '()
+      (let ((pair (car pairs)))
+        (h-adjoin-set (h-make-leaf (car pair)
+                                   (cadr pair))
+                      (h-make-leaf-set (cdr pairs))))))
+
+; ex 2.67
+(define sample-tree
+  (h-make-tree (h-make-leaf 'A 4)
+               (h-make-tree
+                (h-make-leaf 'B 2)
+                (h-make-tree
+                 (h-make-leaf 'D 1)
+                 (h-make-leaf 'C 1)))))
+(define sample-message
+  '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+
+; ex 2.68
+(define (h-encode message tree)
+  (if (null? message)
+      '()
+      (append (h-encode-symbol (car message) tree)
+              (h-encode (cdr message) tree))))
+
+(define (h-encode-symbol sym tree)
+  (cond ((or (null? tree) (h-leaf? tree))
+         '())
+        ((memq? sym (h-symbols (h-left-branch tree)))
+         (cons 0 (h-encode-symbol sym (h-left-branch tree))))
+        ((memq? sym (h-symbols (h-right-branch tree)))
+         (cons 1 (h-encode-symbol sym (h-right-branch tree))))
+        (else
+         (error sym " is not a member of the tree."))))
+                     
+              

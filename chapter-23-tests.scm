@@ -1,7 +1,6 @@
 (load "chapter-23.scm")
 (load "test.scm")
 
-
 (test 
  '(
    (=? '(memq? 'apple '()) #f)
@@ -72,9 +71,14 @@
    (=? '(intersection-bset (bset '()) (bset '(1 2 3))) (bset '()))
    (=? '(intersection-bset (bset '(7 8 9)) (bset '(1 2 3))) (bset '()))
 
-   ; 2.67
+   ; 2.66
    (=? '(lookup 2 (bset '())) #f)
    (=? '(lookup 2 (bset '(1 2 3))) 2)
    (=? '(lookup 99 (bset '(1 2 3 4 5 6 77 88 99 100 122))) 99)
-))
 
+   ; 2.68 
+   (=? '(h-encode-symbol 'A sample-tree) '(0))
+   (=? '(h-encode-symbol 'D sample-tree) '(1 1 0))
+   (=? '(h-encode '(A D A B B C A) sample-tree) sample-message)
+   (=? '(h-encode (h-decode sample-message sample-tree) sample-tree) sample-message)
+))
