@@ -462,3 +462,5 @@
 
 ;; answer: huffman-encoding took 87 bits
 ;;         fixed-length encoding would take (lg 8 = 3) * (36 symbols in song) == 108 bits
+
+;; TODO: 2.71 (on paper)
