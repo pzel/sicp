@@ -1,4 +1,3 @@
-;; (use-modules (srfi srfi-1)) ;; for use with guile-2.0
 (use srfi-1)
 
 (define (memq? sym x)
@@ -316,6 +315,7 @@
 (define (intersection-bset t1 t2)
   (bset (intersection-oset (tree->list1 t1)
                            (tree->list1 t2))))
+
 
 ; 2.67
 (define (key x) x)

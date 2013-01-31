@@ -1,4 +1,4 @@
-(load "./chapter-1.scm")
+(load "./c1.scm")
 (load "./test.scm")
 
 (test '(
