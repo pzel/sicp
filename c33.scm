@@ -84,7 +84,7 @@
 
 ; For benchmarking:
 (use srfi-1)
-(define l1 (iota 100))
+(define l1 (iota 1000))
 (make-cyclical! l1)
 ; Check it out for various sizes of l1
 ; $ csi ./c33.scm -e "(time (is-cyclical-f l1))" 
