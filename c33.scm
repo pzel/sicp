@@ -39,8 +39,7 @@
   (define (check l visited)
     (cond ((null? l) #f)
           ((any (lambda(x) (eq? (cdr l) x)) visited) #t)
-          (else
-           (check (cdr l) (cons (cdr l) visited)))))
+          (else (check (cdr l) (cons (cdr l) visited)))))
   (check l '()))
 
 (define (any pred l)
@@ -55,21 +54,38 @@
   (iter l '() n))
 
 (define (is-cyclical-f l)
-  (let ((fast-pointer (list '()))
-        (slow-pointer (list '())))
-    (define (set-to-cddr! p l)
+  (let ((fast-p (list '()))
+        (slow-p (list '())))
+    (define (set-fast-p! p l)
       (if (and (pair? l) (pair? (cdr l)))
           (begin (set-cdr! p (cddr l)) #t)
           #f))
-    (define (loop l)
-      (if (null? l)
+    (define (loop sl fl)
+      (if (null? sl)
           #f
-          (begin
-            (if (set-to-cddr! fast-pointer l)
-                (begin
-                  (set-cdr! slow-pointer l)
-                  (if (eq? (cdr slow-pointer) (cdr fast-pointer))
-                      #t
-                      (loop (cdr l))))
-                #f))))
+          (if (set-fast-p! fast-p fl)
+              (begin
+                (set-cdr! slow-p sl)
+                (if (eq? (cdr slow-p) (cdr fast-p))
+                    #t
+                    (loop (cdr sl) (cddr fl))))
+              #f)))
+    (loop l l)))
+
+(define (make-cyclical! l)
+  (let ((head-p l))
+    (define (loop l)
+      (cond ((null? (cdr l))
+             (set-cdr! l (cdr head-p)))
+            (else
+             (loop (cdr l)))))
     (loop l)))
+
+
+; For benchmarking:
+(use srfi-1)
+(define l1 (iota 100))
+(make-cyclical! l1)
+; Check it out for various sizes of l1
+; $ csi ./c33.scm -e "(time (is-cyclical-f l1))" 
+; $ csi ./c33.scm -e "(time (is-cyclical l1))" 
