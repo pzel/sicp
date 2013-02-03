@@ -45,3 +45,31 @@
 
 (define (any pred l)
   (member #t (map pred l)))
+
+(define (take l n)
+  (define (iter l acc n)
+    (cond ((null? l) acc)
+          ((= n 0) acc)
+          (else
+           (iter (cdr l) (append acc (list (car l))) (- n 1)))))
+  (iter l '() n))
+
+(define (is-cyclical-f l)
+  (let ((fast-pointer (list '()))
+        (slow-pointer (list '())))
+    (define (set-to-cddr! p l)
+      (if (and (pair? l) (pair? (cdr l)))
+          (begin (set-cdr! p (cddr l)) #t)
+          #f))
+    (define (loop l)
+      (if (null? l)
+          #f
+          (begin
+            (if (set-to-cddr! fast-pointer l)
+                (begin
+                  (set-cdr! slow-pointer l)
+                  (if (eq? (cdr slow-pointer) (cdr fast-pointer))
+                      #t
+                      (loop (cdr l))))
+                #f))))
+    (loop l)))

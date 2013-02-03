@@ -11,4 +11,7 @@
    (=? '(is-cyclical (list 1 2 3)) #f)
    (=? '(is-cyclical (list 1 2 2 3)) #f)
    (=? '(is-cyclical 316-pathological-3) #t)
+   (=? '(is-cyclical-f (list 1 2 3)) #f)
+   (=? '(is-cyclical-f (list 1 2 2 3)) #f)
+   (=? '(is-cyclical-f 316-pathological-3) #t)
 ))
