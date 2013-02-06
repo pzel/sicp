@@ -116,7 +116,6 @@
     (- (* 2 i) 1))
   (cont-frac n d - k))
 
-
 (define (average-damp f)
   (lambda (x) (average x (f x))))
 
