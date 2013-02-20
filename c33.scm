@@ -88,6 +88,13 @@
             (else
              (loop (cdr l)))))
     (loop l)))
+; Benchmarking & tests  for ex. 3.18 & 3.19
+(use srfi-1)
+(define l1 (iota 1000))
+(make-cyclical! l1)
+; Check it out for various sizes of l1
+; $ csi ./c33.scm -e "(time (is-cyclical-f l1))" 
+; $ csi ./c33.scm -e "(time (is-cyclical l1))" 
 
 ; queues 
 (define (front-p q) (car q))
@@ -132,10 +139,53 @@
            (else
             (display (front-p q)))))))
 
-; Benchmarking & tests  for ex. 
-(use srfi-1)
-(define l1 (iota 1000))
-(make-cyclical! l1)
-; Check it out for various sizes of l1
-; $ csi ./c33.scm -e "(time (is-cyclical-f l1))" 
-; $ csi ./c33.scm -e "(time (is-cyclical l1))" 
+; tables
+
+(define (lookup key table)
+  (let ((rec (assoc key (cdr table))))
+    (if rec
+        (cdr rec)
+        #f)))
+
+(define (assoc key table)
+  (cond ((null? table) #f)
+        ((equal? key (caar table)) (car table))
+        (else (assoc key (cdr table)))))
+
+(define (insert! key value table)
+  (let ((rec (assoc key (cdr table))))
+    (if rec
+        (set-cdr! rec value)
+        (set-cdr! table
+                  (cons (cons key value) (cdr table))))
+    'ok))
+
+(define (make-table) (list 'Table))
+
+(define (lookup2 k1 k2 table)
+  (let ((subtable (assoc k1 (cdr table))))
+    (if subtable
+        (let ((rec (assoc k2 (cdr subtable))))
+          (if rec
+              (cdr rec)
+              #f))
+        #f)))
+
+(define (insert2! k1 k2 value table)
+  (let ((subtable (assoc k1 (cdr table))))
+    (if subtable
+        (let ((rec (assoc k2 (cdr subtable))))
+          (if rec
+              (set-cdr! rec value)
+              (set-cdr! subtable
+                        (cons (cons rec value) (cdr subtable)))))
+        (set-cdr! table
+                  (cons (list k1
+                              (cons k2 value))
+                        (cdr table)))))
+  'ok)
+
+
+
+              
+              

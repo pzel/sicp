@@ -39,4 +39,27 @@
           (delete-queue! q1)))
        "Queue []")
 
+  ;tables
+   
+   (=? '(make-table)
+       (list 'Table))
+
+   (=? '(let ((t1 (make-table)))
+          (lookup 'some-key t1))
+       #f)
+             
+   (=? '(let ((eu (make-table)))
+          (insert! 'poland 'warsaw eu)
+          (lookup 'poland eu))
+       'warsaw)
+
+   (=? '(let ((world (make-table)))
+          (insert2! 'eu 'germany 'berlin world)
+          (lookup2 'eu 'germany world))
+       'berlin)
+
+   (=? '(let ((world (make-table)))
+          (insert2! 'eu 'germany 'berlin world)
+          (lookup2 'eu 'netherlands world))
+       #f)
 ))
