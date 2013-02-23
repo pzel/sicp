@@ -109,7 +109,6 @@
       (error "FRONT called for empty queue")
       (car (front-p q))))
 
-
 (define (insert-queue! q el)
   (let ((new-pair (cons el '())))
     (cond ((empty-queue? q) 
@@ -147,10 +146,13 @@
         (cdr rec)
         #f)))
 
-(define (assoc key table)
+(define (assoc-with comp key table)
   (cond ((null? table) #f)
-        ((equal? key (caar table)) (car table))
-        (else (assoc key (cdr table)))))
+        ((comp key (caar table)) (car table))
+        (else (assoc-with comp key (cdr table)))))
+
+(define (assoc key table)
+  (assoc-with equal? key table))
 
 (define (insert! key value table)
   (let ((rec (assoc key (cdr table))))
@@ -185,7 +187,36 @@
                         (cdr table)))))
   'ok)
 
+(define (make-table-obj)
+  (make-table-comp equal?))
 
+(define (make-table-comp comp)
+  (let ((local-table (list '*table*))
+        (asc (lambda(k t) (assoc-with comp k t))))
+    (define (lkp k1 k2)
+      (let ((subtable (asc k1 (cdr local-table))))
+        (if subtable
+            (let ((rec (asc k2 (cdr subtable))))
+              (if rec
+                  (cdr rec)
+                  #f))
+        #f)))
+    (define (ins! k1 k2 value)
+      (let ((subtable (asc k1 (cdr local-table))))
+        (if subtable
+            (let ((rec (asc k2 (cdr subtable))))
+              (if rec
+                  (set-cdr! rec value)
+                  (set-cdr! subtable
+                            (cons (cons rec value) (cdr subtable)))))
+            (set-cdr! local-table
+                      (cons (list k1
+                                  (cons k2 value))
+                            (cdr local-table)))))
+      'ok)
+    (define (dispatch m)
+      (cond ((eq? m 'lookup) lkp)
+            ((eq? m 'insert!) ins!)
+            (else (error "Unknown option -- TABLE"))))
+    dispatch))
 
-              
-              

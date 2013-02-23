@@ -60,6 +60,23 @@
 
    (=? '(let ((world (make-table)))
           (insert2! 'eu 'germany 'berlin world)
-          (lookup2 'eu 'netherlands world))
+          (lookup2 'eu 'brazil world))
        #f)
+
+   (=? '(let ((world (make-table-obj)))
+          ((world 'insert!) 'eu 'sweden 'stockholm)
+          ((world 'lookup) 'eu 'sweden))
+       'stockholm)
+
+   (=? '(let ((world (make-table-obj)))
+          ((world 'insert!) 'eu 'germany 'berlin)
+          ((world 'lookup) 'eu 'switzerland))
+       #f)
+
+   (=? '(letrec ((good-enuff? (lambda(x y) (< (abs (- x y)) 0.1)))
+                (loose-table (make-table-comp good-enuff?)))
+          ((loose-table 'insert!) 1.0 2.0 3)
+          ((loose-table 'lookup) 1.001 2.0009))
+       3)
+
 ))
