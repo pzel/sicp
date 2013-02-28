@@ -150,4 +150,15 @@
           ((world 'lookup) (list 'eu 'sweden)))
        'stockholm)
 
+
+   ;; circuits
+   (=? '(let ((w (make-wire)))
+          (w 'get-signal))
+          0)
+   (=? '(let ((w (make-wire)))
+          ((w 'set-signal!) 1)
+          (w 'get-signal))
+          1)
+
+
 ))

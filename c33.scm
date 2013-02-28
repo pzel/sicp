@@ -211,3 +211,30 @@
               ((atom? (cdr rec)) (cdr rec))
               (else
                (v-lookup comp rec (cdr keys)))))))
+
+
+; circuits
+(define (call-each procs)
+  (begin
+    (map (lambda(proc) (proc)) procs)
+    #t))
+
+
+(define (make-wire)
+  (let ((signal-value 0) (action-procedures '()))
+    (define (set-my-signal! new-value)
+      (if (not (= signal-value new-value))
+          (begin (set! signal-value new-value)
+                 (call-each action-procedures)))
+      #t)
+    (define (accept-action-procedure proc)
+      (set! action-procedures (cons proc action-procedures))
+      (proc))
+    (define (dispatch m)
+      (cond ((eq? m 'get-signal) signal-value)
+            ((eq? m 'set-signal!) set-my-signal!)
+            ((eq? m 'add-action!) accept-action-procedure)
+            (else (error (list "wire: unknown message" m)))))
+    dispatch))
+          
+    
