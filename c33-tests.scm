@@ -78,5 +78,76 @@
           ((loose-table 'insert!) 1.0 2.0 3)
           ((loose-table 'lookup) 1.001 2.0009))
        3)
+   ;;unit test nested table functons
+   ;empty key list has no effect
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t '() 'hello)
+          t)
+       (list 'Table))
+
+   ;one item in list makes a key in current table
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t (list 'one) 'hello) 
+          t)
+       (list 'Table (cons 'one 'hello)))
+
+   ;using insert on the same key overwrites the value
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t (list 'one) 'hello) 
+          (v-insert! eq? t (list 'one) 'hello-world) 
+          t)
+       (list 'Table (cons 'one 'hello-world)))
+
+   ;passing two keys gives a 2d table
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t (list 'one 'two) 'hello)
+          t)
+       (list 'Table (list 'one (cons 'two 'hello))))
+
+   ;a new table is added even in previous table had a key only
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t (list 'one) 'hello)
+          (v-insert! eq? t (list 'one 'two) 'hello2)
+          t)
+       (let ((l (list 'one (cons 'two 'hello2))))
+         (set-cdr! (cdr l) 'hello)
+       (list 'Table l)))
+
+   ; empty lookup list always returns false, no matter the table
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t '() 'hello) 
+          (v-lookup eq? t '()))
+       #f)
+
+   ; simple case
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t (list 'erykah) 'badu) 
+          (v-lookup eq? t (list 'erykah)))
+       'badu)
+
+   ; lookup only returns the value if it is atomic
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t (list 'world 'africa 'mozambique) 'maputo) 
+          (v-lookup eq? t (list 'world)))
+       #f)
+
+   ; lookup returns the value if it atomic in deeply nested tables
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t (list 'world 'africa 'mozambique) 'maputo) 
+          (v-lookup eq? t (list 'world 'africa 'mozambique)))
+       'maputo)
+
+   ; insert overwrited deep table entries
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t (list 'world 'africa 'madagascar) 'antanananarivo) 
+          (v-insert! eq? t (list 'world 'africa 'madagascar) 'antananarivo)
+          (v-lookup eq? t (list 'world 'africa 'madagascar)))
+       'antananarivo)
+
+   ;; ex. 3.25
+   (=? '(let ((world (make-v-table-obj)))
+          ((world 'insert!) (list 'eu 'sweden) 'stockholm)
+          ((world 'lookup) (list 'eu 'sweden)))
+       'stockholm)
 
 ))

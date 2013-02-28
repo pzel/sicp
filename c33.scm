@@ -139,84 +139,75 @@
             (display (front-p q)))))))
 
 ; tables
-
-(define (lookup key table)
-  (let ((rec (assoc key (cdr table))))
-    (if rec
-        (cdr rec)
-        #f)))
-
 (define (assoc-with comp key table)
   (cond ((null? table) #f)
+        ((atom? table) #f) ;; For variably-nested tables
         ((comp key (caar table)) (car table))
         (else (assoc-with comp key (cdr table)))))
 
 (define (assoc key table)
   (assoc-with equal? key table))
 
+(define (lookup key table)
+  (v-lookup eq? table (list key)))
+
 (define (insert! key value table)
-  (let ((rec (assoc key (cdr table))))
-    (if rec
-        (set-cdr! rec value)
-        (set-cdr! table
-                  (cons (cons key value) (cdr table))))
-    'ok))
+  (v-insert! eq? table (list key) value))
 
 (define (make-table) (list 'Table))
 
 (define (lookup2 k1 k2 table)
-  (let ((subtable (assoc k1 (cdr table))))
-    (if subtable
-        (let ((rec (assoc k2 (cdr subtable))))
-          (if rec
-              (cdr rec)
-              #f))
-        #f)))
+  (v-lookup eq? table (list k1 k2)))
 
 (define (insert2! k1 k2 value table)
-  (let ((subtable (assoc k1 (cdr table))))
-    (if subtable
-        (let ((rec (assoc k2 (cdr subtable))))
-          (if rec
-              (set-cdr! rec value)
-              (set-cdr! subtable
-                        (cons (cons rec value) (cdr subtable)))))
-        (set-cdr! table
-                  (cons (list k1
-                              (cons k2 value))
-                        (cdr table)))))
-  'ok)
+  (v-insert! eq? table (list k1 k2) value))
 
 (define (make-table-obj)
   (make-table-comp equal?))
 
 (define (make-table-comp comp)
-  (let ((local-table (list '*table*))
-        (asc (lambda(k t) (assoc-with comp k t))))
+  (let ((local-table (list 'Table)))
     (define (lkp k1 k2)
-      (let ((subtable (asc k1 (cdr local-table))))
-        (if subtable
-            (let ((rec (asc k2 (cdr subtable))))
-              (if rec
-                  (cdr rec)
-                  #f))
-        #f)))
+      (v-lookup comp local-table (list k1 k2)))
     (define (ins! k1 k2 value)
-      (let ((subtable (asc k1 (cdr local-table))))
-        (if subtable
-            (let ((rec (asc k2 (cdr subtable))))
-              (if rec
-                  (set-cdr! rec value)
-                  (set-cdr! subtable
-                            (cons (cons rec value) (cdr subtable)))))
-            (set-cdr! local-table
-                      (cons (list k1
-                                  (cons k2 value))
-                            (cdr local-table)))))
-      'ok)
+      (v-insert! comp local-table (list k1 k2) value))
     (define (dispatch m)
       (cond ((eq? m 'lookup) lkp)
             ((eq? m 'insert!) ins!)
             (else (error "Unknown option -- TABLE"))))
     dispatch))
 
+(define (make-v-table-obj)
+  (let ((local-table (list 'Table)))
+    (define (lkp keys)
+      (v-lookup eq? local-table keys))
+    (define (ins! keys value)
+      (v-insert! eq? local-table keys value))
+    (define (dispatch m)
+      (cond ((eq? m 'lookup) lkp)
+            ((eq? m 'insert!) ins!)
+            (else (error "Unknown option -- V-TABLE"))))
+    dispatch))
+
+(define (v-insert! comp t keys val)
+  (cond ((null? keys) #f)
+        ((null? (cdr keys))
+         (letrec ((key (car keys))
+                  (rec (assoc-with comp key (cdr t))))
+           (if rec
+               (set-cdr! rec val)
+               (set-cdr! t (cons (cons key val) (cdr t))))
+           #t))
+        (else
+         (if (null? (cdr t))
+             (set-cdr! t (cons (cons (car keys) '()) (cdr t))))
+         (v-insert! comp (assoc-with comp (car keys) (cdr t)) (cdr keys) val))))
+
+(define (v-lookup comp t keys)
+  (if (null? keys) 
+      #f
+      (let ((rec (assoc-with comp (car keys) (cdr t))))
+        (cond ((eq? rec #f)      #f)
+              ((atom? (cdr rec)) (cdr rec))
+              (else
+               (v-lookup comp rec (cdr keys)))))))

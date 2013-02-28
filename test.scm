@@ -54,11 +54,11 @@
 
 (define (display-failure l)
   (newline)
-  (display " * In expression:\t")
+  (display " * In expression:    ")
   (display (cadddr l))  (newline)
-  (display "   Expected:\t\t")
+  (display "   Expected:         ")
   (display (caddr l))  (newline)  
-  (display "   Got:\t\t\t")
+  (display "   Got:              ")
   (display (cadr l)) (newline))
 
 (define (results l)
