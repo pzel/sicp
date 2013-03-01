@@ -219,7 +219,6 @@
     (map (lambda(proc) (proc)) procs)
     #t))
 
-
 (define (make-wire)
   (let ((signal-value 0) (action-procedures '()))
     (define (set-my-signal! new-value)
@@ -237,4 +236,71 @@
             (else (error (list "wire: unknown message" m)))))
     dispatch))
           
+(define (inverter input output)
+  (define (invert-input)
+    (let ((new-value (logical-not (get-signal input))))
+      (after-delay inverter-delay
+                   (lambda() (set-signal! output new-value)))))
+  (add-action! input invert-input)
+  #t)
     
+(define (and-gate a1 a2 output)
+  (define (and-action-procedure)
+    (let ((new-value (logical-and (get-signal a1) (get-signal a2))))
+      (after-delay and-gate-delay
+                   (lambda() (set-signal! output new-value)))))
+  (add-action! a1 and-action-procedure)
+  (add-action! a2 and-action-procedure)
+  #t)
+
+(define (or-gate o1 o2 output)
+  (define (or-action-procedure)
+    (let ((new-value (logical-or (get-signal o1) (get-signal o2))))
+      (after-delay or-gate-delay
+                   (lambda() (set-signal! output new-value)))))
+  (add-action! o1 or-action-procedure)
+  (add-action! o2 or-action-procedure)
+  #t)
+
+(define (logical-not n)
+  ((fmap-boolean not) n))
+
+(define (logical-and a b)
+  (define (andf x y) (and x y))
+  ((fmap-boolean2 andf) a b))
+
+(define (logical-or a b)
+  (define (orf x y) (or x y))
+  ((fmap-boolean2 orf) a b))
+
+(define (fmap-boolean func)
+  (lambda (x)
+    (bool->num (func (num->bool x)))))
+
+(define (fmap-boolean2 func)
+  (lambda (x y)
+    (bool->num (func (num->bool x)
+                     (num->bool y)))))
+
+(define (after-delay _ proc)
+  (proc))
+
+(define inverter-delay 2)
+(define and-gate-delay 3)
+(define  or-gate-delay 5)
+
+;syntax
+(define (get-signal wire)         (wire 'get-signal))
+(define (set-signal! wire sig)   ((wire 'set-signal!) sig))
+(define (add-action! wire proc)  ((wire 'add-action!) proc))
+
+; bools to binary numbers
+(define (num->bool x)
+  (cond ((= x 0) #f)
+        ((= x 1) #t)
+        (else (error (list "num->bool: not binary digit" x)))))
+
+(define (bool->num x)
+  (cond ((eq? x #t) 1)
+        ((eq? x #f) 0)
+        (else (error (list "bool->num: not boolean" x)))))
