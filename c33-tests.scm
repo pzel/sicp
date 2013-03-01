@@ -131,6 +131,13 @@
           (v-lookup eq? t (list 'world)))
        #f)
 
+   ; if table is made 2-dimensional, the 1d value for a key is forgotten
+   (=? '(let ((t (make-table)))
+          (v-insert! eq? t (list 'one) 'hello)
+          (v-insert! eq? t (list 'one 'two) 'hello2)
+          (v-lookup eq? t (list 'one)))
+       #f)
+
    ; lookup returns the value if it atomic in deeply nested tables
    (=? '(let ((t (make-table)))
           (v-insert! eq? t (list 'world 'africa 'mozambique) 'maputo) 
