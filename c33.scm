@@ -262,6 +262,20 @@
   (add-action! o2 or-action-procedure)
   #t)
 
+(define (or-gate-on-nand o1 o2 output)
+  (let ((j (make-wire))
+        (k (make-wire)))
+    (nand-gate o1 o1 j)
+    (nand-gate o2 o2 k)
+    (nand-gate j k output)
+    #t))
+
+(define (nand-gate n1 n2 output)
+  (let ((j (make-wire)))
+    (and-gate n1 n2 j)
+    (inverter j output)
+    #t))  
+
 (define (logical-not n)
   ((fmap-boolean not) n))
 
