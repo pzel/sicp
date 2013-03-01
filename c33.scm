@@ -212,7 +212,6 @@
               (else
                (v-lookup comp rec (cdr keys)))))))
 
-
 ; circuits
 (define (call-each procs)
   (begin
@@ -293,6 +292,23 @@
     (or-gate c1 c2 c-out)
     #t))
 
+(define (ripple-carry-adder n1-readable n2-readable c0 sum-readable)
+  (letrec ((n1 (reverse n1-readable))
+           (n2 (reverse n2-readable))
+           (sum (reverse sum-readable))
+           (c1 (make-wire))
+           (c2 (make-wire))
+           (c3 (make-wire))
+           (c-drop (make-wire))
+           (ad1 (full-adder (car n1) (car n2) c0
+                            (car sum) c1))
+           (ad2 (full-adder (cadr n1) (cadr n2) c1
+                            (cadr sum) c2))
+           (ad3 (full-adder (caddr n1) (caddr n2) c2
+                            (caddr sum) c3))
+           (ad4 (full-adder (cadddr n1) (cadddr n2) c3
+                            (cadddr sum) c-drop)))
+    #t))
 
 (define (logical-not n)
   ((fmap-boolean not) n))
@@ -336,3 +352,30 @@
   (cond ((eq? x #t) 1)
         ((eq? x #f) 0)
         (else (error (list "bool->num: not boolean" x)))))
+
+(define (make-n-wires n)
+  (repeat n make-wire))
+
+(define (make-wires signal-values)
+  ; least significat bit first
+  (letrec ((wires (map (lambda(_) (make-wire)) signal-values))
+           (wsigs (zip wires signal-values)))
+    (map (lambda(ws) (begin (set-signal! (car ws) (cadr ws)) 
+                            (car ws)))
+         wsigs)))
+
+(define (get-signals wires)
+  (map get-signal wires))
+
+(define (set-signals! wires signals)
+  (let ((wsigs (zip wires signals)))
+    (map (lambda(ws) (set-signal! (car ws) (cadr ws)))
+         wsigs)))
+
+(define (repeat n proc)
+  (define (work n res)
+    (if (= n 0)
+        res
+        (work (- n 1) (cons (proc) res))))
+  (work n '()))
+

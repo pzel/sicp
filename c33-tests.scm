@@ -357,4 +357,25 @@
           (list (get-signal sum) (get-signal carry-out)))
        (list 1 1))
 
+   ; ex. 3.30
+   (=? '(let ((wires (make-wires (list 1 0 0))))
+          (get-signals wires))
+       (list 1 0 0))
+
+   (=? '(let ((wires (make-wires (list 1 0 0))))
+          (set-signals! wires (list 0 1 1))
+          (get-signals wires))
+       (list 0 1 1))
+
+   (=? '(repeat 4 (lambda() 'x))
+       (list 'x 'x 'x 'x))
+   
+   (=? '(letrec ((a (make-wires (list 0 1 1 1)))
+                 (b (make-wires (list 0 0 0 1)))
+                 (c (make-wire))
+                 (sum (make-wires (list 0 0 0 0)))
+                 (rca (ripple-carry-adder a b c sum)))
+          (get-signals sum))
+       (list 1 0 0 0))
+
 ))
