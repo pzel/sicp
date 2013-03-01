@@ -296,19 +296,18 @@
   (letrec ((n1 (reverse n1-readable))
            (n2 (reverse n2-readable))
            (sum (reverse sum-readable))
-           (c1 (make-wire))
-           (c2 (make-wire))
-           (c3 (make-wire))
-           (c-drop (make-wire))
-           (ad1 (full-adder (car n1) (car n2) c0
-                            (car sum) c1))
-           (ad2 (full-adder (cadr n1) (cadr n2) c1
-                            (cadr sum) c2))
-           (ad3 (full-adder (caddr n1) (caddr n2) c2
-                            (caddr sum) c3))
-           (ad4 (full-adder (cadddr n1) (cadddr n2) c3
-                            (cadddr sum) c-drop)))
-    #t))
+           (couts (make-n-wires (length sum)))
+           (cs (cons c0 couts))
+           (bundles (zip n1 n2 cs sum couts)))
+    (map (lambda(b)
+           (letrec ((in1  (car b))
+                    (in2  (cadr b))
+                    (cin  (caddr b))
+                    (sum  (cadddr b))
+                    (cout (car (cddddr b))))
+             (full-adder in1 in2 cin sum cout)))
+         bundles))
+  #t)
 
 (define (logical-not n)
   ((fmap-boolean not) n))
