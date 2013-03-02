@@ -443,3 +443,16 @@
       (let ((first-seg (head-segment agenda)))
         (set-current-time! agenda (segment-time first-seg))
         (front-queue (segment-queue first-seg)))))
+
+
+(define (probe name wire)
+  (add-action! wire
+               (lambda()
+                   (set-cdr! (get-current-textbuf)
+                         (with-output-to-string
+                           (lambda()
+                             (display name)
+                             (display " at: ")
+                             (display (current-time (get-current-agenda)))
+                             (display " New value = ")
+                             (display (get-signal wire))))))))

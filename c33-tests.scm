@@ -7,8 +7,12 @@
     ((run-simulation <body>)
      (begin
        (define a (make-agenda))
+       (define txtbuf (cons 'txtbuf ""))
        (define get-current-agenda (lambda() a))
-       <body>))))
+       (define get-current-textbuf (lambda() txtbuf))
+       <body>)
+     )))
+
 (test 
  '(
    (=? '(mystery (list 'a 'b 'c 'd)) (list 'd 'c 'b 'a))
@@ -176,7 +180,7 @@
           (w 'get-signal))
        1)
 
-   (=? '(run-simulation
+   (=? '(run-simulation 
           (letrec ((in (make-wire))
                    (out (make-wire))
                    (inv (inverter in out)))
@@ -456,4 +460,20 @@
            (propagate)
            (get-signals sum)))
        (list 1 0 0 0 0))
+
+
+   ; probes
+   (=? '(run-simulation
+         (letrec ((in1 (make-wire))
+                  (in2 (make-wire))
+                  (sum (make-wire))
+                  (carry (make-wire))
+                  (ps (probe 'sum sum))
+                  (pc (probe 'carry carry))
+                  (ha (half-adder in1 in2 sum carry)))
+           
+           (set-signal! in1 1)
+           (propagate)
+           (cdr (get-current-textbuf))))
+       "sum at: 8 New value = 1")
 ))
