@@ -368,7 +368,6 @@
   (repeat n make-wire))
 
 (define (make-wires signal-values)
-  ; least significat bit first
   (letrec ((wires (map (lambda(_) (make-wire)) signal-values))
            (wsigs (zip wires signal-values)))
     (map (lambda(ws) (begin (set-signal! (car ws) (cadr ws)) 
