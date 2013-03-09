@@ -554,4 +554,19 @@
            (set-value! b 0 'user)
            (dump-text)))
        "Probe: average = 1.5")
+
+   ; ex. 3.34
+   ; The two a's represent the same wire, but (multiplier) is 
+   ; implemented in a way that requires its three connectors to be unique.
+   (=? '(run-with-textbuf
+         (letrec ((a (make-connector))
+                  (b (make-connector)))
+           (squarer34 a b)
+           (probe-connector "sqrt" a)
+           (set-value! b 25 'user)
+           (dump-text)))
+       "") ; data doesn't reach the connector
+
+
+
 ))

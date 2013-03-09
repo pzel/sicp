@@ -620,7 +620,11 @@
 (define (averager a b avg)
   (let ((c (make-connector))
         (d (make-connector)))
-    (adder      a b   c)
+    (adder      a   b c)
     (multiplier d avg c)
-    (constant     2   d)
+    (constant       2 d)
     #t))
+
+
+(define (squarer34 a b)
+  (multiplier a a b))
