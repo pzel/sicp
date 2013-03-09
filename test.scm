@@ -21,16 +21,17 @@
 ; Tested in:
 ; * CHICKEN Version 4.7.0 linux-unix-gnu-x86 [ manyargs dload ptables ]
 
+(define (mk-error exn)
+  (cons 'error
+        (show ((condition-property-accessor 'exn 'message) exn))))
+
 (define-syntax catch
   (syntax-rules ()
     ((catch <body>)
      (call/cc 
       (lambda(k)
         (with-exception-handler
-         (lambda(exn)
-           (k (string-append "Error: "
-                             (show ((condition-property-accessor 'exn 'message) 
-                                    exn)))))
+         (lambda(exn) (k (mk-error exn)))
          <body>))))))
 
 (define (test-eval exp)
@@ -42,10 +43,21 @@
 (define (=?~ is should)
   (test-compare is should test-close-enough?))
 
+(define (=?e is msg)
+  (test-compare is msg test-error-equal?))
+
 ; Internals
 (define (test-close-enough? a b)
   (< (abs (- a b)) 0.001))
 
+(define (test-error-equal? e msg)
+  (cmp-error e 
+             (cons 'error msg)))
+
+(define (cmp-error e1 msg)
+  (and (equal? 'error (car e1))
+       (equal? (show (cdr e1))
+               (show (cdr msg)))))
 
 (define (test-compare is should matcher)
   (let ((result (catch (lambda() (test-eval is)))))
@@ -53,10 +65,6 @@
           result
           should
           is)))
-
-(define (test-equal-show? a b)
-  (equal? (show a)
-          (show b)))
 
 (define (show obj)
   (with-output-to-string 

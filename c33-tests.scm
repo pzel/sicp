@@ -512,16 +512,16 @@
            (dump-text)))
        "Probe: farenheit temperature = 77")
 
-   (=? '(car '()) "Error: bad argument type")
+   (=?e '(car '()) "bad argument type")
 
-   (=? '(run-with-textbuf
+   (=?e '(run-with-textbuf
           (letrec ((c (make-connector))
                    (f (make-connector)))
             (celsius-farenheit-converter c f)
             (probe-connector "farenheit temperature" f)
             (set-value! c 25 'user)
             (set-value! f 888 'user)))
-        "Error: (contradiction 77 888)")
+        "(contradiction 77 888)")
 
    (=? '(run-with-textbuf
          (letrec ((c (make-connector))
@@ -567,6 +567,31 @@
            (set-value! b 25 'user)
            (dump-text)))
        "") ; data doesn't reach the connector
+
+   ; ex. 3.35 
+   (=?e '(letrec ((a (make-connector))
+                 (b (make-connector)))
+          (squarer a b)
+          (set-value! b -5 'user))
+       "(squarer: square less than 0: -5)")
+
+   (=? '(run-with-textbuf
+         (letrec ((a (make-connector))
+                  (b (make-connector)))
+           (squarer a b)
+           (probe-connector "sqrt" a)
+           (set-value! b 25 'user)
+           (dump-text)))
+       "Probe: sqrt = 5.0") 
+
+   (=? '(run-with-textbuf
+         (letrec ((a (make-connector))
+                  (b (make-connector)))
+           (squarer a b)
+           (probe-connector "square" b)
+           (set-value! a 2 'user)
+           (dump-text)))
+       "Probe: square = 4") 
 
 
 ))
