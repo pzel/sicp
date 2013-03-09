@@ -1,5 +1,5 @@
 (define show
-  (lambda args 
+  (lambda args
     (map (lambda(a) (begin (display a) (display "\t"))) args)
     (newline)))
 
@@ -93,10 +93,10 @@
 (define l1 (iota 1000))
 (make-cyclical! l1)
 ; Check it out for various sizes of l1
-; $ csi ./c33.scm -e "(time (is-cyclical-f l1))" 
-; $ csi ./c33.scm -e "(time (is-cyclical l1))" 
+; $ csi ./c33.scm -e "(time (is-cyclical-f l1))"
+; $ csi ./c33.scm -e "(time (is-cyclical l1))"
 
-; queues 
+; queues
 (define (front-p q) (car q))
 (define (rear-p q) (cdr q))
 (define (set-front-p! q el) (set-car! q el))
@@ -111,12 +111,12 @@
 
 (define (insert-queue! q el)
   (let ((new-pair (cons el '())))
-    (cond ((empty-queue? q) 
+    (cond ((empty-queue? q)
            (begin
              (set-front-p! q new-pair)
              (set-rear-p! q new-pair)
              q))
-          (else 
+          (else
            (begin
              (set-cdr! (rear-p q) new-pair)
              (set-rear-p! q new-pair)
@@ -125,13 +125,13 @@
 (define (delete-queue! q)
   (cond ((empty-queue? q)
          (error "DELETE called for empty queue"))
-        (else 
+        (else
          (begin
            (set-front-p! q (cdr (front-p q)))
            q))))
-         
+
 (define (show-queue q)
-  (with-output-to-string 
+  (with-output-to-string
    (lambda ()
      (display "Queue ")
      (cond ((empty-queue? q) (display "[]"))
@@ -204,7 +204,7 @@
          (v-insert! comp (assoc-with comp (car keys) (cdr t)) (cdr keys) val))))
 
 (define (v-lookup comp t keys)
-  (if (null? keys) 
+  (if (null? keys)
       #f
       (let ((rec (assoc-with comp (car keys) (cdr t))))
         (cond ((eq? rec #f)      #f)
@@ -234,7 +234,7 @@
             ((eq? m 'add-action!) accept-action-procedure)
             (else (error (list "wire: unknown message" m)))))
     dispatch))
-          
+
 (define (inverter input output)
   (define (invert-input)
     (let ((new-value (logical-not (get-signal input))))
@@ -242,7 +242,7 @@
                    (lambda() (set-signal! output new-value)))))
   (add-action! input invert-input)
   #t)
-    
+
 (define (and-gate a1 a2 output)
   (define (and-action-procedure)
     (let ((new-value (logical-and (get-signal a1) (get-signal a2))))
@@ -273,7 +273,7 @@
   (let ((j (make-wire)))
     (and-gate n1 n2 j)
     (inverter j output)
-    #t))  
+    #t))
 
 (define (half-adder a b s c)
   (let ((d (make-wire)) (e (make-wire)))
@@ -370,7 +370,7 @@
 (define (make-wires signal-values)
   (letrec ((wires (map (lambda(_) (make-wire)) signal-values))
            (wsigs (zip wires signal-values)))
-    (map (lambda(ws) (begin (set-signal! (car ws) (cadr ws)) 
+    (map (lambda(ws) (begin (set-signal! (car ws) (cadr ws))
                             (car ws)))
          wsigs)))
 
@@ -455,3 +455,172 @@
                              (display (current-time (get-current-agenda)))
                              (display " New value = ")
                              (display (get-signal wire))))))))
+
+; constraint system
+
+(define (has-value? conn) 
+  (conn 'has-value?))
+
+(define (get-value conn)
+  (conn 'value))
+
+(define (set-value! conn newval informant)
+  ((conn 'set-value!) newval informant))
+
+(define (forget-value! conn retractor) 
+  ((conn 'forget) retractor))
+
+(define (connect conn constraints)
+  ((conn 'connect) constraints))
+
+(define (adder a1 a2 sum)
+  (define (process-new-value)
+    (cond ((and (has-value? a1) (has-value? a2))
+           (set-value! sum (+ (get-value a1) (get-value a2)) me))
+          ((and (has-value? a1) (has-value? sum))
+           (set-value! a2 (- (get-value sum) (get-value a1)) me))
+          ((and (has-value? a2) (has-value? sum))
+           (set-value! a1 (- (get-value sum) (get-value a2)) me))))
+  (define (process-forget-value)
+    (forget-value! sum me)
+    (forget-value! a1 me)
+    (forget-value! a2 me)
+    (process-new-value))
+  (define (me msg)
+    (cond ((eq? msg 'I-have-a-value)
+           (process-new-value))
+          ((eq? msg 'I-lost-my-value)
+           (process-forget-value))
+          (else
+           (error (list "adder received unknown message" msg)))))
+  (connect a1 me)
+  (connect a2 me)
+  (connect sum me)
+  me)
+
+(define (inform-about-value constraint)
+  (constraint 'I-have-a-value))
+
+(define (inform-about-no-value constraint)
+  (constraint 'I-lost-my-value))
+
+(define (multiplier m1 m2 product)
+  (define (process-new-value)
+    (cond ((and (has-value? m1) (has-value? m2))
+           (set-value! product (* (get-value m1) (get-value m2)) me))
+          ((and (has-value? m1) (has-value? product))
+           (set-value! m2 (/ (get-value product) (get-value m1)) me))
+          ((and (has-value? m2) (has-value? product))
+           (set-value! m1 (/ (get-value product) (get-value m2)) me))))
+  (define (process-forget-value)
+    (forget-value! product me)
+    (forget-value! m1 me)
+    (forget-value! m2 me)
+    (process-new-value))
+  (define (me msg)
+    (cond ((eq? msg 'I-have-a-value)
+           (process-new-value))
+          ((eq? msg 'I-lost-my-value)
+           (process-forget-value))
+          (else
+           (error (list "multiplier received unknown message" msg)))))
+  (connect m1 me)
+  (connect m2 me)
+  (connect product me)
+  me)
+
+(define (constant value conn)
+  (define (me msg)
+    (error (list "constant received message" msg)))
+  (connect conn me)
+  (set-value! conn value me)
+  me)
+
+(define (probe-connector name conn)
+  (define (print-probe value)
+    (begin
+      (set-cdr! (get-current-textbuf)
+                (with-output-to-string
+                  (lambda()
+                    (display "Probe: ")
+                    (display name)
+                    (display " = ")
+                    (display value))))))
+  (define (process-new-value)
+    (print-probe (get-value conn)))
+  (define (process-forget-value)
+    (print-probe "?"))
+  (define (me msg)
+    (cond ((eq? msg 'I-have-a-value)
+           (process-new-value))
+          ((eq? msg 'I-lost-my-value)
+           (process-forget-value))
+          (else
+           (error (list "probe received unknown message" msg)))))
+  (connect conn me)
+  me)
+
+(define (make-connector)
+  (let ((value #f) (informant #f) (constraints '()))
+    (define (set-my-value newval setter)
+      (cond ((not (has-value? me))
+             (begin (set! value newval)
+                    (set! informant setter)
+                    (for-each-except setter
+                                     inform-about-value
+                                     constraints)))
+            ((not (= value newval))
+             (error (list "contradiction" value newval)))
+            (else #f)))
+    (define (forget-my-value retractor)
+      (if (eq? retractor informant)
+          (begin (set! informant #f)
+                 (for-each-except retractor
+                                  inform-about-no-value
+                                  constraints))
+          #f))
+    (define (connect new-constraint)
+      (if (not (memq new-constraint constraints))
+          (set! constraints (cons new-constraint constraints)))
+      (if (has-value? me)
+          (inform-about-value new-constraint))
+      #t)
+    (define (me msg)
+      (cond ((eq? msg 'has-value?)
+             (if informant #t #f))
+            ((eq? msg 'value) value)
+            ((eq? msg 'set-value!) set-my-value)
+            ((eq? msg 'forget) forget-my-value)
+            ((eq? msg 'connect) connect)
+            (else (error (list "connector received unknown message" msg)))))
+    me))
+
+(define (for-each-except exception proc list)
+  (define (loop items)
+    (cond ((null? items) #t)
+          ((eq? (car items) exception) (loop (cdr items)))
+          (else (begin (proc (car items))
+                       (loop (cdr items))))))
+  (loop list))
+
+(define (celsius-farenheit-converter c f)
+  (let ((u (make-connector))
+        (v (make-connector))
+        (w (make-connector))
+        (x (make-connector))
+        (y (make-connector)))
+    (multiplier c w u)
+    (multiplier v x u)
+    (adder      v y f)
+    (constant     9 w)
+    (constant     5 x)
+    (constant    32 y)
+    #t))
+
+(define (averager a b avg)
+  (let ((c (make-connector))
+        (d (make-connector)))
+    (adder      a b   c)
+    (multiplier d avg c)
+    (constant     2   d)
+    #t))

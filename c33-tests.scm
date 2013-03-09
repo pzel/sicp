@@ -7,9 +7,20 @@
     ((run-simulation <body>)
      (begin
        (define a (make-agenda))
-       (define txtbuf (cons 'txtbuf ""))
+       (define textbuf (cons 'textbuf ""))
        (define get-current-agenda (lambda() a))
-       (define get-current-textbuf (lambda() txtbuf))
+       (define get-current-textbuf (lambda() textbuf))
+       (define dump-text (lambda() (cdr textbuf)))
+       <body>)
+     )))
+; for generic output redirection
+(define-syntax run-with-textbuf
+  (syntax-rules ()
+    ((run-simulation <body>)
+     (begin
+       (define textbuf (cons 'textbuf ""))
+       (define get-current-textbuf (lambda() textbuf))
+       (define dump-text (lambda() (cdr textbuf)))
        <body>)
      )))
 
@@ -461,7 +472,6 @@
            (get-signals sum)))
        (list 1 0 0 0 0))
 
-
    ; probes
    (=? '(run-simulation
          (letrec ((in1 (make-wire))
@@ -473,8 +483,9 @@
                   (ha (half-adder in1 in2 sum carry)))
            (set-signal! in1 1)
            (propagate)
-           (cdr (get-current-textbuf))))
+           (dump-text)))
        "sum at: 8 New value = 1")
+
    (=? '(run-simulation
          (letrec ((in1 (make-wire))
                   (in2 (make-wire))
@@ -487,6 +498,60 @@
            (propagate)
            (set-signal! in2 1)
            (propagate)
-           (cdr (get-current-textbuf))))
+           (dump-text)))
        "sum at: 16 New value = 0")
+
+   ; Celsius-Farenheit converter
+   (=? '(run-with-textbuf
+         (letrec ((c (make-connector))
+                  (f (make-connector)))
+           (celsius-farenheit-converter c f)
+           (probe-connector "farenheit temperature" f)
+           (set-value! c 25 'user)
+           (dump-text)))
+       "Probe: farenheit temperature = 77")
+
+   (=?e '(car '()) "bad argument type")
+
+   (=?e '(run-with-textbuf
+          (letrec ((c (make-connector))
+                   (f (make-connector)))
+            (celsius-farenheit-converter c f)
+            (probe-connector "farenheit temperature" f)
+            (set-value! c 25 'user)
+            (set-value! f 888 'user)))
+        "(contradiction 77 888)")
+
+   (=? '(run-with-textbuf
+         (letrec ((c (make-connector))
+                  (f (make-connector)))
+           (celsius-farenheit-converter c f)
+           (probe-connector "farenheit temperature" f)
+           (set-value! c 25 'user)
+           (forget-value! c 'user)
+           (dump-text)))
+       "Probe: farenheit temperature = ?")
+
+   (=? '(run-with-textbuf
+         (letrec ((c (make-connector))
+                  (f (make-connector)))
+           (celsius-farenheit-converter c f)
+           (probe-connector "celsius temperature" c)
+           (set-value! c 25 'user)
+           (forget-value! c 'user)
+           (set-value! f 212 'user)
+           (dump-text)))
+       "Probe: celsius temperature = 100")
+
+   ; ex. 3.33
+   (=? '(run-with-textbuf
+         (letrec ((a (make-connector))
+                  (b (make-connector))
+                  (avg (make-connector)))
+           (averager a b avg)
+           (probe-connector "average" avg)
+           (set-value! a 3 'user)
+           (set-value! b 0 'user)
+           (dump-text)))
+       "Probe: average = 1.5")
 ))
