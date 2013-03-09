@@ -502,23 +502,21 @@
            (dump-text)))
        "sum at: 16 New value = 0")
 
-   ; Celsius-Farenheit converter
+   ; Celsius-Fahrenheit converter
    (=? '(run-with-textbuf
          (letrec ((c (make-connector))
                   (f (make-connector)))
-           (celsius-farenheit-converter c f)
-           (probe-connector "farenheit temperature" f)
+           (celsius-fahrenheit-converter c f)
+           (probe-connector "fahrenheit temperature" f)
            (set-value! c 25 'user)
            (dump-text)))
-       "Probe: farenheit temperature = 77")
-
-   (=?e '(car '()) "bad argument type")
+       "Probe: fahrenheit temperature = 77")
 
    (=?e '(run-with-textbuf
           (letrec ((c (make-connector))
                    (f (make-connector)))
-            (celsius-farenheit-converter c f)
-            (probe-connector "farenheit temperature" f)
+            (celsius-fahrenheit-converter c f)
+            (probe-connector "fahrenheit temperature" f)
             (set-value! c 25 'user)
             (set-value! f 888 'user)))
         "(contradiction 77 888)")
@@ -526,17 +524,17 @@
    (=? '(run-with-textbuf
          (letrec ((c (make-connector))
                   (f (make-connector)))
-           (celsius-farenheit-converter c f)
-           (probe-connector "farenheit temperature" f)
+           (celsius-fahrenheit-converter c f)
+           (probe-connector "fahrenheit temperature" f)
            (set-value! c 25 'user)
            (forget-value! c 'user)
            (dump-text)))
-       "Probe: farenheit temperature = ?")
+       "Probe: fahrenheit temperature = ?")
 
    (=? '(run-with-textbuf
          (letrec ((c (make-connector))
                   (f (make-connector)))
-           (celsius-farenheit-converter c f)
+           (celsius-fahrenheit-converter c f)
            (probe-connector "celsius temperature" c)
            (set-value! c 25 'user)
            (forget-value! c 'user)
@@ -566,7 +564,8 @@
            (probe-connector "sqrt" a)
            (set-value! b 25 'user)
            (dump-text)))
-       "") ; data doesn't reach the connector
+       "") ; no cond predicate is satisfied inside the multiplier, 
+           ; information doesn't reach conn a 
 
    ; ex. 3.35 
    (=?e '(letrec ((a (make-connector))
@@ -593,5 +592,26 @@
            (dump-text)))
        "Probe: square = 4") 
 
+   (=? '(run-with-textbuf
+         (letrec ((a (make-connector))
+                  (b (make-connector)))
+           (squarer a b)
+           (probe-connector "square" b)
+           (set-value! a 2 'user)
+           (forget-value! a 'user)
+           (dump-text)))
+       "Probe: square = ?") 
+
+   ; ex 3.36
+   ; skipped
+
+   ; ex 3.37
+   (=? '(run-with-textbuf
+         (letrec ((c (make-connector))
+                  (f (celsius->fahrenheit-converter c)))
+           (probe-connector "fahrenheit" f)
+           (set-value! c 25 'user)
+           (dump-text)))
+       "Probe: fahrenheit = 77.0")
 
 ))

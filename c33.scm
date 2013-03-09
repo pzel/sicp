@@ -603,7 +603,7 @@
                        (loop (cdr items))))))
   (loop list))
 
-(define (celsius-farenheit-converter c f)
+(define (celsius-fahrenheit-converter c f)
   (let ((u (make-connector))
         (v (make-connector))
         (w (make-connector))
@@ -653,3 +653,30 @@
   (connect a me)
   (connect b me)
   me)
+
+(define (celsius->fahrenheit-converter x)
+  (c+ (c* (c/ (cv 9) (cv 5))
+          x)
+      (cv 32)))
+
+(define (c+ x y)
+  (let ((z (make-connector)))
+    (adder x y z)
+    z))
+
+(define (c* x y)
+  (let ((z (make-connector)))
+    (multiplier x y z)
+    z))
+
+(define (c/ x y)
+  (let ((z (make-connector)))
+    (multiplier z y x)
+    z))
+
+(define (cv x)
+  (let ((z (make-connector)))
+    (constant x z)
+    z))
+
+        
