@@ -13,6 +13,7 @@
        (define dump-text (lambda() (cdr textbuf)))
        <body>)
      )))
+
 ; for generic output redirection
 (define-syntax run-with-textbuf
   (syntax-rules ()
@@ -511,16 +512,16 @@
            (dump-text)))
        "Probe: farenheit temperature = 77")
 
-   (=?e '(car '()) "bad argument type")
+   (=? '(car '()) "Error: bad argument type")
 
-   (=?e '(run-with-textbuf
+   (=? '(run-with-textbuf
           (letrec ((c (make-connector))
                    (f (make-connector)))
             (celsius-farenheit-converter c f)
             (probe-connector "farenheit temperature" f)
             (set-value! c 25 'user)
             (set-value! f 888 'user)))
-        "(contradiction 77 888)")
+        "Error: (contradiction 77 888)")
 
    (=? '(run-with-textbuf
          (letrec ((c (make-connector))
@@ -566,7 +567,6 @@
            (set-value! b 25 'user)
            (dump-text)))
        "") ; data doesn't reach the connector
-
 
 
 ))

@@ -1,8 +1,7 @@
 ;------------------------------------------
 ; A simple test suite.
-; Copyright 2010 pzel
-; This code is licenced under the GPLv3.
-; http://www.gnu.org/licenses/gpl-3.0.txt 
+; Copyright 2010-13 pzel (Simon Zelazny)
+; This code is licenced under the MIT licence
 ;------------------------------------------
 ;
 ; USAGE:
@@ -20,8 +19,19 @@
 ;    (=?e  '(car '()) "bad argument type")
 ; 
 ; Tested in:
-; * CHICKEN Version 4.6.0 linux-unix-gnu-x86 [ manyargs dload ptables ]
 ; * CHICKEN Version 4.7.0 linux-unix-gnu-x86 [ manyargs dload ptables ]
+
+(define-syntax catch
+  (syntax-rules ()
+    ((catch <body>)
+     (call/cc 
+      (lambda(k)
+        (with-exception-handler
+         (lambda(exn)
+           (k (string-append "Error: "
+                             (show ((condition-property-accessor 'exn 'message) 
+                                    exn)))))
+         <body>))))))
 
 (define (test-eval exp)
   (eval exp (interaction-environment)))
@@ -32,35 +42,25 @@
 (define (=?~ is should)
   (test-compare is should test-close-enough?))
 
-(define (=?e is msg)
-  (test-for-error is msg))
-
 ; Internals
 (define (test-close-enough? a b)
   (< (abs (- a b)) 0.001))
 
+
 (define (test-compare is should matcher)
-  (let ((result (test-eval is)))
+  (let ((result (catch (lambda() (test-eval is)))))
     (list (matcher result should)
           result
           should
           is)))
 
+(define (test-equal-show? a b)
+  (equal? (show a)
+          (show b)))
+
 (define (show obj)
   (with-output-to-string 
     (lambda() (display obj))))
-
-(define (test-for-error is msg)
-  (let ((result (call/cc 
-                 (lambda(k)
-                   (with-exception-handler
-                    (lambda(exn)
-                      (k ((condition-property-accessor 'exn 'message) exn)))
-                    (lambda() (test-eval is)))))))
-        (list (string=? (show result) (show msg))
-              result
-              msg
-              is)))
 
 (define (test-philter p l)
   (define (iter p l res)
@@ -101,4 +101,3 @@
            (ok (- total err)))
     (display (format "~n * Failed: ~s\tPassed: ~s\t Total: ~s.~n" err ok total))
   #f))
-
