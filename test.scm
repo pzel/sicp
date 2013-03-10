@@ -21,15 +21,6 @@
 ; Tested in:
 ; * CHICKEN Version 4.7.0 linux-unix-gnu-x86 [ manyargs dload ptables ]
 
-(define-syntax catch
-  (syntax-rules ()
-    ((catch <body>)
-     (call/cc 
-      (lambda(k)
-        (with-exception-handler
-         (lambda(exn) (k (mk-error exn)))
-         <body>))))))
-
 (define (test-eval exp)
   (eval exp (interaction-environment)))
 
@@ -40,28 +31,41 @@
   (test-compare is should test-close-enough?))
 
 (define (=?e is msg)
-  (test-compare is msg test-error-equal?))
+  (test-compare-error is msg))
 
 ; Internals
+(define (catch proc)
+  (call/cc 
+   (lambda(k)
+     (with-exception-handler
+      (lambda(exn) (k (mk-error exn)))
+      proc))))
+
+(define (cmp-error e1 e2)
+  (and (equal? 'error (car e1))
+       (equal? (show (cadr e1))
+               (show (cadr e2)))))
+
 (define (mk-error exn)
   (list 'error
         (show ((condition-property-accessor 'exn 'message) exn))
         (show ((condition-property-accessor 'exn 'arguments) exn))))
 
-(define (cmp-error e1 msg)
-  (and (equal? 'error (car e1))
-       (equal? (show (cadr e1))
-               (show (cadr msg)))))
+(define (test-compare-error is msg)
+  (let ((result (catch (lambda() (test-eval is)))))
+    (list (test-error-equal? result msg)
+          result
+          msg
+          is)))
 
 (define (test-close-enough? a b)
   (< (abs (- a b)) 0.001))
 
 (define (test-error-equal? e msg)
-  (cmp-error e 
-             (list 'error msg)))
+  (cmp-error e (list 'error msg)))
 
 (define (test-compare is should matcher)
-  (let ((result (catch (lambda() (test-eval is)))))
+  (let ((result (test-eval is)))
     (list (matcher result should)
           result
           should

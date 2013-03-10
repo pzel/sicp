@@ -614,4 +614,6 @@
            (dump-text)))
        "Probe: fahrenheit = 77.0")
 
+;   (=? '(car x) "unbound variable")
+   
 ))
