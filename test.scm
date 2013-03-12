@@ -17,12 +17,10 @@
 ;    (=?   '(cdr3 (cons3 23 56)) 56)
 ;    (=?~  '(sqrt 3) 1.732))))
 ;    (=?e  '(car '()) "bad argument type")
+;    (=?s  '(<stream1>) <stream2>)
 ; 
 ; Tested in:
 ; * CHICKEN Version 4.7.0 linux-unix-gnu-x86 [ manyargs dload ptables ]
-
-(define (test-eval exp)
-  (eval exp (interaction-environment)))
 
 (define (=? is should)
   (test-compare is should equal?))
@@ -33,7 +31,13 @@
 (define (=?e is msg)
   (test-compare-error is msg))
 
+(define (=?s is should)
+  (test-compare is should test-stream-equal?))
+
 ; Internals
+(define (test-eval exp)
+  (eval exp (interaction-environment)))
+
 (define (catch proc)
   (call/cc 
    (lambda(k)
@@ -63,6 +67,13 @@
 
 (define (test-error-equal? e msg)
   (cmp-error e (list 'error msg)))
+
+(define (test-stream-equal? s1 s2)
+  (cond ((and (null? s1) (null? s2)) #t)
+        ((or (null? s1) (null? s2)) #f)
+        ((eq? (car s1) (car s2))
+         (test-stream-equal? (force (cdr s1))
+                             (force (cdr s2))))))
 
 (define (test-compare is should matcher)
   (let ((result (test-eval is)))

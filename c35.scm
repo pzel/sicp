@@ -9,3 +9,15 @@
 
 (define (stream-car s) (car s))
 (define (stream-cdr s) (force (cdr s)))
+
+(define (stream-ref s n)
+  (if (= n 0)
+      (stream-car s)
+      (stream-ref (stream-cdr s)
+                  (- n 1))))
+(define (stream-map s f)
+  (if (null-stream? s)
+      empty-stream
+      (cons-stream (f (stream-car s))
+                   (stream-map (stream-cdr s) f))))
+
