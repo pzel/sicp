@@ -1,7 +1,7 @@
 (load "./c35.scm")
 (load "./test.scm")
 
-(test 
+(run-tests
  '(
    (=? 'empty-stream '())
    (=? '(null-stream? empty-stream) #t)
@@ -20,5 +20,11 @@
    (=?s '(let ((s1 (cons-stream 10 (cons-stream 20 empty-stream))))
            (stream-map s1 (lambda(x) (* x x))))
         (cons-stream 100 (cons-stream 400 empty-stream)))
+
+   (=? '(let ((res (cons 'result '())))
+          (stream-for-each (lambda(x) (set-cdr! res (cons x (cdr res))))
+                           (cons-stream 10 (cons-stream 20 empty-stream)))
+          res)
+        (list 'result 20 10))
 
    ))

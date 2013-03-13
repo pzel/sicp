@@ -1,7 +1,7 @@
 (load "./c1.scm")
 (load "./test.scm")
 
-(test '(
+(run-tests '(
    (=?  '(abs -2) 2)
    (=?  '(abs  2) 2)
    (=?  '(abs  0) 0)

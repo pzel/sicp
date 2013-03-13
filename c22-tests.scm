@@ -1,6 +1,6 @@
 (load "./c22.scm")
 (load "./test.scm")
-(test '(
+(run-tests '(
         ; ex. 2.2
         (=? '(y-point (make-point 1 9)) 9)
         (=? '(x-point (make-point 1 9)) 1)

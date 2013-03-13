@@ -447,14 +447,12 @@
 (define (probe name wire)
   (add-action! wire
                (lambda()
-                   (set-cdr! (get-current-textbuf)
-                         (with-output-to-string
-                           (lambda()
-                             (display name)
-                             (display " at: ")
-                             (display (current-time (get-current-agenda)))
-                             (display " New value = ")
-                             (display (get-signal wire))))))))
+                 (display name)
+                 (display " at: ")
+                 (display (current-time (get-current-agenda)))
+                 (display " New value = ")
+                 (display (get-signal wire))
+                 (newline))))
 
 ; constraint system
 
@@ -538,14 +536,11 @@
 
 (define (probe-connector name conn)
   (define (print-probe value)
-    (begin
-      (set-cdr! (get-current-textbuf)
-                (with-output-to-string
-                  (lambda()
-                    (display "Probe: ")
-                    (display name)
-                    (display " = ")
-                    (display value))))))
+    (display "Probe: ")
+    (display name)
+    (display " = ")
+    (display value)
+    (newline))
   (define (process-new-value)
     (print-probe (get-value conn)))
   (define (process-forget-value)

@@ -1,7 +1,7 @@
 (load "./c31.scm")
 (load "./test.scm")
 
-(test 
+(run-tests
  '(
    (=? '(let ((a (make-accumulator 0))) 
    				(list (a 10) (a 10) (a 34))) 

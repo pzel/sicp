@@ -21,3 +21,11 @@
       (cons-stream (f (stream-car s))
                    (stream-map (stream-cdr s) f))))
 
+(define (stream-for-each f s)
+  (if (null-stream? s)
+      #t
+      (begin 
+        (f (stream-car s))
+        (stream-for-each f (stream-cdr s)))))
+      
+

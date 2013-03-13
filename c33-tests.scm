@@ -7,26 +7,13 @@
     ((run-simulation <body>)
      (begin
        (define a (make-agenda))
-       (define textbuf (cons 'textbuf ""))
        (define get-current-agenda (lambda() a))
-       (define get-current-textbuf (lambda() textbuf))
-       (define dump-text (lambda() (cdr textbuf)))
        <body>)
      )))
 
-; for generic output redirection
-(define-syntax run-with-textbuf
-  (syntax-rules ()
-    ((run-simulation <body>)
-     (begin
-       (define textbuf (cons 'textbuf ""))
-       (define get-current-textbuf (lambda() textbuf))
-       (define dump-text (lambda() (cdr textbuf)))
-       <body>)
-     )))
-
-(test 
+(run-tests
  '(
+
    (=? '(mystery (list 'a 'b 'c 'd)) (list 'd 'c 'b 'a))
    (=? '(count-pairs 316-proper-list) 3)
    (=? '(count-pairs 316-pathological-1) 4)
@@ -474,7 +461,7 @@
        (list 1 0 0 0 0))
 
    ; probes
-   (=? '(run-simulation
+   (=?o '(run-simulation
          (letrec ((in1 (make-wire))
                   (in2 (make-wire))
                   (sum (make-wire))
@@ -483,11 +470,11 @@
                   (pc (probe 'carry carry))
                   (ha (half-adder in1 in2 sum carry)))
            (set-signal! in1 1)
-           (propagate)
-           (dump-text)))
-       "sum at: 8 New value = 1")
+           (propagate)))
+        "sum at: 0 New value = 0\ncarry at: 0 New value = 0\nsum at: 8 New value = 1\n")
 
-   (=? '(run-simulation
+
+   (=?o '(run-simulation
          (letrec ((in1 (make-wire))
                   (in2 (make-wire))
                   (sum (make-wire))
@@ -498,21 +485,20 @@
            (set-signal! in1 1)
            (propagate)
            (set-signal! in2 1)
-           (propagate)
-           (dump-text)))
-       "sum at: 16 New value = 0")
+           (propagate)))
+        "sum at: 0 New value = 0\ncarry at: 0 New value = 0\nsum at: 8 New value = 1\ncarry at: 11 New value = 1\nsum at: 16 New value = 0\n")
+
 
    ; Celsius-Fahrenheit converter
-   (=? '(run-with-textbuf
+   (=?o '(run-simulation
          (letrec ((c (make-connector))
                   (f (make-connector)))
            (celsius-fahrenheit-converter c f)
            (probe-connector "fahrenheit temperature" f)
-           (set-value! c 25 'user)
-           (dump-text)))
-       "Probe: fahrenheit temperature = 77")
+           (set-value! c 25 'user)))
+       "Probe: fahrenheit temperature = 77\n")
 
-   (=?e '(run-with-textbuf
+   (=?e '(run-simulation
           (letrec ((c (make-connector))
                    (f (make-connector)))
             (celsius-fahrenheit-converter c f)
@@ -521,49 +507,45 @@
             (set-value! f 888 'user)))
         "(contradiction 77 888)")
 
-   (=? '(run-with-textbuf
+   (=?o '(run-simulation
          (letrec ((c (make-connector))
                   (f (make-connector)))
            (celsius-fahrenheit-converter c f)
            (probe-connector "fahrenheit temperature" f)
            (set-value! c 25 'user)
-           (forget-value! c 'user)
-           (dump-text)))
-       "Probe: fahrenheit temperature = ?")
+           (forget-value! c 'user)))
+       "Probe: fahrenheit temperature = 77\nProbe: fahrenheit temperature = ?\n")
 
-   (=? '(run-with-textbuf
+   (=?o '(run-simulation
          (letrec ((c (make-connector))
                   (f (make-connector)))
            (celsius-fahrenheit-converter c f)
            (probe-connector "celsius temperature" c)
            (set-value! c 25 'user)
            (forget-value! c 'user)
-           (set-value! f 212 'user)
-           (dump-text)))
-       "Probe: celsius temperature = 100")
+           (set-value! f 212 'user)))
+       "Probe: celsius temperature = 25\nProbe: celsius temperature = ?\nProbe: celsius temperature = 100\n")
 
    ; ex. 3.33
-   (=? '(run-with-textbuf
+   (=?o '(run-simulation
          (letrec ((a (make-connector))
                   (b (make-connector))
                   (avg (make-connector)))
            (averager a b avg)
            (probe-connector "average" avg)
            (set-value! a 3 'user)
-           (set-value! b 0 'user)
-           (dump-text)))
-       "Probe: average = 1.5")
+           (set-value! b 0 'user)))
+       "Probe: average = 1.5\n")
 
    ; ex. 3.34
    ; The two a's represent the same wire, but (multiplier) is 
    ; implemented in a way that requires its three connectors to be unique.
-   (=? '(run-with-textbuf
+   (=?o '(run-simulation
          (letrec ((a (make-connector))
                   (b (make-connector)))
            (squarer34 a b)
            (probe-connector "sqrt" a)
-           (set-value! b 25 'user)
-           (dump-text)))
+           (set-value! b 25 'user)))
        "") ; no cond predicate is satisfied inside the multiplier, 
            ; information doesn't reach conn a 
 
@@ -574,45 +556,41 @@
           (set-value! b -5 'user))
        "(squarer: square less than 0: -5)")
 
-   (=? '(run-with-textbuf
+   (=?o '(run-simulation
          (letrec ((a (make-connector))
                   (b (make-connector)))
            (squarer a b)
            (probe-connector "sqrt" a)
-           (set-value! b 25 'user)
-           (dump-text)))
-       "Probe: sqrt = 5.0") 
+           (set-value! b 25 'user)))
+       "Probe: sqrt = 5.0\n") 
 
-   (=? '(run-with-textbuf
+   (=?o '(run-simulation
+         (letrec ((a (make-connector))
+                  (b (make-connector)))
+           (squarer a b)
+           (probe-connector "square" b)
+           (set-value! a 2 'user)))
+       "Probe: square = 4\n") 
+
+   (=?o '(run-simulation
          (letrec ((a (make-connector))
                   (b (make-connector)))
            (squarer a b)
            (probe-connector "square" b)
            (set-value! a 2 'user)
-           (dump-text)))
-       "Probe: square = 4") 
-
-   (=? '(run-with-textbuf
-         (letrec ((a (make-connector))
-                  (b (make-connector)))
-           (squarer a b)
-           (probe-connector "square" b)
-           (set-value! a 2 'user)
-           (forget-value! a 'user)
-           (dump-text)))
-       "Probe: square = ?") 
+           (forget-value! a 'user)))
+       "Probe: square = 4\nProbe: square = ?\n") 
 
    ; ex 3.36
    ; skipped
 
    ; ex 3.37
-   (=? '(run-with-textbuf
+   (=?o '(run-simulation
          (letrec ((c (make-connector))
                   (f (celsius->fahrenheit-converter c)))
            (probe-connector "fahrenheit" f)
-           (set-value! c 25 'user)
-           (dump-text)))
-       "Probe: fahrenheit = 77.0")
+           (set-value! c 25 'user)))
+       "Probe: fahrenheit = 77.0\n")
 
 ;   (=? '(car x) "unbound variable")
    

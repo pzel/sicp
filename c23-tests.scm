@@ -1,7 +1,7 @@
 (load "c23.scm")
 (load "test.scm")
 
-(test 
+(run-tests
  '(
    (=? '(memq? 'apple '()) #f)
    (=? '(memq? 'apple (list 'apple 'banana 'cranberry)) (list 'apple 'banana 'cranberry))
