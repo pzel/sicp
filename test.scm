@@ -132,8 +132,8 @@
            (r (get-results l))
            (errors (test-philter (lambda(x) (not (equal? (car x) #t))) r)))
     (if (null? errors)
-        (show-success total)
-        (show-errors errors total))))
+        (begin (show-success total) (exit 0))
+        (begin (show-errors errors total) (exit 1)))))
 
 (define (get-results l)
   (map (lambda(exp) (test-eval exp 'hide-output)) l))
