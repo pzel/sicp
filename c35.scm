@@ -15,11 +15,14 @@
       (s-ref (s-cdr s)
              (- n 1))))
 
-(define (s-map s f)
-  (if (s-null? s)
+(define (s-map f . ss)
+  (if (s-null? (car ss))
       ES
-      (s-cons (f (s-car s))
-              (s-map (s-cdr s) f))))
+      (s-cons 
+       (apply f (map s-car ss))
+       (apply s-map
+              (cons f (map s-cdr ss))))))
+
 
 (define (s-for-each f s)
   (if (s-null? s)
@@ -37,10 +40,17 @@
       ES
       (s-cons (s-car s)
               (s-take (- n 1) (s-cdr s)))))
-
       
 (define (s-enumerate-interval low high)
   (if (> low high)
       ES
       (s-cons low
               (s-enumerate-interval (+ low 1) high))))
+
+(define (s-filter p s)
+  (cond ((s-null? s) ES)
+        ((p (s-car s))
+         (s-cons (s-car s) (s-filter p (s-cdr s))))
+        (else
+         (s-filter p (s-cdr s)))))
+         
