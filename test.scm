@@ -35,11 +35,11 @@
 (define (=?e is msg)
   (test-compare-error is msg))
 
-(define (=?s is should)
-  (test-compare is should test-stream-equal?))
-
 (define (=?o is should)
   (test-compare-output is should ))
+
+(define (=?s is should)
+  (test-compare is should test-stream-equal?))
 
 ; INTERNALS
 (define (catch proc)
