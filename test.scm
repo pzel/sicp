@@ -109,7 +109,8 @@
         ((or (null? s1) (null? s2)) #f)
         ((eq? (car s1) (car s2))
          (test-stream-equal? (force (cdr s1))
-                             (force (cdr s2))))))
+                             (force (cdr s2))))
+        (else #f)))
 
 (define (test-string-equal? s1 s2)
   (equal? s1 s2))
