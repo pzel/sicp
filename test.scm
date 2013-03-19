@@ -50,8 +50,8 @@
 
 (define (cmp-error e1 e2)
   (and (equal? 'error (car e1))
-       (equal? (show (cadr e1))
-               (show (cadr e2)))))
+       (equal? (write (cadr e1))
+               (write (cadr e2)))))
 
 (define dev/null
   (make-output-port (lambda(in) #t)
@@ -59,10 +59,8 @@
 
 (define (mk-error exn)
   (list 'error
-        (show ((condition-property-accessor 'exn 'message) exn))
-        (show ((condition-property-accessor 'exn 'arguments) exn))))
-
-(define (show obj) (with-output-to-string (lambda() (display obj))))
+        (write ((condition-property-accessor 'exn 'message) exn))
+        (write ((condition-property-accessor 'exn 'arguments) exn))))
 
 (define (test-compare is should matcher)
   (let ((result (test-eval is 'hide-output)))
@@ -88,12 +86,10 @@
 (define (test-eval exp io)
   (cond  ((eq? io 'hide-output)
           (with-output-to-port dev/null 
-            (lambda()
-              (eval exp (interaction-environment)))))
+            (lambda() (eval exp (interaction-environment)))))
          ((eq? io 'capture-output)
           (with-output-to-string 
-            (lambda()
-              (eval exp (interaction-environment)))))
+            (lambda() (eval exp (interaction-environment)))))
          (else
           (error "test.scm: test-eval doesn't know how to treat output"))))
     
