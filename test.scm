@@ -24,7 +24,6 @@
 ; * CHICKEN Version 4.7.0 linux-unix-gnu-x86 [ manyargs dload ptables ]
 
 ; TEST MATCHERS
-
 (define (=? is should)
   (test-compare is should equal?))
 
@@ -110,7 +109,6 @@
 (define (test-string-equal? s1 s2)
   (equal? s1 s2))
 
-
 (define (test-philter p l)
   (define (iter p l res)
     (if (null? l)
@@ -120,9 +118,7 @@
             (iter p (cdr l) res))))
   (iter p l '()))
 
-
 ; TEST RUNNER + DISPLAY
-
 (define (run-tests l)
   (letrec ((total (length l))
            (r (get-results l))
