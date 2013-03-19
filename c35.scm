@@ -23,7 +23,6 @@
        (apply s-map
               (cons f (map s-cdr ss))))))
 
-
 (define (s-for-each f s)
   (if (s-null? s)
       #t
@@ -54,3 +53,20 @@
         (else
          (s-filter p (s-cdr s)))))
          
+(define (integers-from n)
+  (s-cons n (integers-from (+ n 1))))
+
+(define integers (integers-from 1))
+
+(define (divisible? x y) (= 0 (remainder x y)))
+
+(define no-sevens
+  (s-filter (lambda(x) (not (divisible? x 7)))
+            integers))
+
+(define (fibgen a b)
+  (s-cons a
+          (fibgen b (+ a b))))
+
+(define fibs (fibgen 0 1))
+

@@ -17,12 +17,11 @@
 ;    (=?~  '(sqrt 3) 1.732)                ; test numeric result with delta
 ;    (=?o  '(display "hello") "hello")     ; test output
 ;    (=?e  '(car '()) "bad argument type") ; test error message
-;    (=?s  '(<stream1>) <stream2>)         ; test stream equality (delay/force)
+;    (=?s  '(<stream>) <list>)             ; test stream equality vs. list
 ;  ))
 ;
 ; Tested in:
 ; * CHICKEN Version 4.7.0 linux-unix-gnu-x86 [ manyargs dload ptables ]
-
 
 ; TEST MATCHERS
 

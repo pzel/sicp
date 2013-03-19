@@ -31,36 +31,39 @@
    (=?o '(s-display (s-cons 1 (s-cons 2 ES)))
         "1\n2\n")
 
+   (=?s '(s-cons 1 (s-cons 2 (s-cons 3 ES)))
+        (list 1 2 3))
+
    (=?s '(s-take 2 (s-cons 1 (s-cons 2 (s-cons 3 ES))))
-       (s-cons 1 (s-cons 2 ES)))
+       (list 1 2))
 
    (=?s '(s-enumerate-interval 5 8)
-        (s-cons 5 (s-cons 6 (s-cons 7 (s-cons 8 ES)))))
+        (list 5 6 7 8))
 
    (=?s '(s-filter (lambda(el) (eq? el 3))
                         (s-cons 1 (s-cons 2 (s-cons 3 ES))))
-        (s-cons 3 ES))
+        (list 3))
 
    (=?s '(s-take 2 (s-filter
                   prime? 
                   (s-enumerate-interval 10000 1000000)))
-        (s-cons 10007 (s-cons 10009 ES)))
+        (list 10007 10009))
 
-; ex. 3.50 : general s-map
+   ; ex. 3.50 : general s-map
    (=?s '(s-map (lambda(x y z) (+ x y z))
                 (s-cons 0  (s-cons 1  (s-cons 2 ES)))
                 (s-cons 10 (s-cons 11 (s-cons 12 ES)))
                 (s-cons 90 (s-cons 100 (s-cons 120 ES))))
-        (s-cons 100 (s-cons 112 (s-cons 134 ES))))
+        (list 100 112 134))
 
-; ex. 3.51 : lazy evaluation w/ memoization
+   ; ex. 3.51 : lazy evaluation w/ memoization
    (=?o '(letrec ((show (lambda(x) (display x) x))
                   (s (s-map show (s-enumerate-interval 0 10))))
            (s-ref s 5)
            (s-ref s 7))
         "01234567")
 
-; ex. 3.52
+   ; ex. 3.52
    (=?o '(begin
            (define (d x) (display x) (display " "))
            (define sum 0)
@@ -77,9 +80,17 @@
            (s-ref y 7)
            (d sum) 
 
-           (with-output-to-string (lambda() (s-display z))) ; don't test for this
+           (with-output-to-string (lambda() (s-display z))) ; don't print
            (d sum))
-
         "1 6 10 136 210 ")
+
+   (=?s '(s-take 117 integers)
+        (s-enumerate-interval 1 117))
+
+   (=? '(s-ref no-sevens 100)
+       117)
+
+   (=? '(s-ref fibs 5)
+       5)
 
    ))
