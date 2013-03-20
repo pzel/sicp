@@ -77,3 +77,39 @@
                            (s-cdr stream)))))
 (define primes
   (sieve (integers-from 2)))
+
+(define (add-streams s1 s2)
+  (s-map + s1 s2))
+
+(define fibs_
+  (s-cons 0
+          (s-cons 1
+                  (add-streams fibs
+                               (s-cdr fibs)))))
+
+(define primes_
+  (s-cons 2
+          (s-filter prime?_
+                    (integers-from 3))))
+
+(define (prime?_ x)
+  (define (iter x ps)
+    (cond ((> (square (s-car ps)) x) #t)
+          ((divisible? x (s-car ps)) #f)
+          (else
+           (iter x (s-cdr ps)))))
+  (iter x primes_))
+
+
+; repeat
+(define (s-repeat n)
+  (s-cons n (s-repeat n)))
+
+;ex 3.54
+(define (mul-streams s1 s2)
+  (s-map * s1 s2))
+
+(define factorials
+  (s-cons 1
+          (mul-streams integers
+                       factorials)))

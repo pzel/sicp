@@ -96,5 +96,31 @@
    ; sieve of Eratosthenes
    (=? '(s-ref primes 50)
        233)
+
+   (=? '(s-ref fibs_ 5)
+       5)
    
+   ; lazy self-referential primes
+   (=? '(s-ref primes_ 50)
+       233)
+   
+   ; Ex. 3.53 will return powers of two
+   (=? '(begin
+          (define s (s-cons 1 (add-streams s s)))
+          (s-ref s 6))
+       64)
+
+   ; repeat
+   (=?s '(s-take 5 (s-repeat 1))
+        (list 1 1 1 1 1))
+
+   ; Ex. 3.54
+   (=?s '(s-take 5 (mul-streams (integers-from 1)
+                               (integers-from 2)))
+        (list 2 6 12 20 30))
+
+
+   (=?s '(s-take 8 factorials)
+        (list 1 1 2 6 24 120 720 5040))
+
    ))
