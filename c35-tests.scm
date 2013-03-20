@@ -123,4 +123,8 @@
    (=?s '(s-take 8 factorials)
         (list 1 1 2 6 24 120 720 5040))
 
+   ; ex. 3.55
+   (=?s '(s-take 5 (partial-sums integers))
+        (list 1 3 6 10 15))
+
    ))

@@ -113,3 +113,9 @@
   (s-cons 1
           (mul-streams integers
                        factorials)))
+
+;ex 3.55
+(define (partial-sums s)
+  (s-cons (s-car s)
+          (add-streams integers
+                       (partial-sums (s-cdr s)))))
