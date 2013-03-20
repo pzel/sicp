@@ -70,3 +70,10 @@
 
 (define fibs (fibgen 0 1))
 
+(define (sieve stream)
+  (s-cons (s-car stream)
+          (sieve (s-filter (lambda(x)
+                             (not (divisible? x (s-car stream))))
+                           (s-cdr stream)))))
+(define primes
+  (sieve (integers-from 2)))

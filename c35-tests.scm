@@ -93,4 +93,8 @@
    (=? '(s-ref fibs 5)
        5)
 
+   ; sieve of Eratosthenes
+   (=? '(s-ref primes 50)
+       233)
+   
    ))
