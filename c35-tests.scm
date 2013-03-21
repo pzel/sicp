@@ -123,8 +123,15 @@
    (=?s '(s-take 8 factorials)
         (list 1 1 2 6 24 120 720 5040))
 
+   ; stream to list (for debugging)
+   (=? '(s-to-list (s-cons 1 (s-cons 2 ES)) 3)
+       (list 1 2))
+
    ; ex. 3.55
-   (=?s '(s-take 5 (partial-sums integers))
+   (=? '(s-to-list (partial-sums integers) 5)
         (list 1 3 6 10 15))
+
+   (=? '(s-to-list (partial-sums (s-repeat 1)) 5)
+        (list 1 2 3 4 5))
 
    ))

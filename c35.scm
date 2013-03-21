@@ -35,7 +35,7 @@
               s))
 
 (define (s-take n s)
-  (if (<= n 0)
+  (if (or (<= n 0) (s-null? s))
       ES
       (s-cons (s-car s)
               (s-take (- n 1) (s-cdr s)))))
@@ -100,10 +100,18 @@
            (iter x (s-cdr ps)))))
   (iter x primes_))
 
-
 ; repeat
 (define (s-repeat n)
   (s-cons n (s-repeat n)))
+
+; to-list
+(define (s-to-list s limit)
+  (define (iter s)
+    (if (s-null? s)
+        (begin (display s)'())
+        (cons (s-car s)
+              (iter (s-cdr s)))))
+  (iter (s-take limit s)))
 
 ;ex 3.54
 (define (mul-streams s1 s2)
@@ -113,9 +121,8 @@
   (s-cons 1
           (mul-streams integers
                        factorials)))
-
 ;ex 3.55
 (define (partial-sums s)
   (s-cons (s-car s)
-          (add-streams integers
-                       (partial-sums (s-cdr s)))))
+          (add-streams (s-cdr s)
+                       (partial-sums s))))
