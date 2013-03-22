@@ -134,4 +134,15 @@
    (=? '(s-to-list (partial-sums (s-repeat 1)) 5)
         (list 1 2 3 4 5))
 
+   ; ex. 3.56: Hamming numbers
+   (=?s '(s-merge (s-cons 1 (s-cons 3 ES))
+                  (s-cons 2 (s-cons 3 (s-cons 4 ES))))
+        (list 1 2 3 4))
+
+   (=? '(s-to-list (s-scale 2 integers) 5)
+        (list 2 4 6 8 10))
+        
+   (=? '(s-to-list hamming 20)
+       (list 1 2 3 4 5 6 8 9 10 12 15 16 18 20 24 25 27 30 32 36))
+
    ))

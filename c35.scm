@@ -126,3 +126,32 @@
   (s-cons (s-car s)
           (add-streams (s-cdr s)
                        (partial-sums s))))
+
+
+;ex 3.56
+(define (s-scale factor s)
+  (s-map (lambda(x) (* x factor))
+         s))
+
+(define (s-merge s1 s2)
+  (cond ((s-null? s1) s2)
+        ((s-null? s2) s1)
+        (else
+         (let ((s1car (s-car s1))
+               (s2car (s-car s2)))
+           (cond ((< s1car s2car)
+                  (s-cons s1car
+                          (s-merge (s-cdr s1) s2)))
+                 ((> s1car s2car)
+                  (s-cons s2car
+                          (s-merge s1 (s-cdr s2))))
+                 (else
+                  (s-cons s1car
+                          (s-merge (s-cdr s1)
+                                   (s-cdr s2)))))))))
+
+(define hamming
+  (s-cons 1
+          (s-merge (s-scale 2 hamming)
+                   (s-merge (s-scale 3 hamming)
+                            (s-scale 5 hamming)))))
