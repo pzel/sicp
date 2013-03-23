@@ -155,3 +155,10 @@
           (s-merge (s-scale 2 hamming)
                    (s-merge (s-scale 3 hamming)
                             (s-scale 5 hamming)))))
+
+
+; ex 3.58
+(define (s-expand num den radix)
+  (s-cons
+   (quotient (* num radix) den)
+   (s-expand (remainder (* num radix) den) den radix)))
