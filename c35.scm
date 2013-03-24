@@ -202,3 +202,22 @@
 
 (define (accel-seq t s)
   (s-map s-car (make-tableau t s)))
+
+
+; ex: 3.64
+(define (s-limit delta s)
+  (if (< (abs (- (s-car s) (s-car (s-cdr s)))) delta)
+      (s-car (s-cdr s))
+      (s-limit delta (s-cdr s))))
+           
+(define (sqrt_ x tolerance)
+  (s-limit tolerance (sqrt-s x)))
+
+;ex 3.65
+
+(define (ln2-summands x)
+  (s-cons (/ 1.0 x)
+          (s-map - (ln2-summands (+ x 1)))))
+
+(define naive-ln2
+  (partial-sums (ln2-summands 1)))

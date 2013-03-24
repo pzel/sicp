@@ -177,4 +177,25 @@
    ;  memoized.
 
 
+   ; ex. 3.64
+   (=?~ '(s-limit 0.01 pi-s)
+        3.146)
+
+   (=?~ '(sqrt_ 16 4.0)
+        5.191)
+
+   (=?~ '(sqrt_ 16 0.01)
+        4.00)
+
+   ; ex. 3.65
+   ; lg(2) is ~ 0.69314718
+   (=?~ '(s-ref 4 naive-ln2)
+        0.78333)
+
+   (=?~ '(s-ref 4 (euler-t naive-ln2))
+        0.69358)
+
+   (=?~ '(s-ref 2 (accel-seq euler-t naive-ln2))
+       0.69314718)
+
    ))
