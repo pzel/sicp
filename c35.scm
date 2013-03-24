@@ -9,11 +9,11 @@
 (define (s-car s) (car s))
 (define (s-cdr s) (force (cdr s)))
 
-(define (s-ref s n)
+(define (s-ref n s)
   (if (<= n 0)
       (s-car s)
-      (s-ref (s-cdr s)
-             (- n 1))))
+      (s-ref (- n 1)
+             (s-cdr s))))
 
 (define (s-map f . ss)
   (if (s-null? (car ss))
@@ -105,7 +105,7 @@
   (s-cons n (s-repeat n)))
 
 ; to-list
-(define (s-to-list s limit)
+(define (s-to-list limit s)
   (define (iter s)
     (if (s-null? s)
         (begin (display s)'())
@@ -126,7 +126,6 @@
   (s-cons (s-car s)
           (add-streams (s-cdr s)
                        (partial-sums s))))
-
 
 ;ex 3.56
 (define (s-scale factor s)
@@ -156,9 +155,50 @@
                    (s-merge (s-scale 3 hamming)
                             (s-scale 5 hamming)))))
 
-
 ; ex 3.58
 (define (s-expand num den radix)
   (s-cons
    (quotient (* num radix) den)
    (s-expand (remainder (* num radix) den) den radix)))
+
+; 3.59-3.62 -- TODO: understand the math, complete the exercises.
+;
+
+(define (avg . args)
+  (/ (apply + args)
+     (length args)))
+
+(define (sqrt-improve guess x)
+  (avg guess 
+       (/ x guess)))
+
+(define (sqrt-s x)
+  (define guesses
+    (s-cons 1.0
+            (s-map (lambda(g)
+                     (sqrt-improve g x))
+                   guesses)))
+  guesses)
+
+(define (pi-summands x)
+  (s-cons (/ 1.0 x)
+          (s-map - (pi-summands (+ x 2)))))
+
+(define pi-s
+  (s-scale 4 (partial-sums (pi-summands 1))))
+
+(define (euler-t s)
+  (let ((s0 (s-ref 0 s))
+        (s1 (s-ref 1 s))
+        (s2 (s-ref 2 s)))
+    (s-cons (- s2
+               (/ (square (- s2 s1))
+                  (+ s2 (- s0 (* 2 s1)))))
+            (euler-t (s-cdr s)))))
+            
+(define (make-tableau t s)
+  (s-cons s
+          (make-tableau t (t s))))
+
+(define (accel-seq t s)
+  (s-map s-car (make-tableau t s)))

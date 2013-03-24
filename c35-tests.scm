@@ -11,11 +11,11 @@
    (=? '(s-car (s-cdr (s-cons 3 (s-cons 4 ES)))) 4)
 
    (=? '(let ((s1 (s-cons 10 ES)))
-          (s-ref s1 0))
+          (s-ref 0 s1))
        10)
 
    (=? '(let ((s1 (s-cons 10 (s-cons 20 ES))))
-          (s-ref s1 1))
+          (s-ref 1 s1))
        20)
 
    (=?s '(let ((s1 (s-cons 10 (s-cons 20 ES))))
@@ -59,8 +59,8 @@
    ; ex. 3.51 : lazy evaluation w/ memoization
    (=?o '(letrec ((show (lambda(x) (display x) x))
                   (s (s-map show (s-enumerate-interval 0 10))))
-           (s-ref s 5)
-           (s-ref s 7))
+           (s-ref 5 s)
+           (s-ref 7 s))
         "01234567")
 
    ; ex. 3.52
@@ -77,7 +77,7 @@
            (define z (s-filter (lambda(x) (= (remainder x 5) 0)) seq))
            (d sum) 
 
-           (s-ref y 7)
+           (s-ref 7 y)
            (d sum) 
 
            (with-output-to-string (lambda() (s-display z))) ; don't print
@@ -87,27 +87,27 @@
    (=?s '(s-take 117 integers)
         (s-enumerate-interval 1 117))
 
-   (=? '(s-ref no-sevens 100)
+   (=? '(s-ref 100 no-sevens)
        117)
 
-   (=? '(s-ref fibs 5)
+   (=? '(s-ref 5 fibs)
        5)
 
    ; sieve of Eratosthenes
-   (=? '(s-ref primes 50)
+   (=? '(s-ref 50 primes)
        233)
 
-   (=? '(s-ref fibs_ 5)
+   (=? '(s-ref 5 fibs_)
        5)
    
    ; lazy self-referential primes
-   (=? '(s-ref primes_ 50)
+   (=? '(s-ref 50 primes_)
        233)
    
    ; Ex. 3.53 will return powers of two
    (=? '(begin
           (define s (s-cons 1 (add-streams s s)))
-          (s-ref s 6))
+          (s-ref 6 s))
        64)
 
    ; repeat
@@ -124,14 +124,14 @@
         (list 1 1 2 6 24 120 720 5040))
 
    ; stream to list (for debugging)
-   (=? '(s-to-list (s-cons 1 (s-cons 2 ES)) 3)
+   (=? '(s-to-list 3 (s-cons 1 (s-cons 2 ES)))
        (list 1 2))
 
    ; ex. 3.55
-   (=? '(s-to-list (partial-sums integers) 5)
+   (=? '(s-to-list 5 (partial-sums integers))
         (list 1 3 6 10 15))
 
-   (=? '(s-to-list (partial-sums (s-repeat 1)) 5)
+   (=? '(s-to-list 5 (partial-sums (s-repeat 1)))
         (list 1 2 3 4 5))
 
    ; ex. 3.56: Hamming numbers
@@ -139,16 +139,42 @@
                   (s-cons 2 (s-cons 3 (s-cons 4 ES))))
         (list 1 2 3 4))
 
-   (=? '(s-to-list (s-scale 2 integers) 5)
+   (=? '(s-to-list 5 (s-scale 2 integers))
         (list 2 4 6 8 10))
         
-   (=? '(s-to-list hamming 20)
+   (=? '(s-to-list 20 hamming)
        (list 1 2 3 4 5 6 8 9 10 12 15 16 18 20 24 25 27 30 32 36))
 
 
    ; ex. 3.57 n times
 
    ; ex. 3.58
-   (=? '(s-to-list (s-expand 1 7 10) 7)
+   (=? '(s-to-list 7 (s-expand 1 7 10))
        (list 1 4 2 8 5 7 1))
+
+   ; exs. 3.59-3.62 -- TODO
+
+
+   (=? '(s-ref 1 (sqrt-s 2))
+       1.5)
+
+   (=?~ '(s-ref 10 (sqrt-s 2))
+        1.414213)
+
+   (=?~ '(s-ref 4 pi-s)
+        3.33968253968254)
+
+   (=?~ '(s-ref 4 (euler-t pi-s))
+        3.14271284271284)
+
+   (=?~ '(s-ref 4 (accel-seq euler-t pi-s))
+        3.1415927140337)
+
+   ; ex. 3.63
+   ; This implementation has to map the lambda(guess) function for all 
+   ; previous elelments of the stream every time stream-cdr is called.
+   ; The performance hit would remain if the implementation of delay was not
+   ;  memoized.
+
+
    ))
