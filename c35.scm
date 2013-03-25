@@ -244,3 +244,16 @@
 (define prime-sum-pairs-s
   (s-filter (lambda(p) (prime? (+ (fst p) (snd p))))
             (pairs-s integers integers)))
+
+; ex. 3.66
+(define (s-find matcher s)
+  (define (iter s count)
+    (cond ((s-null? s)
+           -1)
+          ((matcher (s-car s))
+           count)
+          (else 
+            (iter (s-cdr s) (+ 1 count)))))
+  (iter s 0))
+  
+          

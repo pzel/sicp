@@ -20,4 +20,4 @@
         (else #f)))
 
 (define (prime? n)
-  (fast-prime? n 10))
+  (fast-prime? n 20)) ; sometimes failed with 10 tries, even for small n
