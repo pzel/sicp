@@ -198,4 +198,6 @@
    (=?~ '(s-ref 2 (accel-seq euler-t naive-ln2))
        0.69314718)
 
+  (=? '(s-to-list 8 prime-sum-pairs-s)
+    '( (1 . 1) (1 . 2) (2 . 3) (1 . 4) (1 . 6) (3 . 4) (2 . 5) (1 . 10 )))
    ))

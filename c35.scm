@@ -1,3 +1,5 @@
+; use prime.scm for prime-sum-pairs-s
+(load "./prime.scm")
 
 (define-syntax s-cons
   (syntax-rules ()
@@ -221,3 +223,24 @@
 
 (define naive-ln2
   (partial-sums (ln2-summands 1)))
+
+(define (mk-pair a b)
+  (cons a b))
+(define (fst p) (car p))
+(define (snd p) (cdr p))
+
+(define (pairs-s s1 s2)
+  (s-cons (mk-pair (s-car s1) (s-car s2))
+          (interleave (s-map (lambda(x) (mk-pair (s-car s1) x)) (s-cdr s2))
+                      (pairs-s (s-cdr s1)
+                               (s-cdr s2)))))         
+
+(define (interleave s1 s2)
+  (if (s-null? s1)
+      s2
+      (s-cons (s-car s1)
+              (interleave s2 (s-cdr s1)))))
+
+(define prime-sum-pairs-s
+  (s-filter (lambda(p) (prime? (+ (fst p) (snd p))))
+            (pairs-s integers integers)))
