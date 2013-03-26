@@ -260,6 +260,42 @@
 (define (all-pairs-s s1 s2)
   (s-cons (mk-pair (s-car s1) (s-car s2))
           (interleave (s-map (lambda(x) (mk-pair (s-car s1) x)) (s-cdr s2))
-                      (interleave (s-map (lambda(x) (mk-pair x (s-car s1))) (s-cdr s2))
-                                  (all-pairs-s (s-cdr s1)
-                                               (s-cdr s2))))))
+                      (interleave (s-map (lambda(x) (mk-pair x (s-car s1))) 
+                                         (s-cdr s2))
+                                  (all-pairs-s (s-cdr s1) (s-cdr s2))))))
+
+; ex. 3.68
+; this will loop forever
+(define (naive-pairs-s s1 s2)
+  (interleave
+    (s-map (lambda(x) (mk-pair (s-car s1) x)) s2)
+    (naive-pairs-s (s-cdr s1) (s-cdr s2))))
+
+;ex 3.69
+(define (p-triple? t)
+ (let ((a (car t))
+       (b (cadr t))
+       (c (caddr t)))
+   (and (> b a)
+        (= (+ (* a a) (* b b))
+           (* c c)))))
+
+(define (interleave3 s t u)
+  (if (s-null? s)
+      (interleave t u)
+      (s-cons (s-car s)
+              (interleave3 t u (s-cdr s)))))
+
+(define (triples-s s t u)
+ (let ((a (s-car s))
+       (b (s-car t))
+       (c (s-car u)))
+   (s-cons 
+    (list a b c)
+    (interleave3
+     (s-map (lambda(b* c*) (list a b* c*)) t         (s-cdr u))
+     (s-map (lambda(b* c*) (list a b* c*)) (s-cdr t) (s-cdr u))
+     (triples-s (s-cdr s) (s-cdr t) (s-cdr u))))))
+                      
+(define p-triples-s 
+  (s-filter p-triple? (triples-s integers integers integers)))

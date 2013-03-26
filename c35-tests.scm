@@ -209,7 +209,7 @@
   (=? '(s-find (lambda(x) (= x 10)) integers)
         9)
   (=? '(s-find (lambda(x) (equal? x '(1 . 100))) (pairs-s integers integers))
-        197)
+        197) ; takes quite some time, consider commenting out
 
   ; ex. 3.67
   (=? '(s-to-list 5 (all-pairs-s integers integers))
@@ -218,4 +218,43 @@
        7)
   (=? '(s-find (lambda(x) (equal? x `(5 . 1))) (all-pairs-s integers integers))
        14)
+
+  ; ex. 3.69
+  (=? '(p-triple? (list 1 2 3)) #f)
+  (=? '(p-triple? (list 3 4 5)) #t)
+  (=? '(p-triple? (list 4 3 5)) #f)
+  (=? '(p-triple? (list 5 4 3)) #f)
+      
+  (=? '(s-to-list 9 (interleave3 integers (s-repeat 99) integers))
+      '( 1 99 1 2 99 2 3 99 3))
+
+  (=? '(s-find (lambda(x) (equal? x (list 2 1 2))) 
+               (s-take 100 (triples-s integers integers integers)))
+      #f)
+
+  (=? '(s-find (lambda(x) (equal? x (list 2 3 2))) 
+               (s-take 100 (triples-s integers integers integers)))
+      #f)
+
+  (=? '(s-find (lambda(x) (equal? x (list 3 2 1))) 
+               (s-take 100 (triples-s integers integers integers)))
+      #f)
+
+  (=? '(s-find (lambda(x) (equal? x (list 1 1 2))) 
+               (s-take 100 (triples-s integers integers integers)))
+      1)
+
+  (=? '(s-find (lambda(x) (equal? x (list 1 2 3))) 
+               (s-take 100 (triples-s integers integers integers)))
+      4)
+
+  (=? '(s-to-list 5 (triples-s integers integers integers))
+      '((1 1 1) (1 1 2) (1 2 2) (2 2 2) (1 2 3)))
+
+ (=? '(s-to-list 2 p-triples-s)
+     '((3 4 5) (5 12 13)))
+
+ ;; it takes ages to get the third entry
+ ;; (=? '(s-to-list 3 p-triples-s)
+ ;;     '((3 4 5) (5 12 13) (7 24 25))); (8 15 17)))
    ))
