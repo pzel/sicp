@@ -249,11 +249,17 @@
 (define (s-find matcher s)
   (define (iter s count)
     (cond ((s-null? s)
-           -1)
+           #f)
           ((matcher (s-car s))
            count)
           (else 
             (iter (s-cdr s) (+ 1 count)))))
   (iter s 0))
-  
-          
+
+; ex. 3.67
+(define (all-pairs-s s1 s2)
+  (s-cons (mk-pair (s-car s1) (s-car s2))
+          (interleave (s-map (lambda(x) (mk-pair (s-car s1) x)) (s-cdr s2))
+                      (interleave (s-map (lambda(x) (mk-pair x (s-car s1))) (s-cdr s2))
+                                  (all-pairs-s (s-cdr s1)
+                                               (s-cdr s2))))))

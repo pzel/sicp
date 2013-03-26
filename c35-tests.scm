@@ -202,10 +202,20 @@
     '( (1 . 1) (1 . 2) (2 . 3) (1 . 4) (1 . 6) (3 . 4) (2 . 5) (1 . 10 )))
     
   ; ex. 3.66
+  (=? '(s-find (lambda(x) (= x -1)) (s-take 10 integers))
+        #f)
   (=? '(s-find (lambda(x) (= x 1)) integers)
         0)
   (=? '(s-find (lambda(x) (= x 10)) integers)
         9)
   (=? '(s-find (lambda(x) (equal? x '(1 . 100))) (pairs-s integers integers))
         197)
+
+  ; ex. 3.67
+  (=? '(s-to-list 5 (all-pairs-s integers integers))
+      '( (1 . 1) (1 . 2) (2 . 1) (1 . 3) (2 . 2)))
+  (=? '(s-find (lambda(x) (equal? x `(1 . 5))) (all-pairs-s integers integers))
+       7)
+  (=? '(s-find (lambda(x) (equal? x `(5 . 1))) (all-pairs-s integers integers))
+       14)
    ))
