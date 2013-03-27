@@ -257,4 +257,12 @@
  ;; it takes ages to get the third entry
  ;; (=? '(s-to-list 3 p-triples-s)
  ;;     '((3 4 5) (5 12 13) (7 24 25))); (8 15 17)))
+
+ ; ex. 3.70
+ ; a
+ (=? '(s-to-list 10 (pairs-by pair-sum integers integers))
+     '((1 . 1) (1 . 2) (1 . 3) (2 . 2) (1 . 4) (2 . 3) (1 . 5) (3 . 3) (2 . 4) (1 . 6)))
+ ; b
+ (=? '(s-ref 50 (pairs-by pair-235 no235s no235s))
+     '(7 . 29))
    ))

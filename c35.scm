@@ -299,3 +299,37 @@
                       
 (define p-triples-s 
   (s-filter p-triple? (triples-s integers integers integers)))
+
+;ex 3.70
+;a
+(define (pairs-by w s1 s2)
+  (s-cons (mk-pair (s-car s1) (s-car s2))
+          (merge-by w 
+                    (s-map (lambda(x) (mk-pair (s-car s1) x)) (s-cdr s2))
+                    (pairs-s (s-cdr s1)
+                             (s-cdr s2)))))
+
+(define (pair-sum p)
+  (+ (fst p)
+     (snd p)))
+
+(define (merge-by w s1 s2)
+  (let ((p1 (s-car s1))
+        (p2 (s-car s2)))
+    (cond ((= (w p1) (w p2))
+           (s-cons p1 (s-cons p2 (merge-by w (s-cdr s1) (s-cdr s2)))))
+          ((< (w p1) (w p2))
+           (s-cons p1 (merge-by w (s-cdr s1) s2)))
+          ((> (w p1) (w p2))
+           (s-cons p2 (merge-by w s1 (s-cdr s2)))))))
+;b
+(define (pair-235 p)
+  (+ (* 2 (fst p))
+     (* 3 (snd p))
+     (* 5 (fst p) (snd p))))
+
+(define no235s
+  (s-filter (lambda(x) (and (not (divisible? x 2))
+                            (not (divisible? x 3))
+                            (not (divisible? x 5))))
+            integers))
