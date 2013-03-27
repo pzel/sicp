@@ -294,5 +294,18 @@
  (=? '(s-to-list 6 (s-map (lambda(l) (sum-of-cubes (car l))) ramanujan))
      '(1729 4104 13832 20683 32832 39312))
 
+ ; ex. 3.72
+ (=? '(s-to-list 4 (s-zip integers integers))
+     '( (1 . 1) (2 . 2) (3 . 3) (4 . 4)))
+
+ (=? '(s-to-list 
+       4 
+       (s-zip (s-map (lambda(l) (sum-of-squares (car l))) square-triplets)
+              square-triplets))
+     '((325 (10 . 15) (6 . 17) (1 . 18))
+       (425 (13 . 16) (8 . 19) (5 . 20)) 
+       (650 (17 . 19) (11 . 23) (5 . 25)) 
+       (725 (14 . 23) (10 . 25) (7 . 26))))
+
    ))
 

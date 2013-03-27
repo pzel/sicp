@@ -380,3 +380,20 @@
 (define ramanujan
   (s-conseq 2 eq-sum-of-cubes cube-weighted-pairs))
 
+;ex. 3.72
+(define (s-zip s1 s2)
+  (s-map cons s1 s2))
+
+(define (sum-of-squares p)
+  (+ (square (fst p))
+     (square (snd p))))
+
+(define (eq-sum-of-squares p1 p2)
+  (= (sum-of-squares p1)
+     (sum-of-squares p2)))
+
+(define square-weighted-pairs
+  (pairs-by sum-of-squares integers integers))
+
+(define square-triplets
+  (s-conseq 3 eq-sum-of-squares square-weighted-pairs))
