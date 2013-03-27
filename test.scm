@@ -18,6 +18,7 @@
 ;    (=?o  '(display "hello") "hello")     ; test output
 ;    (=?e  '(car '()) "bad argument type") ; test error message
 ;    (=?s  '(<stream>) <list>)             ; test stream equality vs. list
+;    (pend '(not-implemented) #t)          ; fail this test w/o eval'ing
 ;  ))
 ;
 ; Tested in:
@@ -38,6 +39,10 @@
 
 (define (=?s is should)
   (test-compare is should test-stream-equal?))
+
+(define (pend is should)
+  (list #f 'pending should is))
+  
 
 ; INTERNALS
 (define (catch proc)

@@ -21,8 +21,8 @@
    (=?s '(let ((s1 (s-cons 10 (s-cons 20 ES))))
            (s-map (lambda(x) (* x x)) s1))
         (s-cons 100 (s-cons 400 ES)))
-
-   (=? '(let ((res (cons 'result '())))
+ 
+  (=? '(let ((res (cons 'result '())))
           (s-for-each (lambda(x) (set-cdr! res (cons x (cdr res))))
                       (s-cons 10 (s-cons 20 ES)))
           res)
@@ -260,9 +260,39 @@
 
  ; ex. 3.70
  ; a
- (=? '(s-to-list 10 (pairs-by pair-sum integers integers))
-     '((1 . 1) (1 . 2) (1 . 3) (2 . 2) (1 . 4) (2 . 3) (1 . 5) (3 . 3) (2 . 4) (1 . 6)))
+ (=? '(s-monotonic? 10 integers)
+     #t)
+ (=? '(s-monotonic? 10 (s-cons 10 (s-cons 9 ES)))
+     #f)
+
+ (=? '(s-monotonic? 100 (s-map pair-sum (pairs-by pair-sum integers integers)))
+     #t)
+
+ (=? '(s-monotonic? 100 (s-map pair-prod (pairs-by pair-prod integers integers)))
+     #t)
+
  ; b
- (=? '(s-ref 50 (pairs-by pair-235 no235s no235s))
-     '(7 . 29))
+ (=? '(s-monotonic? 50 (s-map pair-235 (pairs-by pair-235 no235s no235s)))
+     #t)
+
+ ; ex. 3.71
+ (=? '(s-to-list 3 (s-conseq 2 equal? (s-repeat 'hello)))
+     '( (hello hello)
+        (hello hello)
+        (hello hello)))
+
+ (=? '(s-to-list 1 (s-conseq 3 equal? (s-repeat (cons 'hello 'hello))))
+     '( ((hello . hello) (hello . hello) (hello . hello))))
+
+ (=? '(s-to-list 5 ramanujan)
+     '(((9 . 10) (1 . 12))
+       ((9 . 15) (2 . 16))
+       ((18 .  20) (2 . 24))
+       ((19 . 24) (10 . 27))
+       ((18 . 30) (4 . 32))))
+
+ (=? '(s-to-list 6 (s-map (lambda(l) (sum-of-cubes (car l))) ramanujan))
+     '(1729 4104 13832 20683 32832 39312))
+
    ))
+

@@ -300,28 +300,41 @@
 (define p-triples-s 
   (s-filter p-triple? (triples-s integers integers integers)))
 
+; for testing
+(define (s-monotonic? limit s)
+  (define (iter n last s)
+    (cond ((= n 0) #t)
+          ((> last (s-car s)) #f)
+          (else
+           (iter (- n 1) (s-car s) (s-cdr s)))))
+  (iter limit 0 s))
+
 ;ex 3.70
 ;a
+(define (merge-by w s1 s2)
+  (let ((p1 (s-car s1))
+        (p2 (s-car s2)))
+    (cond ((< (w p1) (w p2))
+           (s-cons p1 (merge-by w (s-cdr s1) s2)))
+          ((= (w p1) (w p2))
+           (s-cons p1 (merge-by w (s-cdr s1) s2)))
+          (else
+           (s-cons p2 (merge-by w s1 (s-cdr s2)))))))
+
 (define (pairs-by w s1 s2)
   (s-cons (mk-pair (s-car s1) (s-car s2))
-          (merge-by w 
+          (merge-by w
                     (s-map (lambda(x) (mk-pair (s-car s1) x)) (s-cdr s2))
-                    (pairs-s (s-cdr s1)
-                             (s-cdr s2)))))
+                    (pairs-by w (s-cdr s1) (s-cdr s2)))))
 
 (define (pair-sum p)
   (+ (fst p)
      (snd p)))
 
-(define (merge-by w s1 s2)
-  (let ((p1 (s-car s1))
-        (p2 (s-car s2)))
-    (cond ((= (w p1) (w p2))
-           (s-cons p1 (s-cons p2 (merge-by w (s-cdr s1) (s-cdr s2)))))
-          ((< (w p1) (w p2))
-           (s-cons p1 (merge-by w (s-cdr s1) s2)))
-          ((> (w p1) (w p2))
-           (s-cons p2 (merge-by w s1 (s-cdr s2)))))))
+(define (pair-prod p)
+  (* (fst p)
+     (snd p)))
+
 ;b
 (define (pair-235 p)
   (+ (* 2 (fst p))
@@ -333,3 +346,37 @@
                             (not (divisible? x 3))
                             (not (divisible? x 5))))
             integers))
+
+; ex. 3.71
+(define (s-conseq n f s)
+  (define (iter prev s)
+    (cond ((null? prev)
+           (iter (list (s-car s)) (s-cdr s)))
+          ((= n (length prev))
+           (s-cons prev
+                   (iter (list (s-car s)) (s-cdr s))))
+          ((f (car prev) (s-car s))
+           (iter (cons (s-car s) prev) (s-cdr s)))
+          (else
+           (iter (list (s-car s)) (s-cdr s)))))
+  (iter '() s))
+
+
+(define (cube x) (* x x x))
+
+(define (sum-of-cubes p)
+  (+ (cube (fst p))
+     (cube (snd p))))
+
+(define (eq-sum-of-cubes p1 p2)
+  (= (sum-of-cubes p1)
+     (sum-of-cubes p2)))
+
+(define cube-weighted-pairs
+  (pairs-by sum-of-cubes
+            integers
+            integers))
+
+(define ramanujan
+  (s-conseq 2 eq-sum-of-cubes cube-weighted-pairs))
+
