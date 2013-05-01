@@ -416,8 +416,6 @@
             (accumulate-n op acc (map cdr seqs)))))
 
 ; 2.37
-; TODO: Learn matrix math, write tests,
-;       implement the functions.
 (define (dot-product v w)
   (accumulate + 0 (map * w v)))
 
