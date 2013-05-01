@@ -421,6 +421,19 @@
 (define (dot-product v w)
   (accumulate + 0 (map * w v)))
 
+(define (matrix-*-vector m v)
+  (map (lambda(row)
+         (dot-product row v))
+       m))
+
+(define (transpose mat)
+  (accumulate-n cons '() mat))
+
+(define (matrix-*-matrix m1 m2)
+  (let ((cols (transpose m2)))
+    (map (lambda(row) 
+           (matrix-*-vector cols row))
+         m1)))
 
 ; 2.38
 (define (foldr f acc seq)
