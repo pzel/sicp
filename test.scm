@@ -43,7 +43,6 @@
 (define (pend is should)
   (list #f 'pending should is))
   
-
 ; INTERNALS
 (define (catch proc)
   (call/cc 
@@ -52,10 +51,8 @@
       (lambda(exn) (k (mk-error exn)))
       proc))))
 
-(define (cmp-error e1 e2)
-  (and (equal? 'error (car e1))
-       (equal? (write (cadr e1))
-               (write (cadr e2)))))
+(define (cmp-error e1 should)
+  (equal? (cadr e1) should))
 
 (define dev/null
   (make-output-port (lambda(in) #t)
@@ -63,8 +60,8 @@
 
 (define (mk-error exn)
   (list 'error
-        (write ((condition-property-accessor 'exn 'message) exn))
-        (write ((condition-property-accessor 'exn 'arguments) exn))))
+        ((condition-property-accessor 'exn 'message) exn)
+        ((condition-property-accessor 'exn 'arguments) exn)))
 
 (define (test-compare is should matcher)
   (let ((result (test-eval is 'hide-output)))
@@ -74,7 +71,7 @@
           is)))
 
 (define (test-compare-error is msg)
-  (let ((result (catch (lambda() (test-eval is 'hide-output)))))
+  (let ((result (catch (lambda() (test-eval is 'debug-output)))))
     (list (test-error-equal? result msg)
           result
           msg
@@ -94,6 +91,8 @@
          ((eq? io 'capture-output)
           (with-output-to-string 
             (lambda() (eval exp (interaction-environment)))))
+         ((eq? io 'debug-output)
+            (eval exp (interaction-environment)))
          (else
           (error "test.scm: test-eval doesn't know how to treat output"))))
     
@@ -101,7 +100,7 @@
   (< (abs (- a b)) 0.001))
 
 (define (test-error-equal? e msg)
-  (cmp-error e (list 'error msg)))
+  (cmp-error e msg))
 
 (define (test-stream-equal? s1 s2)
   (cond ((and (null? s1) (null? s2)) #t)

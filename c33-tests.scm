@@ -505,7 +505,7 @@
             (probe-connector "fahrenheit temperature" f)
             (set-value! c 25 'user)
             (set-value! f 888 'user)))
-        "(contradiction 77 888)")
+        '("contradiction" 77 888))
 
    (=?o '(run-simulation
          (letrec ((c (make-connector))
@@ -554,7 +554,7 @@
                  (b (make-connector)))
           (squarer a b)
           (set-value! b -5 'user))
-       "(squarer: square less than 0: -5)")
+       '("squarer: square less than 0:" -5))
 
    (=?o '(run-simulation
          (letrec ((a (make-connector))
