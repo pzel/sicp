@@ -21,6 +21,8 @@
    (=? '(definition-variable '(define (f y) y)) 'f)
    (=? '(definition-value '(define x 0)) '0)
    (=? '(definition-value '(define (h x) x)) '(lambda (x) x))
+   ;; Assignment
+   (=? '(assignment? '(set! x 2)) #t)
    ;; Lambdas
    (=? '(lambda? '(hello world)) #f)
    (=? '(lambda? '(lambda (x) x)) #t)
@@ -53,11 +55,18 @@
    ;; Quotes
    (=? '(text-of-quotation '(quote t1)) 't1)
 
+   ;; Assignment 
+   (=? '(assignment? '(set x 3)) #f)
+   (=? '(assignment? '(set! x 3)) #t)
+   (=? '(assignment-variable '(set! y 55)) 'y)
+   (=? '(assignment-value '(set! y 55)) 55)
 
    ;; High-level Evaluation
    (=? '(%eval 3 %null-env) 3)
    (=? '(%eval '(begin 1 2 3 4)  %null-env) 4)
    (=? '(%eval '(begin (define x 77) x) %base-env) 77)
    (=? '(%eval '(quote x) %base-env) 'x)
+   (=? '(%eval '(begin (define x 77) (set! x 66) x) %base-env) 66)
+;   (=? '(%eval '(if TRUE 'yes dont-crash) %base-env) 'yes)
 ;   (=? '(%eval '(+ 2 2) %null-env) 4)
 ))
