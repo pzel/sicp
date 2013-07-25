@@ -5,6 +5,7 @@
  '(
    ;; Unit tests
    ;; Data predicates
+   (=? '(quoted? '(quote hello)) #t)
    (=? '(self-evaluating? 3) #t)
    (=? '(self-evaluating? "hello") #t)
    (=? '(self-evaluating? '(1 23)) #f)
@@ -49,10 +50,14 @@
    (=?e '(lookup-variable-value 'not-here
 				(extend-environment '(test) '(0) %null-env))
 	"Undefined variable: ")
+   ;; Quotes
+   (=? '(text-of-quotation '(quote t1)) 't1)
+
 
    ;; High-level Evaluation
    (=? '(%eval 3 %null-env) 3)
    (=? '(%eval '(begin 1 2 3 4)  %null-env) 4)
    (=? '(%eval '(begin (define x 77) x) %base-env) 77)
+   (=? '(%eval '(quote x) %base-env) 'x)
 ;   (=? '(%eval '(+ 2 2) %null-env) 4)
 ))
