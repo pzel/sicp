@@ -11,6 +11,8 @@
          (eval-sequence (begin-actions exp) env))
         ((definition? exp)
          (eval-definition exp env))
+	((variable? exp)
+	 (lookup-variable-value exp env))
         ;; ((application? exp)
         ;;  (apply (eval (operator exp) env)
         ;;         (list-of-values (operands exp) env)))
@@ -30,6 +32,7 @@
 
 ;; Environments & state
 (define %null-env '())
+
 (define (define-variable! var val env)
   (let ((frame (first-frame env)))
     (define (scan vars vals)
@@ -40,19 +43,6 @@
             (else (scan (cdr vars) (cdr vals)))))
     (scan (frame-variables frame)
           (frame-values frame))))
-
-  ;; (define (env-loop env)
-  ;;   (define (scan vars vals)
-  ;;     (cond ((null? vars)
-  ;;            (env-loop (enclosing-environment env)))
-  ;;           ((eq? var (car vars))
-  ;;            (cal vals))
-  ;;           (else
-  ;;             (scan (cdr vars) (cdr vals)))))
-  ;;   (if (eq? env %null-env)
-  ;;       (error "
-             
-
 
 ;; Data representation
 (define (add-binding-to-frame! var val frame)
@@ -70,6 +60,7 @@
   (if (symbol? (cadr exp))
       (cadr exp) ; we're defining a symbol
       (caadr exp))) ; we're using sugar to define a function
+(define (enclosing-environment env) (cdr env))
 (define (extend-environment vars vals env)
   (let [(nvars (length vars)) (nvals (length vals))]
     (if (= nvars nvals)
@@ -77,14 +68,29 @@
         (if (< nvars nvals)
             (error "extend-environment: too few variables")
             (error "extend-environment: too few values")))))
-
 (define (first-exp seq) (car seq))
+(define (first-frame env) (if (null? env) (error "first-frame: NULL environment") (car env)))
 (define (frame-variables frame) (car frame))
 (define (frame-values frame) (cdr frame))
 (define (lambda? exp) (tagged-list? exp 'lambda))
 (define (lambda-parameters exp) (cadr exp))
 (define (lambda-body exp) (cddr exp))
 (define (last-exp? seq) (null? (cdr seq)))
+(define (lookup-variable-value var env)
+  (define (env-loop env)
+    (define (scan vars vals)
+      (cond ((null? vars)
+	     (env-loop (enclosing-environment env)))
+	    ((eq? var (car vars))
+	     (car vals))
+	    (else (scan (cdr vars) (cdr vals)))))
+    (if (eq? env %null-env)
+	(error "Undefined variable: " var)
+	(let [(frame (first-frame env))]
+	  (scan (frame-variables frame)
+		(frame-values frame)))))
+  (env-loop env))
+		 
 (define (make-lambda parameters body) (cons 'lambda (cons parameters body)))
 (define (make-frame variables values) (cons variables values))
 (define (operator exp) (car exp))
@@ -92,3 +98,6 @@
 (define (rest-exps seq) (cdr seq))
 (define (self-evaluating? exp) (or (string? exp) (number? exp)))
 (define (tagged-list? l tag) (and (pair? l) (eq? tag (car l))))
+(define (variable? v) (symbol? v))
+
+(define %base-env (extend-environment '() '() %null-env))
