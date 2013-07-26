@@ -12,6 +12,8 @@
 	((variable? exp)   (lookup-variable-value exp env))
 	((quoted? exp)     (text-of-quotation exp))
 	((assignment? exp) (eval-assignment exp env))
+	((if? exp)         (eval-if exp env))
+	((cond? exp)       (eval-if (cond->if exp) env))
         ;; ((application? exp)
         ;;  (apply (eval (operator exp) env)
         ;;         (list-of-values (operands exp) env)))
@@ -28,20 +30,61 @@
                  (%eval (definition-value exp) env)
                  env))
 
+(define (eval-if exp env)
+  (if (true? (%eval (if-predicate exp) env))
+      (%eval (if-consequent exp) env)
+      (%eval (if-alternative exp) env)))
+
 (define (eval-sequence exps env)
   (cond ((last-exp? exps) (%eval (first-exp exps) env))
         (else
          (%eval (first-exp exps) env)
          (eval-sequence (rest-exps exps) env))))
 
+;; Application
+(define (application? exp) (pair? exp))
+(define (operator exp) (car exp))
+(define (operands exp) (cdr exp))
+
 ;; Assignment
 (define (assignment? exp) (tagged-list? exp 'set!))
 (define (assignment-variable exp) (cadr exp))
 (define (assignment-value exp) (caddr exp))
 
+;; Boolean values
+(define %t #t)
+(define %f #f)
+(define (true? x) (eq? x '%t))
+(define (false? x) (not (true? x)))
+
+;; Conditionals
+(define (cond? exp) (tagged-list? exp 'cond))
+(define (cond-clauses exp) (cadr exp)) ;; <- sicp says (cdr exp), i disagree
+(define (cond-else-clause? exp) (eq? (cond-predicate exp) 'else))
+(define (cond-predicate clause) (car clause))
+(define (cond-actions clause) (cdr clause))
+(define (cond->if exp) (expand-clauses (cond-clauses exp)))
+(define (expand-clauses clauses)
+  (if (null? clauses)
+      '%f
+      (let [(first (car clauses))
+	    (rest (cdr clauses))]
+	(if (cond-else-clause? first)
+	    (if (null? rest)
+		(sequence->exp (cond-actions first))
+		(error "ELSE is not last"))
+	    (make-if (cond-predicate first)
+		     (sequence->exp (cond-actions first))
+		     (expand-clauses rest))))))
+
+;; Data representation
+(define (quoted? exp) (tagged-list? exp 'quote))
+(define (self-evaluating? exp) (or (string? exp) (number? exp)))
+(define (tagged-list? l tag) (and (pair? l) (eq? tag (car l))))
+(define (text-of-quotation exp) (cadr exp))
+(define (variable? v) (symbol? v))
 
 ;; Definitions
-
 (define (definition? exp) (tagged-list? exp 'define))
 (define (definition-value exp)
   (if (symbol? (cadr exp)) 
@@ -51,7 +94,6 @@
   (if (symbol? (cadr exp))
       (cadr exp) ; we're defining a symbol
       (caadr exp))) ; we're using sugar to define a function
-
 
 ;; Environments
 (define %null-env '())
@@ -114,12 +156,14 @@
 (define (frame-values frame) (cdr frame))
 (define (make-frame variables values) (cons variables values))
 
-;; Sequences
-(define (begin? exp) (tagged-list? exp 'begin))
-(define (begin-actions exp) (cdr exp))
-(define (first-exp seq) (car seq))
-(define (last-exp? seq) (null? (cdr seq)))
-(define (rest-exps seq) (cdr seq))
+;; Ifs
+(define (if? exp) (tagged-list? exp 'if))
+(define (if-predicate exp) (cadr exp))
+(define (if-consequent exp) (caddr exp))
+(define (if-alternative exp) 
+  (if (not (null? (cdddr exp))) (cadddr exp) '%f))
+(define (make-if predicate consequent alternative)
+  (list 'if predicate consequent alternative))
 
 ;; Lambdas
 (define (lambda? exp) (tagged-list? exp 'lambda))
@@ -127,17 +171,18 @@
 (define (lambda-body exp) (cddr exp))
 (define (make-lambda parameters body) (cons 'lambda (cons parameters body)))
 
-;; Application
-(define (application? exp) (pair? exp))
-(define (operator exp) (car exp))
-(define (operands exp) (cdr exp))
-
-;; Data representation
-(define (quoted? exp) (tagged-list? exp 'quote))
-(define (self-evaluating? exp) (or (string? exp) (number? exp)))
-(define (tagged-list? l tag) (and (pair? l) (eq? tag (car l))))
-(define (text-of-quotation exp) (cadr exp))
-(define (variable? v) (symbol? v))
+;; Sequences
+(define (begin? exp) (tagged-list? exp 'begin))
+(define (begin-actions exp) (cdr exp))
+(define (first-exp seq) (car seq))
+(define (last-exp? seq) (null? (cdr seq)))
+(define (rest-exps seq) (cdr seq))
+(define (sequence->exp seq)
+  (cond ((null? seq) seq)
+	((last-exp? seq) (first-exp seq))
+	(else (make-begin seq))))
+(define (make-begin seq)
+  (cons 'begin seq))
 
 ;; Set the base environment for evaluation
-(define %base-env (extend-environment '() '() %null-env))
+(define %base-env (extend-environment '(%t %f) '('%t '%f) %null-env))

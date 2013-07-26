@@ -4,6 +4,7 @@
 (run-tests
  '(
    ;; Unit tests
+
    ;; Data predicates
    (=? '(quoted? '(quote hello)) #t)
    (=? '(self-evaluating? 3) #t)
@@ -14,6 +15,7 @@
    (=? '(tagged-list? '(yy 1 2 3) 'yy) #t)
    (=? '(variable? 'x) #t)
    (=? '(variable? 2) #f)
+
    ;; Definitions
    (=? '(definition? '(define x 1)) #t)
    (=? '(definition? '(define (f x) x)) #t)
@@ -21,8 +23,10 @@
    (=? '(definition-variable '(define (f y) y)) 'f)
    (=? '(definition-value '(define x 0)) '0)
    (=? '(definition-value '(define (h x) x)) '(lambda (x) x))
+
    ;; Assignment
    (=? '(assignment? '(set! x 2)) #t)
+
    ;; Lambdas
    (=? '(lambda? '(hello world)) #f)
    (=? '(lambda? '(lambda (x) x)) #t)
@@ -30,6 +34,7 @@
    (=? '(lambda-body '(lambda (x y) x)) '(x))
    (=? '(lambda-body '(lambda (x y) (f x y))) '((f x y)))
    (=? '(make-lambda '(x y) '((+ x y))) '(lambda (x y) (+ x y)))
+
    ;; Environments
    (=? '%null-env '())
    (=? '(make-frame '(a b) '(1 2)) '((a b) 1 2))
@@ -46,11 +51,9 @@
 	  (enclosing-environment e2)) '(((a) 1)))
 
    ;; Lookups
-   (=? '(lookup-variable-value 'test
-			       (extend-environment '(test) '(0) %null-env))
+   (=? '(lookup-variable-value 'test (extend-environment '(test) '(0) %null-env))
        0)
-   (=?e '(lookup-variable-value 'not-here
-				(extend-environment '(test) '(0) %null-env))
+   (=?e '(lookup-variable-value 'not-here (extend-environment '(test) '(0) %null-env))
 	"Undefined variable: ")
    ;; Quotes
    (=? '(text-of-quotation '(quote t1)) 't1)
@@ -61,12 +64,48 @@
    (=? '(assignment-variable '(set! y 55)) 'y)
    (=? '(assignment-value '(set! y 55)) 55)
 
-   ;; High-level Evaluation
+   ;; Ifs
+   (=? '(if? '(if a b c)) #t)
+   (=? '(if? '(fi a b c)) #f)
+   (=? '(if-predicate '(if a b c)) 'a)
+   (=? '(if-consequent '(if a b c)) 'b)
+   (=? '(if-alternative '(if a b c)) 'c)
+   (=? '(if-alternative '(if a b)) '%f)
+   (=? '(make-if 'a 'b 'c) '(if a b c))
+
+   ;; Conditional expressions
+   (=? '(cond? '(cond ((a 1) (b 2)))) #t)
+   (=? '(cond-clauses '(cond ((a 1) (b 2)))) '((a 1) (b 2)))
+   (=? '(cond-predicate '(a 1)) 'a)
+   (=? '(cond-actions '(a 1)) '(1))
+   (=? '(cond-else-clause? '(else whatever)) #t)
+   (=? '(cond->if '(cond ((a 1) (else 2)))) '(if a 1 2))
+   (=? '(cond->if '(cond ((a 1)))) '(if a 1 %f))  ;; This is ugly...
+   (=? '(cond->if '(cond ((a 1) (b 2) (else 3)))) '(if a 1 (if b 2 3)))
+   (=? '(cond->if '(cond ((a 1) (b 2) (else 3)))) '(if a 1 (if b 2 3)))
+   (=?e '(cond->if '(cond ((a 1) (else 3) (b 2)))) "ELSE is not last")
+
+   ;; Sequences
+   (=? '(sequence->exp '(1)) '1)
+   (=? '(sequence->exp '(1 1)) '(begin 1 1))
+
+   ;; Bools
+   (=? '(true? '%t) #t)
+   (=? '(true? '%f) #f)
+   (=? '(false? '%f) #t)
+   (=? '(false? '%t) #f)
+
+
+
+   ;; High-level Evaluation -- “acceptance” tests
    (=? '(%eval 3 %null-env) 3)
    (=? '(%eval '(begin 1 2 3 4)  %null-env) 4)
    (=? '(%eval '(begin (define x 77) x) %base-env) 77)
    (=? '(%eval '(quote x) %base-env) 'x)
    (=? '(%eval '(begin (define x 77) (set! x 66) x) %base-env) 66)
-;   (=? '(%eval '(if TRUE 'yes dont-crash) %base-env) 'yes)
+   (=? '(%eval '(if '%t 'conseq dont-eval-me) %base-env) 'conseq)
+   (=? '(%eval '(if '%f dont-eval-me 'alt) %base-env) 'alt)
+   (=? '(%eval '(cond (('%f dont-eval1) ('%f dont-eval2) ('%t 'yes))) %base-env) 'yes)
+;   (=? '(%eval '(lambda (x) x) %base-env) '%procedure)
 ;   (=? '(%eval '(+ 2 2) %null-env) 4)
 ))
