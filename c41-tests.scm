@@ -131,4 +131,5 @@
    (=? '(%eval '((lambda(x y) x) 1 2) %base-env) 1)
    (=? '(%eval '(+ 2 2) %base-env) 4)
    (=? '(%eval '(cons 2 (cons 3 '())) %base-env) '(2 3))
+   (=?e '(%eval '(list 1 2 3) %base-env) "Undefined variable: ")
 ))
