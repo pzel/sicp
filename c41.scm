@@ -1,22 +1,19 @@
-;; The evaluator & sub-evaluators
-(define (%apply procedure arguments)
-  (cond ((primitive-procedure? procedure)
-         (apply-primitive-procedure procedure arguments))
-        (else
-         (error "%apply does not support" procedure))))
 
 (define (%eval exp env)
   (cond ((self-evaluating? exp) exp)
+	((quoted? exp)     (text-of-quotation exp))
         ((begin? exp)      (eval-sequence (begin-actions exp) env))
         ((definition? exp) (eval-definition exp env))
-	((variable? exp)   (lookup-variable-value exp env))
-	((quoted? exp)     (text-of-quotation exp))
 	((assignment? exp) (eval-assignment exp env))
+	((variable? exp)   (lookup-variable-value exp env))
 	((if? exp)         (eval-if exp env))
 	((cond? exp)       (eval-if (cond->if exp) env))
-        ;; ((application? exp)
-        ;;  (apply (eval (operator exp) env)
-        ;;         (list-of-values (operands exp) env)))
+	((lambda? exp)     (make-procedure (lambda-parameters exp)
+					   (lambda-body exp)
+					   env))
+        ((application? exp)
+         (%apply (%eval (operator exp) env)
+		 (list-of-values (operands exp) env)))
         (else
          (error "%eval: unknown expression" exp))))
 
@@ -41,10 +38,36 @@
          (%eval (first-exp exps) env)
          (eval-sequence (rest-exps exps) env))))
 
+(define (list-of-values exps env)
+  (if (no-operands? exps) 
+      '()
+      (cons (%eval (first-operand exps) env)
+	    (list-of-values (rest-operands exps) env))))
+      
+
 ;; Application
 (define (application? exp) (pair? exp))
 (define (operator exp) (car exp))
 (define (operands exp) (cdr exp))
+(define (no-operands? exp) (null? exp))
+(define (first-operand exp) (car exp))
+(define (rest-operands exp) (cdr exp))
+
+(define (%apply proc arguments)
+  (cond ((primitive-procedure? proc)
+         (apply-primitive-procedure proc arguments))
+	((compound-procedure? proc)
+	 (eval-sequence
+	  (procedure-body proc)
+	  (extend-environment (procedure-parameters proc) 
+			      arguments
+			      (procedure-environment proc))))
+        (else (error "%apply does not support" proc))))
+
+(define (apply-primitive-procedure proc args)
+  (apply-in-underlying-scheme (primitive-implementation proc) 
+			      args))
+(define (apply-in-underlying-scheme p args) (apply p args))
 
 ;; Assignment
 (define (assignment? exp) (tagged-list? exp 'set!))
@@ -171,6 +194,15 @@
 (define (lambda-body exp) (cddr exp))
 (define (make-lambda parameters body) (cons 'lambda (cons parameters body)))
 
+;; Procedures
+(define (make-procedure params body env) (list 'procedure params body env))
+(define (procedure-parameters proc) (cadr proc))
+(define (procedure-body proc) (caddr proc))
+(define (procedure-environment proc) (cadddr proc))
+(define (primitive-procedure? p) (tagged-list? p 'primitive))
+(define (compound-procedure? p) (tagged-list? p 'procedure))
+(define (primitive-implementation p) (cadr p))
+
 ;; Sequences
 (define (begin? exp) (tagged-list? exp 'begin))
 (define (begin-actions exp) (cdr exp))
@@ -184,5 +216,27 @@
 (define (make-begin seq)
   (cons 'begin seq))
 
+;; Scheme backend plumbing
+(define primitive-procedures
+  (list (list 'car car)
+	(list 'cdr cdr)
+	(list 'cons cons)
+	(list 'null? null?)
+	(list '+ +)))
+
+(define (primitive-procedure-names) (map car primitive-procedures))
+(define (primitive-procedure-objects) 
+  (map (lambda(proc) (list 'primitive (cadr proc)))
+       primitive-procedures))
+
 ;; Set the base environment for evaluation
-(define %base-env (extend-environment '(%t %f) '('%t '%f) %null-env))
+(define (setup-environment!)
+  (let [(initial-env
+	 (extend-environment (primitive-procedure-names)
+			     (primitive-procedure-objects)
+			     %null-env))]
+    (define-variable! '%t #t initial-env)
+    (define-variable! '%f #f initial-env)
+    initial-env))
+  
+(define %base-env (setup-environment!))

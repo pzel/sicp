@@ -34,6 +34,16 @@
    (=? '(lambda-body '(lambda (x y) x)) '(x))
    (=? '(lambda-body '(lambda (x y) (f x y))) '((f x y)))
    (=? '(make-lambda '(x y) '((+ x y))) '(lambda (x y) (+ x y)))
+   
+   ;; Procedures
+   (=? '(make-procedure '(a b) '((f a b)) %base-env)
+       `(procedure (a b) ((f a b)) ,%base-env))
+   (=? '(procedure-parameters (make-procedure '(a b) '((f a b)) %base-env))
+       '(a b))
+   (=? '(procedure-body (make-procedure '(a b) '((f a b)) %base-env))
+       '((f a b)))
+   (=? '(procedure-environment (make-procedure '(a b) '((f a b)) %base-env))
+       %base-env)
 
    ;; Environments
    (=? '%null-env '())
@@ -95,7 +105,17 @@
    (=? '(false? '%f) #t)
    (=? '(false? '%t) #f)
 
-
+   ;; Application/Evaluation
+   (=? '(application? '((lambda(x) x) 3)) #t)
+   (=? '(application? '(+ 3 4)) #t)
+   (=? '(operator '(+ 1 2)) '+)
+   (=? '(operands '(+ 1 2)) '(1 2))
+   (=? '(no-operands? '()) #t)
+   (=? '(no-operands? '(1 2)) #f)
+   (=? '(first-operand '(1 2)) 1)
+   (=? '(rest-operands '(1 2)) '(2))
+   (=? '(list-of-values '(x y z) (extend-environment '(x y z) '(1 2 3) %base-env))
+       '(1 2 3))
 
    ;; High-level Evaluation -- “acceptance” tests
    (=? '(%eval 3 %null-env) 3)
@@ -106,6 +126,9 @@
    (=? '(%eval '(if '%t 'conseq dont-eval-me) %base-env) 'conseq)
    (=? '(%eval '(if '%f dont-eval-me 'alt) %base-env) 'alt)
    (=? '(%eval '(cond (('%f dont-eval1) ('%f dont-eval2) ('%t 'yes))) %base-env) 'yes)
-;   (=? '(%eval '(lambda (x) x) %base-env) '%procedure)
-;   (=? '(%eval '(+ 2 2) %null-env) 4)
+   (=? '(%eval '(lambda (x) x) %base-env) `(procedure (x) (x) ,%base-env))
+   (=? '(%eval '((lambda(x) x) 3) %base-env) 3)
+   (=? '(%eval '((lambda(x y) x) 1 2) %base-env) 1)
+   (=? '(%eval '(+ 2 2) %base-env) 4)
+   (=? '(%eval '(cons 2 (cons 3 '())) %base-env) '(2 3))
 ))
