@@ -132,4 +132,21 @@
    (=? '(%eval '(+ 2 2) %base-env) 4)
    (=? '(%eval '(cons 2 (cons 3 '())) %base-env) '(2 3))
    (=?e '(%eval '(list 1 2 3) %base-env) "Undefined variable: ")
+
+   ; Ex. 4.1
+   (=?o '(list-of-values '((display 1)(display 2)(display 3)) %base-env)
+       "123")
+   (=?o '(list-of-values-backend-dependent
+          '((display 1)(display 2)(display 3)) %base-env 'right)
+        "321")
+   (=?o '(list-of-values-backend-dependent
+          '((display 1)(display 2)(display 3)) %base-env 'left)
+        "123")
+   (=?o '(list-of-values-backend-agnostic 
+          '((display 1)(display 2)(display 3)) %base-env 'right)
+        "123")
+   (=?o '(list-of-values-backend-agnostic 
+          '((display 1)(display 2)(display 3)) %base-env 'left)
+        "123")
+
 ))

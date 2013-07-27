@@ -43,7 +43,6 @@
       '()
       (cons (%eval (first-operand exps) env)
 	    (list-of-values (rest-operands exps) env))))
-      
 
 ;; Application
 (define (application? exp) (pair? exp))
@@ -222,6 +221,7 @@
 	(list 'cdr cdr)
 	(list 'cons cons)
 	(list 'null? null?)
+	(list 'display display)
 	(list '+ +)))
 
 (define (primitive-procedure-names) (map car primitive-procedures))
@@ -240,3 +240,32 @@
     initial-env))
   
 (define %base-env (setup-environment!))
+
+; ex. 4.1
+(define-syntax r-eval
+  (syntax-rules ()
+    ((r-map l)
+     (reverse (map force (reverse l))))))
+
+(define-syntax r-cons
+  (syntax-rules ()
+    ((r-cons a b)
+     (r-eval (cons (delay a) b)))))
+
+(define (list-of-values-backend-dependent exps env backend-type)
+  (if (no-operands? exps)
+      '()
+      (if (eq? backend-type 'right)
+          (r-cons (%eval (first-operand exps) env) 
+                  (list-of-values-backend-dependent (rest-operands exps) env backend-type))
+          (cons (%eval (first-operand exps) env) 
+                  (list-of-values-backend-dependent (rest-operands exps) env backend-type)))))
+
+(define (list-of-values-backend-agnostic exps env backend-type)
+  (if (no-operands? exps)
+      '()
+      (let [(a (%eval (first-operand exps) env))
+            (b (list-of-values-backend-agnostic (rest-operands exps) env backend-type))]
+        (if (eq? backend-type 'right)
+            (r-cons a b)
+            (cons a b)))))
