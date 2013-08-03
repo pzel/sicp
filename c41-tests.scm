@@ -137,16 +137,18 @@
    (=?o '(list-of-values '((display 1)(display 2)(display 3)) %base-env)
        "123")
    (=?o '(list-of-values-backend-dependent
+          '((display 1)(display 2)(display 3)) %base-env 'left)
+        "123")
+   ;; Backend evals RTL, we're in trouble.
+   (=?o '(list-of-values-backend-dependent
           '((display 1)(display 2)(display 3)) %base-env 'right)
         "321")
-   (=?o '(list-of-values-backend-dependent
+
+   (=?o '(list-of-values-backend-agnostic 
           '((display 1)(display 2)(display 3)) %base-env 'left)
         "123")
+   ;; Backend evals RTL, but we get values in source order.
    (=?o '(list-of-values-backend-agnostic 
           '((display 1)(display 2)(display 3)) %base-env 'right)
         "123")
-   (=?o '(list-of-values-backend-agnostic 
-          '((display 1)(display 2)(display 3)) %base-env 'left)
-        "123")
-
 ))
