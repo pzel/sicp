@@ -1,4 +1,5 @@
 (load "./c41.scm")
+(load "./c41-4.2b.scm")
 (load "./test.scm")
 
 (run-tests
@@ -151,4 +152,10 @@
    (=?o '(list-of-values-backend-agnostic 
           '((display 1)(display 2)(display 3)) %base-env 'right)
         "123")
+   
+   ; Ex. 4.2b
+   (=?e '(%eval42b '(+ 1 2) %base-env42b) "%eval: unknown expression")
+   (=? '(%eval42b '(call + 1 2) %base-env42b) 3)
+   (=? '(%eval42b '(call + (call + 10 5) (call (lambda(x) 5) 'whatever)) %base-env42b) 20)
+   (=? '(%eval42b '(begin (define (f x) (call + 1 x)) (call f 5)) %base-env42b) 6)
 ))

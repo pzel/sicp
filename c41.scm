@@ -9,13 +9,13 @@
 	((if? exp)         (eval-if exp env))
 	((cond? exp)       (eval-if (cond->if exp) env))
 	((lambda? exp)     (make-procedure (lambda-parameters exp)
-					   (lambda-body exp)
-					   env))
-        ((application? exp)
-         (%apply (%eval (operator exp) env)
-		 (list-of-values (operands exp) env)))
-        (else
-         (error "%eval: unknown expression" exp))))
+                                     (lambda-body exp)
+                                     env))
+  ((application? exp)
+   (%apply (%eval (operator exp) env)
+           (list-of-values (operands exp) env)))
+  (else
+   (error "%eval: unknown expression" exp))))
 
 (define (eval-assignment exp env)
   (set-variable-value! (assignment-variable exp)
