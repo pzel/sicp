@@ -1,21 +1,7 @@
-
-(define (%eval exp env)
-  (cond ((self-evaluating? exp) exp)
-	((quoted? exp)     (text-of-quotation exp))
-        ((begin? exp)      (eval-sequence (begin-actions exp) env))
-        ((definition? exp) (eval-definition exp env))
-	((assignment? exp) (eval-assignment exp env))
-	((variable? exp)   (lookup-variable-value exp env))
-	((if? exp)         (eval-if exp env))
-	((cond? exp)       (eval-if (cond->if exp) env))
-	((lambda? exp)     (make-procedure (lambda-parameters exp)
-                                     (lambda-body exp)
-                                     env))
-  ((application? exp)
-   (%apply (%eval (operator exp) env)
-           (list-of-values (operands exp) env)))
-  (else
-   (error "%eval: unknown expression" exp))))
+    
+(define (%eval exp env) 
+  (let ((m (get-eval-method (type-of exp) eval-methods)))
+    (m exp env)))
 
 (define (eval-assignment exp env)
   (set-variable-value! (assignment-variable exp)
@@ -43,6 +29,22 @@
       '()
       (cons (%eval (first-operand exps) env)
 	    (list-of-values (rest-operands exps) env))))
+
+;; Ex. 4.3 -- this would require registering eval-methods for certain types via
+;; a (register 'quoted (lambda(exp enn) (blah exp)), function or a macro such as
+;; (define-eval (begin exp env) (blah exp)) but I'll just test the representation.
+(define eval-methods
+  (list
+   (cons 'self-evaluating   (lambda(exp env) exp))
+   (cons 'quoted            (lambda(exp env) (text-of-quotation exp)))
+   (cons 'begin             (lambda(exp env)  (eval-sequence (begin-actions exp) env)))
+   (cons 'definition        (lambda(exp env) (eval-definition exp env)))
+   (cons 'assignment        (lambda(exp env) (eval-assignment exp env)))
+   (cons 'variable          (lambda(exp env) (lookup-variable-value exp env)))
+   (cons 'if                (lambda(exp env) (eval-if exp env)))
+   (cons 'cond              (lambda(exp env) (eval-if (cond->if exp) env)))
+   (cons 'lambda            (lambda(exp env) (make-procedure (lambda-parameters exp) (lambda-body exp) env)))
+   (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) (list-of-values (operands exp) env))))))
 
 ;; Application
 (define (application? exp) (pair? exp))
@@ -269,3 +271,25 @@
         (if (eq? backend-type 'right)
             (r-cons a b)
             (cons a b)))))
+
+; ex. 4.3
+(define (type-of expr)
+  (cond ((quoted? expr) 'quoted)
+        ((begin? expr) 'begin)
+        ((self-evaluating? expr) 'self-evaluating)
+        ((assignment? expr) 'assignment)
+        ((definition? expr) 'definition)
+        ((variable? expr) 'variable)
+        ((if? expr) 'if)
+        ((cond? expr) 'cond)
+        ((lambda? expr) 'lambda)
+        ((application? expr) 'application)
+        (else
+         (error "could not determine the type of" expr))))
+
+(define (get-eval-method type table) 
+  (cond ((null? table) (error "could not find eval method for" type))
+        ((eq? (caar table) type) (cdar table))
+        (else
+         (get-eval-method type (cdr table)))))
+         

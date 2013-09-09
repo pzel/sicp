@@ -158,4 +158,18 @@
    (=? '(%eval42b '(call + 1 2) %base-env42b) 3)
    (=? '(%eval42b '(call + (call + 10 5) (call (lambda(x) 5) 'whatever)) %base-env42b) 20)
    (=? '(%eval42b '(begin (define (f x) (call + 1 x)) (call f 5)) %base-env42b) 6)
+
+   ; Ex. 4.3
+   (=? '(type-of '(quote x)) 'quoted)
+   (=? '(type-of '(begin a b c)) 'begin)
+   (=? '(type-of 3) 'self-evaluating)
+   (=? '(type-of '(set! x 3)) 'assignment)
+   (=? '(type-of '(define x 3)) 'definition)
+   (=? '(type-of 'x) 'variable)
+   (=? '(type-of '(if x y z)) 'if)
+   (=? '(type-of '(cond ((x y) z))) 'cond)
+   (=? '(type-of '(lambda(x) (+ x x))) 'lambda)
+   (=? '(type-of '(+ 1 2)) 'application)
+   (=? '(get-eval-method 'quoted '((quoted . 0))) 0)
+
 ))
