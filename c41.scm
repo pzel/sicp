@@ -37,13 +37,14 @@
   (list
    (cons 'self-evaluating   (lambda(exp env) exp))
    (cons 'quoted            (lambda(exp env) (text-of-quotation exp)))
-   (cons 'begin             (lambda(exp env)  (eval-sequence (begin-actions exp) env)))
+   (cons 'begin             (lambda(exp env) (eval-sequence (begin-actions exp) env)))
    (cons 'definition        (lambda(exp env) (eval-definition exp env)))
    (cons 'assignment        (lambda(exp env) (eval-assignment exp env)))
    (cons 'variable          (lambda(exp env) (lookup-variable-value exp env)))
    (cons 'if                (lambda(exp env) (eval-if exp env)))
    (cons 'cond              (lambda(exp env) (eval-if (cond->if exp) env)))
    (cons 'lambda            (lambda(exp env) (make-procedure (lambda-parameters exp) (lambda-body exp) env)))
+   (cons 'and               (lambda(exp env) (eval-and (and-actions exp) env)))
    (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) (list-of-values (operands exp) env))))))
 
 ;; Application
@@ -78,7 +79,7 @@
 ;; Boolean values
 (define %t #t)
 (define %f #f)
-(define (true? x) (eq? x '%t))
+(define (true? x) (eq? x %t))
 (define (false? x) (not (true? x)))
 
 ;; Conditionals
@@ -220,11 +221,12 @@
 ;; Scheme backend plumbing
 (define primitive-procedures
   (list (list 'car car)
-	(list 'cdr cdr)
-	(list 'cons cons)
-	(list 'null? null?)
-	(list 'display display)
-	(list '+ +)))
+        (list 'cdr cdr)
+        (list 'cons cons)
+        (list 'null? null?)
+        (list 'false? false?)
+        (list 'display display)
+        (list '+ +)))
 
 (define (primitive-procedure-names) (map car primitive-procedures))
 (define (primitive-procedure-objects) 
@@ -273,23 +275,34 @@
             (cons a b)))))
 
 ; ex. 4.3
-(define (type-of expr)
-  (cond ((quoted? expr) 'quoted)
-        ((begin? expr) 'begin)
-        ((self-evaluating? expr) 'self-evaluating)
-        ((assignment? expr) 'assignment)
-        ((definition? expr) 'definition)
-        ((variable? expr) 'variable)
-        ((if? expr) 'if)
-        ((cond? expr) 'cond)
-        ((lambda? expr) 'lambda)
-        ((application? expr) 'application)
+(define (type-of exp)
+  (cond ((quoted? exp) 'quoted)
+        ((begin? exp) 'begin)
+        ((self-evaluating? exp) 'self-evaluating)
+        ((assignment? exp) 'assignment)
+        ((definition? exp) 'definition)
+        ((if? exp) 'if)
+        ((cond? exp) 'cond)
+        ((lambda? exp) 'lambda)
+        ((and? exp) 'and)
+        ((variable? exp) 'variable)
+        ((application? exp) 'application)
         (else
-         (error "could not determine the type of" expr))))
+         (error "could not determine the type of" exp))))
 
 (define (get-eval-method type table) 
   (cond ((null? table) (error "could not find eval method for" type))
         ((eq? (caar table) type) (cdar table))
         (else
          (get-eval-method type (cdr table)))))
-         
+
+;; ex. 4.4
+;; AND and OR special forms
+(define (and? exp) (tagged-list? exp 'and))
+(define (and-actions exp) (cdr exp))
+(define (eval-and exps env)
+  (cond ((last-exp? exps) (%eval (first-exp exps) env))
+        ((false? (%eval (first-exp exps) env)) %f)
+        (else
+         (eval-and (rest-exps exps) env))))
+

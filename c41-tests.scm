@@ -1,5 +1,5 @@
 (load "./c41.scm")
-(load "./c41-4.2b.scm")
+(load "./c41-4.2b.scm") ;; Ex. 4.2b: Louis Reasoner's LISP-2-ish evaluator
 (load "./test.scm")
 
 (run-tests
@@ -101,10 +101,10 @@
    (=? '(sequence->exp '(1 1)) '(begin 1 1))
 
    ;; Bools
-   (=? '(true? '%t) #t)
-   (=? '(true? '%f) #f)
-   (=? '(false? '%f) #t)
-   (=? '(false? '%t) #f)
+   (=? '(true? %t) #t)
+   (=? '(true? %f) #f)
+   (=? '(false? %f) #t)
+   (=? '(false? %t) #f)
 
    ;; Application/Evaluation
    (=? '(application? '((lambda(x) x) 3)) #t)
@@ -124,9 +124,10 @@
    (=? '(%eval '(begin (define x 77) x) %base-env) 77)
    (=? '(%eval '(quote x) %base-env) 'x)
    (=? '(%eval '(begin (define x 77) (set! x 66) x) %base-env) 66)
-   (=? '(%eval '(if '%t 'conseq dont-eval-me) %base-env) 'conseq)
-   (=? '(%eval '(if '%f dont-eval-me 'alt) %base-env) 'alt)
-   (=? '(%eval '(cond (('%f dont-eval1) ('%f dont-eval2) ('%t 'yes))) %base-env) 'yes)
+   (=? '(%eval '(false? %t) %base-env) %f)
+   (=? '(%eval '(if %t 'conseq dont-eval-me) %base-env) 'conseq)
+   (=? '(%eval '(if %f dont-eval-me 'alt) %base-env) 'alt)
+   (=? '(%eval '(cond ((%f dont-eval1) (%f dont-eval2) (%t 'yes))) %base-env) 'yes)
    (=? '(%eval '(lambda (x) x) %base-env) `(procedure (x) (x) ,%base-env))
    (=? '(%eval '((lambda(x) x) 3) %base-env) 3)
    (=? '(%eval '((lambda(x y) x) 1 2) %base-env) 1)
@@ -134,7 +135,7 @@
    (=? '(%eval '(cons 2 (cons 3 '())) %base-env) '(2 3))
    (=?e '(%eval '(list 1 2 3) %base-env) "Undefined variable: ")
 
-   ; Ex. 4.1
+   ;; Ex. 4.1
    (=?o '(list-of-values '((display 1)(display 2)(display 3)) %base-env)
        "123")
    (=?o '(list-of-values-backend-dependent
@@ -153,13 +154,13 @@
           '((display 1)(display 2)(display 3)) %base-env 'right)
         "123")
    
-   ; Ex. 4.2b
+   ;; Ex. 4.2b
    (=?e '(%eval42b '(+ 1 2) %base-env42b) "%eval: unknown expression")
    (=? '(%eval42b '(call + 1 2) %base-env42b) 3)
    (=? '(%eval42b '(call + (call + 10 5) (call (lambda(x) 5) 'whatever)) %base-env42b) 20)
    (=? '(%eval42b '(begin (define (f x) (call + 1 x)) (call f 5)) %base-env42b) 6)
 
-   ; Ex. 4.3
+   ;; Ex. 4.3
    (=? '(type-of '(quote x)) 'quoted)
    (=? '(type-of '(begin a b c)) 'begin)
    (=? '(type-of 3) 'self-evaluating)
@@ -171,5 +172,15 @@
    (=? '(type-of '(lambda(x) (+ x x))) 'lambda)
    (=? '(type-of '(+ 1 2)) 'application)
    (=? '(get-eval-method 'quoted '((quoted . 0))) 0)
+   (=? '(get-eval-method 'quoted '((not-here . #f) (quoted . 0))) 0)
 
+   ;; Ex 4.3
+   ;; ANDs 
+   (=? '(and? '(and #t #t)) #t)
+   (=? '(and? '(blah #t #t)) #f)
+   (=? '(and-actions '(and a b)) '(a b))
+   (=?o '(%eval '(and (begin (display "1") %t)
+                      (begin (display "2") %f)
+                      (begin (display "3") %t)) %base-env) "12")
+   
 ))
