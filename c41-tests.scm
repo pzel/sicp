@@ -7,30 +7,30 @@
    ;; Unit tests
 
    ;; Data predicates
-   (=? '(quoted? '(quote hello)) #t)
-   (=? '(self-evaluating? 3) #t)
-   (=? '(self-evaluating? "hello") #t)
+   (=? '(quoted? '(quote hello)) 'quote)
+   (=? '(self-evaluating? 3) 'self-evaluating)
+   (=? '(self-evaluating? "hello") 'self-evaluating)
    (=? '(self-evaluating? '(1 23)) #f)
    (=? '(tagged-list? '() 'tag) #f)
-   (=? '(tagged-list? '(vv) 'vv) #t)
-   (=? '(tagged-list? '(yy 1 2 3) 'yy) #t)
-   (=? '(variable? 'x) #t)
+   (=? '(tagged-list? '(vv) 'vv) 'vv)
+   (=? '(tagged-list? '(yy 1 2 3) 'yy) 'yy)
+   (=? '(variable? 'x) 'variable)
    (=? '(variable? 2) #f)
 
    ;; Definitions
-   (=? '(definition? '(define x 1)) #t)
-   (=? '(definition? '(define (f x) x)) #t)
+   (=? '(definition? '(define x 1)) 'define)
+   (=? '(definition? '(define (f x) x)) 'define)
    (=? '(definition-variable '(define x 1)) 'x)
    (=? '(definition-variable '(define (f y) y)) 'f)
    (=? '(definition-value '(define x 0)) '0)
    (=? '(definition-value '(define (h x) x)) '(lambda (x) x))
 
    ;; Assignment
-   (=? '(assignment? '(set! x 2)) #t)
+   (=? '(assignment? '(set! x 2)) 'set!)
 
    ;; Lambdas
    (=? '(lambda? '(hello world)) #f)
-   (=? '(lambda? '(lambda (x) x)) #t)
+   (=? '(lambda? '(lambda (x) x)) 'lambda)
    (=? '(lambda-parameters '(lambda (x y) 2)) '(x y))
    (=? '(lambda-body '(lambda (x y) x)) '(x))
    (=? '(lambda-body '(lambda (x y) (f x y))) '((f x y)))
@@ -71,21 +71,21 @@
 
    ;; Assignment 
    (=? '(assignment? '(set x 3)) #f)
-   (=? '(assignment? '(set! x 3)) #t)
+   (=? '(assignment? '(set! x 3)) 'set!)
    (=? '(assignment-variable '(set! y 55)) 'y)
    (=? '(assignment-value '(set! y 55)) 55)
 
    ;; Ifs
-   (=? '(if? '(if a b c)) #t)
+   (=? '(if? '(if a b c)) 'if)
    (=? '(if? '(fi a b c)) #f)
    (=? '(if-predicate '(if a b c)) 'a)
    (=? '(if-consequent '(if a b c)) 'b)
    (=? '(if-alternative '(if a b c)) 'c)
-   (=? '(if-alternative '(if a b)) '%f)
+   (=? '(if-alternative '(if a b)) %f)
    (=? '(make-if 'a 'b 'c) '(if a b c))
 
    ;; Conditional expressions
-   (=? '(cond? '(cond ((a 1) (b 2)))) #t)
+   (=? '(cond? '(cond ((a 1) (b 2)))) 'cond)
    (=? '(cond-clauses '(cond ((a 1) (b 2)))) '((a 1) (b 2)))
    (=? '(cond-predicate '(a 1)) 'a)
    (=? '(cond-actions '(a 1)) '(1))
@@ -107,8 +107,8 @@
    (=? '(false? %t) #f)
 
    ;; Application/Evaluation
-   (=? '(application? '((lambda(x) x) 3)) #t)
-   (=? '(application? '(+ 3 4)) #t)
+   (=? '(application? '((lambda(x) x) 3)) 'application)
+   (=? '(application? '(+ 3 4)) 'application)
    (=? '(operator '(+ 1 2)) '+)
    (=? '(operands '(+ 1 2)) '(1 2))
    (=? '(no-operands? '()) #t)
@@ -161,26 +161,41 @@
    (=? '(%eval42b '(begin (define (f x) (call + 1 x)) (call f 5)) %base-env42b) 6)
 
    ;; Ex. 4.3
-   (=? '(type-of '(quote x)) 'quoted)
+   (=? '(type-of '(quote x)) 'quote)
    (=? '(type-of '(begin a b c)) 'begin)
    (=? '(type-of 3) 'self-evaluating)
-   (=? '(type-of '(set! x 3)) 'assignment)
-   (=? '(type-of '(define x 3)) 'definition)
+   (=? '(type-of '(set! x 3)) 'set!)
+   (=? '(type-of '(define x 3)) 'define)
    (=? '(type-of 'x) 'variable)
    (=? '(type-of '(if x y z)) 'if)
    (=? '(type-of '(cond ((x y) z))) 'cond)
    (=? '(type-of '(lambda(x) (+ x x))) 'lambda)
    (=? '(type-of '(+ 1 2)) 'application)
+   (=? '(first (lambda(x) (= x 0)) '(1 2 3)) #f)
+   (=? '(first (lambda(x) (= x 0)) '(1 2 0 3)) #t)
    (=? '(get-eval-method 'quoted '((quoted . 0))) 0)
    (=? '(get-eval-method 'quoted '((not-here . #f) (quoted . 0))) 0)
 
-   ;; Ex 4.3
+   ;; Ex 4.4
    ;; ANDs 
-   (=? '(and? '(and #t #t)) #t)
+   (=? '(and? '(and #t #t)) 'and)
    (=? '(and? '(blah #t #t)) #f)
    (=? '(and-actions '(and a b)) '(a b))
+   (=? '(%eval '(and %t %t) %base-env) %t)
+   (=? '(%eval '(and %t %f) %base-env) %f)
    (=?o '(%eval '(and (begin (display "1") %t)
                       (begin (display "2") %f)
                       (begin (display "3") %t)) %base-env) "12")
+
+   ;; ORs 
+   (=? '(or? '(or #t #t)) 'or)
+   (=? '(or? '(blah #t #t)) #f)
+   (=? '(or-actions '(or a b)) '(a b))
+   (=? '(%eval '(or %t %t) %base-env) %t)
+   (=? '(%eval '(or %f %t) %base-env) %t)
+   (=? '(%eval '(or %f %f) %base-env) %f)
+   (=?o '(%eval '(or (begin (display "1") %f)
+                     (begin (display "2") %t)
+                     (begin (display "3") %f)) %base-env) "12")
    
 ))

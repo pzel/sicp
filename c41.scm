@@ -36,19 +36,20 @@
 (define eval-methods
   (list
    (cons 'self-evaluating   (lambda(exp env) exp))
-   (cons 'quoted            (lambda(exp env) (text-of-quotation exp)))
+   (cons 'quote             (lambda(exp env) (text-of-quotation exp)))
    (cons 'begin             (lambda(exp env) (eval-sequence (begin-actions exp) env)))
-   (cons 'definition        (lambda(exp env) (eval-definition exp env)))
-   (cons 'assignment        (lambda(exp env) (eval-assignment exp env)))
+   (cons 'define            (lambda(exp env) (eval-definition exp env)))
+   (cons 'set!              (lambda(exp env) (eval-assignment exp env)))
    (cons 'variable          (lambda(exp env) (lookup-variable-value exp env)))
    (cons 'if                (lambda(exp env) (eval-if exp env)))
    (cons 'cond              (lambda(exp env) (eval-if (cond->if exp) env)))
    (cons 'lambda            (lambda(exp env) (make-procedure (lambda-parameters exp) (lambda-body exp) env)))
    (cons 'and               (lambda(exp env) (eval-and (and-actions exp) env)))
+   (cons 'or                (lambda(exp env) (eval-or (or-actions exp) env)))
    (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) (list-of-values (operands exp) env))))))
 
 ;; Application
-(define (application? exp) (pair? exp))
+(define (application? exp) (and (pair? exp) 'application))
 (define (operator exp) (car exp))
 (define (operands exp) (cdr exp))
 (define (no-operands? exp) (null? exp))
@@ -104,10 +105,15 @@
 
 ;; Data representation
 (define (quoted? exp) (tagged-list? exp 'quote))
-(define (self-evaluating? exp) (or (string? exp) (number? exp)))
-(define (tagged-list? l tag) (and (pair? l) (eq? tag (car l))))
+(define (self-evaluating? exp) (if (or (string? exp) (number? exp))
+                                   'self-evaluating
+                                   #f))
+  
+(define (tagged-list? l tag) (if (and (pair? l) (eq? tag (car l)))
+                                 tag
+                                 #f))
 (define (text-of-quotation exp) (cadr exp))
-(define (variable? v) (symbol? v))
+(define (variable? v) (and (symbol? v) 'variable))
 
 ;; Definitions
 (define (definition? exp) (tagged-list? exp 'define))
@@ -186,7 +192,7 @@
 (define (if-predicate exp) (cadr exp))
 (define (if-consequent exp) (caddr exp))
 (define (if-alternative exp) 
-  (if (not (null? (cdddr exp))) (cadddr exp) '%f))
+  (if (not (null? (cdddr exp))) (cadddr exp) %f))
 (define (make-if predicate consequent alternative)
   (list 'if predicate consequent alternative))
 
@@ -275,20 +281,17 @@
             (cons a b)))))
 
 ; ex. 4.3
+(define (first pred l)
+  (cond ((null? l) #f)
+        (else (let ((el (car l)))
+                (or (pred el)
+                    (first pred (cdr l)))))))
+
 (define (type-of exp)
-  (cond ((quoted? exp) 'quoted)
-        ((begin? exp) 'begin)
-        ((self-evaluating? exp) 'self-evaluating)
-        ((assignment? exp) 'assignment)
-        ((definition? exp) 'definition)
-        ((if? exp) 'if)
-        ((cond? exp) 'cond)
-        ((lambda? exp) 'lambda)
-        ((and? exp) 'and)
-        ((variable? exp) 'variable)
-        ((application? exp) 'application)
-        (else
-         (error "could not determine the type of" exp))))
+  (or (first (lambda(f) (f exp))
+             (list quoted? begin? self-evaluating? assignment? 
+                   definition? if? cond? lambda? and? or? variable? application?))
+      (error "could not determine the type of" exp)))
 
 (define (get-eval-method type table) 
   (cond ((null? table) (error "could not find eval method for" type))
@@ -305,4 +308,14 @@
         ((false? (%eval (first-exp exps) env)) %f)
         (else
          (eval-and (rest-exps exps) env))))
+
+(define (or? exp) (tagged-list? exp 'or))
+(define (or-actions exp) (cdr exp))
+(define (eval-or exps env)
+  (cond ((last-exp? exps) 
+         (%eval (first-exp exps) env))
+        ((true? 
+          (%eval (first-exp exps) env)) %t)
+        (else
+         (eval-or (rest-exps exps) env))))
 
