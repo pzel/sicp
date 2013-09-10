@@ -186,6 +186,12 @@
    (=?o '(%eval '(and (begin (display "1") %t)
                       (begin (display "2") %f)
                       (begin (display "3") %t)) %base-env) "12")
+   ;; derived and
+   (=? '(%eval '(dand %t %t) %base-env) %t)
+   (=? '(%eval '(dand %t %f) %base-env) %f)
+   (=?o '(%eval '(dand (begin (display "1") %t)
+                       (begin (display "2") %f)
+                       (begin (display "3") %t)) %base-env) "12")
 
    ;; ORs 
    (=? '(or? '(or #t #t)) 'or)
@@ -197,5 +203,11 @@
    (=?o '(%eval '(or (begin (display "1") %f)
                      (begin (display "2") %t)
                      (begin (display "3") %f)) %base-env) "12")
-   
+   ;;   derived or
+   (=? '(%eval '(dor %t %t) %base-env) %t)
+   (=? '(%eval '(dor %f %t) %base-env) %t)
+   (=? '(%eval '(dor %f %f) %base-env) %f)
+   (=?o '(%eval '(dor (begin (display "1") %f)
+                      (begin (display "2") %t)
+                      (begin (display "3") %f)) %base-env) "12")
 ))

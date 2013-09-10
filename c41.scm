@@ -45,7 +45,9 @@
    (cons 'cond              (lambda(exp env) (eval-if (cond->if exp) env)))
    (cons 'lambda            (lambda(exp env) (make-procedure (lambda-parameters exp) (lambda-body exp) env)))
    (cons 'and               (lambda(exp env) (eval-and (and-actions exp) env)))
+   (cons 'dand              (lambda(exp env) (eval-if (and->if exp) env)))
    (cons 'or                (lambda(exp env) (eval-or (or-actions exp) env)))
+   (cons 'dor               (lambda(exp env) (eval-if (or->if exp) env)))
    (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) (list-of-values (operands exp) env))))))
 
 ;; Application
@@ -290,7 +292,7 @@
 (define (type-of exp)
   (or (first (lambda(f) (f exp))
              (list quoted? begin? self-evaluating? assignment? 
-                   definition? if? cond? lambda? and? or? variable? application?))
+                   definition? if? cond? lambda? and? dand? or? dor? variable? application?))
       (error "could not determine the type of" exp)))
 
 (define (get-eval-method type table) 
@@ -319,3 +321,28 @@
         (else
          (eval-or (rest-exps exps) env))))
 
+;; Ex. 4.4 -- AND and OR as derived expressions
+(define (dand? exp) (tagged-list? exp 'dand))
+(define (and->if exp)
+  (define (expand-clauses clauses)
+    (if (null? clauses)
+        '%t
+        (let [(first (car clauses))
+              (rest (cdr clauses))]
+          (make-if first
+                   (expand-clauses rest)
+                   '%f))))
+  (expand-clauses (and-actions exp)))
+
+(define (dor? exp) (tagged-list? exp 'dor))
+(define (or->if exp)
+  (define (expand-clauses clauses)
+    (if (null? clauses)
+        '%f
+        (let [(first (car clauses))
+              (rest (cdr clauses))]
+          (make-if first
+                   '%t
+                   (expand-clauses rest)))))
+  (expand-clauses (or-actions exp)))
+  
