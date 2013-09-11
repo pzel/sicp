@@ -48,6 +48,7 @@
    (cons 'dand              (lambda(exp env) (eval-if (and->if exp) env)))
    (cons 'or                (lambda(exp env) (eval-or (or-actions exp) env)))
    (cons 'dor               (lambda(exp env) (eval-if (or->if exp) env)))
+   (cons 'let               (lambda(exp env) (%eval (let->combination exp) env)))
    (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) (list-of-values (operands exp) env))))))
 
 ;; Application
@@ -292,7 +293,9 @@
 (define (type-of exp)
   (or (first (lambda(f) (f exp))
              (list quoted? begin? self-evaluating? assignment? 
-                   definition? if? cond? lambda? and? dand? or? dor? variable? application?))
+                   definition? if? cond? lambda? and? dand? or? dor? 
+                   let?
+                   variable? application?))
       (error "could not determine the type of" exp)))
 
 (define (get-eval-method type table) 
@@ -345,4 +348,17 @@
                    '%t
                    (expand-clauses rest)))))
   (expand-clauses (or-actions exp)))
+  
+;; Ex. 4.5 TODO
+
+;; Ex. 4.6
+(define (let? exp) (tagged-list? exp 'let))
+(define (let-bindings exp) (cadr exp))
+(define (let-body exp) (cddr exp))
+(define (let-vars exp) (map car (let-bindings exp)))
+(define (let-vals exp) (map cadr (let-bindings exp)))
+(define (let->combination exp)
+  (cons (make-lambda (let-vars exp) (let-body exp)) 
+        (let-vals exp)))
+
   

@@ -144,7 +144,7 @@
    ;; Backend evals RTL, we're in trouble.
    (=?o '(list-of-values-backend-dependent
           '((display 1)(display 2)(display 3)) %base-env 'right)
-        "321")
+         "321")
 
    (=?o '(list-of-values-backend-agnostic 
           '((display 1)(display 2)(display 3)) %base-env 'left)
@@ -210,4 +210,19 @@
    (=?o '(%eval '(dor (begin (display "1") %f)
                       (begin (display "2") %t)
                       (begin (display "3") %f)) %base-env) "12")
+
+   ;; 4.5 TODO
+
+
+   ;; 4.6 Let-to-lambda
+   (=? '(let? '(let ((a 1)) a)) 'let)
+   (=? '(let-bindings '(let ((a 1)) a)) '((a 1)))
+   (=? '(let-body '(let ((a 1)) a)) '(a))
+   (=? '(let-vars '(let ((a 1) (b 2)) a)) '(a b))
+   (=? '(let-vals    '(let ((a 1) (b 2)) a)) '(1 2))
+   (=? '(let->combination '(let ((a 1)) (f a))) '((lambda (a) (f a)) 1))
+   (=? '(let->combination '(let ((a 1) (b 2)) (f a b))) '((lambda (a b) (f a b)) 1 2))
+   (=? '(%eval '(let ((a 11)) a) %base-env) 11)
+   (=? '(%eval '(let ((a 11) (b 22)) (+ a b)) %base-env) 33)
+
 ))
