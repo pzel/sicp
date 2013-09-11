@@ -254,10 +254,11 @@
   
 (define %base-env (setup-environment!))
 
-; ex. 4.1
+;; ex. 4.1
+;; TODO: blog about this
 (define-syntax r-eval
   (syntax-rules ()
-    ((r-map l)
+    ((r-eval l)
      (reverse (map force (reverse l))))))
 
 (define-syntax r-cons
