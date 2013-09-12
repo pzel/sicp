@@ -49,6 +49,7 @@
    (cons 'or                (lambda(exp env) (eval-or (or-actions exp) env)))
    (cons 'dor               (lambda(exp env) (eval-if (or->if exp) env)))
    (cons 'let               (lambda(exp env) (%eval (let->combination exp) env)))
+   (cons 'let*              (lambda(exp env) (%eval (let*->nested-let exp) env)))
    (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) (list-of-values (operands exp) env))))))
 
 ;; Application
@@ -295,7 +296,7 @@
   (or (first (lambda(f) (f exp))
              (list quoted? begin? self-evaluating? assignment? 
                    definition? if? cond? lambda? and? dand? or? dor? 
-                   let?
+                   let? let*?
                    variable? application?))
       (error "could not determine the type of" exp)))
 
@@ -363,3 +364,16 @@
         (let-vals exp)))
 
   
+;; Ex. 4.7
+(define (let*? exp) (tagged-list? exp 'let*))
+(define (let*->nested-let exp)
+  (cond ((null? (let-bindings exp))
+         (car (let-body exp)))
+        (else
+         (list 'let
+               (list (car (let-bindings exp)))
+               (let*->nested-let (list 'let 
+                                       (cdr (let-bindings exp)) 
+                                       (car (let-body exp))))))))
+(define (let*->combination exp)
+  (let->combination (let*->nested-let exp)))

@@ -225,4 +225,14 @@
    (=? '(%eval '(let ((a 11)) a) %base-env) 11)
    (=? '(%eval '(let ((a 11) (b 22)) (+ a b)) %base-env) 33)
 
+   ; 4.7 let*
+   (=? '(let*? '(let* ((a 1) (b a)) b)) 'let*)
+   (=? '(let*->nested-let '(let* ((a 1) (b a)) b))
+       '(let ((a 1)) (let ((b a)) b)))
+   (=? '(%eval '(let* ((a 11) (b a) (c b)) 11) %base-env) 11)
+
+   ;; If the evaluator already supports let, then it's enough that we transform
+   ;; let* to let, and let the evaluator handle the expansion when it
+   ;; gets to the generated let-clause.
+
 ))
