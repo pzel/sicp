@@ -1,17 +1,17 @@
-    
+
 (define (%eval exp env) 
   (let ((m (get-eval-method (type-of exp) eval-methods)))
     (m exp env)))
 
 (define (eval-assignment exp env)
   (set-variable-value! (assignment-variable exp)
-		       (%eval (assignment-value exp) env)
-		       env))
+                       (%eval (assignment-value exp) env)
+                       env))
 
 (define (eval-definition exp env)
   (define-variable! (definition-variable exp)
-                 (%eval (definition-value exp) env)
-                 env))
+    (%eval (definition-value exp) env)
+    env))
 
 (define (eval-if exp env)
   (if (true? (%eval (if-predicate exp) env))
@@ -28,7 +28,7 @@
   (if (no-operands? exps) 
       '()
       (cons (%eval (first-operand exps) env)
-	    (list-of-values (rest-operands exps) env))))
+            (list-of-values (rest-operands exps) env))))
 
 ;; Ex. 4.3 -- this would require registering eval-methods for certain types via
 ;; a (register 'quoted (lambda(exp enn) (blah exp)), function or a macro such as
@@ -63,17 +63,16 @@
 (define (%apply proc arguments)
   (cond ((primitive-procedure? proc)
          (apply-primitive-procedure proc arguments))
-	((compound-procedure? proc)
-	 (eval-sequence
-	  (procedure-body proc)
-	  (extend-environment (procedure-parameters proc) 
-			      arguments
-			      (procedure-environment proc))))
+        ((compound-procedure? proc)
+         (eval-sequence
+          (procedure-body proc)
+          (extend-environment (procedure-parameters proc) 
+                              arguments
+                              (procedure-environment proc))))
         (else (error "%apply does not support" proc))))
 
 (define (apply-primitive-procedure proc args)
-  (apply-in-underlying-scheme (primitive-implementation proc) 
-			      args))
+  (apply-in-underlying-scheme (primitive-implementation proc) args))
 (define (apply-in-underlying-scheme p args) (apply p args))
 
 ;; Assignment
@@ -84,35 +83,42 @@
 ;; Boolean values
 (define %t #t)
 (define %f #f)
-(define (true? x) (eq? x %t))
-(define (false? x) (not (true? x)))
+(define (true? x) (not (false? x)))
+(define (false? x) (eq? x %f))
 
 ;; Conditionals
 (define (cond? exp) (tagged-list? exp 'cond))
-(define (cond-clauses exp) (cadr exp)) ;; <- sicp says (cdr exp), i disagree
+(define (cond-clauses exp) (cdr exp))
 (define (cond-else-clause? exp) (eq? (cond-predicate exp) 'else))
 (define (cond-predicate clause) (car clause))
 (define (cond-actions clause) (cdr clause))
 (define (cond->if exp) (expand-clauses (cond-clauses exp)))
+(define (arrow-syntax? exp) (and (pair? exp) (eq? '=> (car exp))))
+(define (arrow->exp pred func) (cons (cadr func) (list pred)))
+;; EX 4.5
 (define (expand-clauses clauses)
   (if (null? clauses)
       '%f
-      (let [(first (car clauses))
-	    (rest (cdr clauses))]
-	(if (cond-else-clause? first)
-	    (if (null? rest)
-		(sequence->exp (cond-actions first))
-		(error "ELSE is not last"))
-	    (make-if (cond-predicate first)
-		     (sequence->exp (cond-actions first))
-		     (expand-clauses rest))))))
+      (let* [(first (car clauses))
+             (rest (cdr clauses))
+             (pred (cond-predicate first))
+             (action (cond-actions first))]
+        (if (cond-else-clause? first)
+            (if (null? rest)
+                (sequence->exp action)
+                (error "ELSE is not last"))
+            (make-if pred
+                     (if (arrow-syntax? action)
+                         (arrow->exp pred action)
+                         (sequence->exp action))
+                     (expand-clauses rest))))))
 
 ;; Data representation
 (define (quoted? exp) (tagged-list? exp 'quote))
 (define (self-evaluating? exp) (if (or (string? exp) (number? exp))
                                    'self-evaluating
                                    #f))
-  
+
 (define (tagged-list? l tag) (if (and (pair? l) (eq? tag (car l)))
                                  tag
                                  #f))
@@ -158,29 +164,29 @@
   (define (env-loop env)
     (define (scan vars vals)
       (cond ((null? vars)
-	     (env-loop (enclosing-environment env)))
-	    ((eq? var (car vars))
-	     (car vals))
-	    (else (scan (cdr vars) (cdr vals)))))
+             (env-loop (enclosing-environment env)))
+            ((eq? var (car vars))
+             (car vals))
+            (else (scan (cdr vars) (cdr vals)))))
     (if (eq? env %null-env)
-	(error "Undefined variable: " var)
-	(let [(frame (first-frame env))]
-	  (scan (frame-variables frame)
-		(frame-values frame)))))
+        (error "Undefined variable: " var)
+        (let [(frame (first-frame env))]
+          (scan (frame-variables frame)
+                (frame-values frame)))))
   (env-loop env))
 (define (set-variable-value! var val env)
   (define (env-loop env)
     (define (scan vars vals)
       (cond ((null? vars)
-	     (env-loop (enclosing-environment env)))
-	    ((eq? var (car vars))
-	     (set-car! vals val))
-	    (else (scan (cdr vars) (cdr vals)))))
+             (env-loop (enclosing-environment env)))
+            ((eq? var (car vars))
+             (set-car! vals val))
+            (else (scan (cdr vars) (cdr vals)))))
     (if (eq? env %null-env)
-	(error "Undefined variable: " var)
-	(let [(frame (first-frame env))]
-	  (scan (frame-variables frame)
-		(frame-values frame)))))
+        (error "Undefined variable: " var)
+        (let [(frame (first-frame env))]
+          (scan (frame-variables frame)
+                (frame-values frame)))))
   (env-loop env))
 
 ;; Frames
@@ -223,8 +229,8 @@
 (define (rest-exps seq) (cdr seq))
 (define (sequence->exp seq)
   (cond ((null? seq) seq)
-	((last-exp? seq) (first-exp seq))
-	(else (make-begin seq))))
+        ((last-exp? seq) (first-exp seq))
+        (else (make-begin seq))))
 (define (make-begin seq)
   (cons 'begin seq))
 
@@ -246,13 +252,13 @@
 ;; Set the base environment for evaluation
 (define (setup-environment!)
   (let [(initial-env
-	 (extend-environment (primitive-procedure-names)
-			     (primitive-procedure-objects)
-			     %null-env))]
+         (extend-environment (primitive-procedure-names)
+                             (primitive-procedure-objects)
+                             %null-env))]
     (define-variable! '%t #t initial-env)
     (define-variable! '%f #f initial-env)
     initial-env))
-  
+
 (define %base-env (setup-environment!))
 
 ;; ex. 4.1
@@ -274,7 +280,7 @@
           (r-cons (%eval (first-operand exps) env) 
                   (list-of-values-backend-dependent (rest-operands exps) env backend-type))
           (cons (%eval (first-operand exps) env) 
-                  (list-of-values-backend-dependent (rest-operands exps) env backend-type)))))
+                (list-of-values-backend-dependent (rest-operands exps) env backend-type)))))
 
 (define (list-of-values-backend-agnostic exps env backend-type)
   (if (no-operands? exps)
@@ -285,7 +291,7 @@
             (r-cons a b)
             (cons a b)))))
 
-; ex. 4.3
+                                        ; ex. 4.3
 (define (first pred l)
   (cond ((null? l) #f)
         (else (let ((el (car l)))
@@ -350,8 +356,8 @@
                    '%t
                    (expand-clauses rest)))))
   (expand-clauses (or-actions exp)))
-  
-;; Ex. 4.5 TODO
+
+;; Ex. 4.5 DONE. See: expand-clauses
 
 ;; Ex. 4.6
 (define (let? exp) (tagged-list? exp 'let))
@@ -363,7 +369,7 @@
   (cons (make-lambda (let-vars exp) (let-body exp)) 
         (let-vals exp)))
 
-  
+
 ;; Ex. 4.7
 (define (let*? exp) (tagged-list? exp 'let*))
 (define (let*->nested-let exp)

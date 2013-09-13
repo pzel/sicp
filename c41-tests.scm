@@ -58,14 +58,14 @@
    (=?e '(extend-environment '() '(1) %null-env) "extend-environment: too few variables")
    (=? '(first-frame (extend-environment '(a) '(1) %null-env)) '((a) 1))
    (=? '(letrec [(e1 (extend-environment '(a) '(1) %null-env))
-		 (e2 (extend-environment '(b) '(2) e1))]
-	  (enclosing-environment e2)) '(((a) 1)))
+                 (e2 (extend-environment '(b) '(2) e1))]
+          (enclosing-environment e2)) '(((a) 1)))
 
    ;; Lookups
    (=? '(lookup-variable-value 'test (extend-environment '(test) '(0) %null-env))
        0)
    (=?e '(lookup-variable-value 'not-here (extend-environment '(test) '(0) %null-env))
-	"Undefined variable: ")
+        "Undefined variable: ")
    ;; Quotes
    (=? '(text-of-quotation '(quote t1)) 't1)
 
@@ -85,16 +85,18 @@
    (=? '(make-if 'a 'b 'c) '(if a b c))
 
    ;; Conditional expressions
-   (=? '(cond? '(cond ((a 1) (b 2)))) 'cond)
-   (=? '(cond-clauses '(cond ((a 1) (b 2)))) '((a 1) (b 2)))
+   (=? '(cond? '(cond (a 1) (b 2))) 'cond)
+   (=? '(cond-clauses '(cond (a 1) (b 2))) '((a 1) (b 2)))
+   (=? '(cond-clauses '(cond (else 0))) '((else 0)))
    (=? '(cond-predicate '(a 1)) 'a)
    (=? '(cond-actions '(a 1)) '(1))
    (=? '(cond-else-clause? '(else whatever)) #t)
-   (=? '(cond->if '(cond ((a 1) (else 2)))) '(if a 1 2))
-   (=? '(cond->if '(cond ((a 1)))) '(if a 1 %f))  ;; This is ugly...
-   (=? '(cond->if '(cond ((a 1) (b 2) (else 3)))) '(if a 1 (if b 2 3)))
-   (=? '(cond->if '(cond ((a 1) (b 2) (else 3)))) '(if a 1 (if b 2 3)))
-   (=?e '(cond->if '(cond ((a 1) (else 3) (b 2)))) "ELSE is not last")
+   (=? '(cond->if '(cond (else 2))) '2)
+   (=? '(cond->if '(cond (a 1) (else 2))) '(if a 1 2))
+   (=? '(cond->if '(cond (a 1))) '(if a 1 %f))  
+   (=? '(cond->if '(cond (a 1) (b 2) (else 3))) '(if a 1 (if b 2 3)))
+   (=? '(cond->if '(cond (a 1) (b 2) (else 3))) '(if a 1 (if b 2 3)))
+   (=?e '(cond->if '(cond (a 1) (else 3) (b 2))) "ELSE is not last")
 
    ;; Sequences
    (=? '(sequence->exp '(1)) '1)
@@ -127,7 +129,7 @@
    (=? '(%eval '(false? %t) %base-env) %f)
    (=? '(%eval '(if %t 'conseq dont-eval-me) %base-env) 'conseq)
    (=? '(%eval '(if %f dont-eval-me 'alt) %base-env) 'alt)
-   (=? '(%eval '(cond ((%f dont-eval1) (%f dont-eval2) (%t 'yes))) %base-env) 'yes)
+   (=? '(%eval '(cond (%f dont-eval1) (%f dont-eval2) (%t 'yes)) %base-env) 'yes)
    (=? '(%eval '(lambda (x) x) %base-env) `(procedure (x) (x) ,%base-env))
    (=? '(%eval '((lambda(x) x) 3) %base-env) 3)
    (=? '(%eval '((lambda(x y) x) 1 2) %base-env) 1)
@@ -137,14 +139,14 @@
 
    ;; Ex. 4.1
    (=?o '(list-of-values '((display 1)(display 2)(display 3)) %base-env)
-       "123")
+        "123")
    (=?o '(list-of-values-backend-dependent
           '((display 1)(display 2)(display 3)) %base-env 'left)
         "123")
    ;; Backend evals RTL, we're in trouble.
    (=?o '(list-of-values-backend-dependent
           '((display 1)(display 2)(display 3)) %base-env 'right)
-         "321")
+        "321")
 
    (=?o '(list-of-values-backend-agnostic 
           '((display 1)(display 2)(display 3)) %base-env 'left)
@@ -153,7 +155,7 @@
    (=?o '(list-of-values-backend-agnostic 
           '((display 1)(display 2)(display 3)) %base-env 'right)
         "123")
-   
+
    ;; Ex. 4.2b
    (=?e '(%eval42b '(+ 1 2) %base-env42b) "%eval: unknown expression")
    (=? '(%eval42b '(call + 1 2) %base-env42b) 3)
@@ -168,7 +170,7 @@
    (=? '(type-of '(define x 3)) 'define)
    (=? '(type-of 'x) 'variable)
    (=? '(type-of '(if x y z)) 'if)
-   (=? '(type-of '(cond ((x y) z))) 'cond)
+   (=? '(type-of '(cond (x y) z)) 'cond)
    (=? '(type-of '(lambda(x) (+ x x))) 'lambda)
    (=? '(type-of '(+ 1 2)) 'application)
    (=? '(first (lambda(x) (= x 0)) '(1 2 3)) #f)
@@ -211,8 +213,14 @@
                       (begin (display "2") %t)
                       (begin (display "3") %f)) %base-env) "12")
 
-   ;; 4.5 TODO
-
+   ;; 4.5 Cond arrow syntax
+   (=? '(arrow-syntax? '(=> grue)) #t)
+   (=? '(arrow->exp '(cons 1 2) '(=> car)) '(car (cons 1 2)))
+   (=? '(cond->if '(cond (a 1) (else 2))) '(if a 1 2))
+   (=? '(cond->if '(cond ((cons 1 2) => car) (else 0))) '(if (cons 1 2) (car (cons 1 2)) 0))
+   (=? '(%eval '(cond ((cons 1 2) => cdr) (else %f)) %base-env) '2)
+   (=? '(%eval '(cond (%f => never-run) ((cons 2 3) => car) (else 0)) %base-env) '2)
+   (=? '(%eval '(cond (%f => never-run) (else 'exit)) %base-env) 'exit)
 
    ;; 4.6 Let-to-lambda
    (=? '(let? '(let ((a 1)) a)) 'let)
@@ -225,14 +233,14 @@
    (=? '(%eval '(let ((a 11)) a) %base-env) 11)
    (=? '(%eval '(let ((a 11) (b 22)) (+ a b)) %base-env) 33)
 
-   ; 4.7 let*
+   ;; 4.7 let*
    (=? '(let*? '(let* ((a 1) (b a)) b)) 'let*)
    (=? '(let*->nested-let '(let* ((a 1) (b a)) b))
        '(let ((a 1)) (let ((b a)) b)))
    (=? '(%eval '(let* ((a 11) (b a) (c b)) 11) %base-env) 11)
 
    ;; If the evaluator already supports let, then it's enough that we transform
-   ;; let* to let, and let the evaluator handle the expansion when it
+   ;; let* to let, and make the evaluator handle the expansion when it
    ;; gets to the generated let-clause.
 
-))
+   ))

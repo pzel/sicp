@@ -64,7 +64,7 @@
         ((condition-property-accessor 'exn 'arguments) exn)))
 
 (define (test-compare is should matcher)
-  (let ((result (test-eval is 'hide-output)))
+  (let ((result (catch (lambda() (test-eval is 'hide-output)))))
     (list (matcher result should)
           result
           should
