@@ -241,8 +241,10 @@
         (list 'cdr cdr)
         (list 'cons cons)
         (list 'null? null?)
+        (list 'reverse reverse)
         (list 'false? false?)
         (list 'display display)
+        (list 'empty (lambda() (list)))
         (list '= =)
         (list '+ +)))
 
@@ -416,13 +418,12 @@
 (define (for-end exp) (car (cddadr exp)))
 (define (for-body exp) (caddr exp))
 (define (for->let exp)
-  (let ((loop-name 
-         (string->symbol (string-append "loop-" (symbol->string (for-var exp))))))
+  (let ((loop-name (string->symbol (string-append "loop-" (symbol->string (for-var exp)))))
+        (res-name  (string->symbol (string-append "res-" (symbol->string (for-var exp))))))
     (list 'let loop-name
-          (list (list (for-var exp)
-                      (for-start exp)))
+          (list (list res-name '(empty))
+                (list (for-var exp) (for-start exp)))
           (make-if `(= ,(for-var exp) ,(for-end exp))
-                   '(quote done)
-                   (sequence->exp
-                    (list (for-body exp)
-                          `(,loop-name (+ 1 ,(for-var exp)))))))))
+                   `(reverse ,res-name)
+                   `(let ((,res-name (cons ,(for-body exp) ,res-name)))
+                      (,loop-name ,res-name (+ 1 ,(for-var exp))))))))

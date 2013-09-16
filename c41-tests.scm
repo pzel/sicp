@@ -267,30 +267,36 @@
        '(10 . "done"))
 
    ;; 4.9  For loop
-   ;; (for (i 0 10) (display i))
-   (=? '(for? '(for (i 0 10) (display i))) 'for)
-   (=? '(for-var '(for (i 0 10) (display i))) 'i)
-   (=? '(for-start '(for (i 0 10) (display i))) 0)
-   (=? '(for-end '(for (i 0 10) (display i))) 10)
-   (=? '(for-body '(for (i 0 10) (display i))) '(display i))
+   ;; We'll need an empty-list
+   (=? '(%eval/env '(empty)) '())
+   ;; (for (i 0 10) i)
+   (=? '(for? '(for (i 0 10) i)) 'for)
+   (=? '(for-var '(for (i 0 10) i)) 'i)
+   (=? '(for-start '(for (i 0 10) i)) 0)
+   (=? '(for-end '(for (i 0 10) i)) 10)
+   (=? '(for-body '(for (i 0 10) i)) 'i)
    (=? '(for->let '(for (i 0 10) (display i)))
-       '(let loop-i ((i 0))
-          (if (= i 10) 
-              'done
-              (begin (display i)
-                     (loop-i (+ 1 i))))))
-   (=? '(%eval/env '(for (i 0 10) (display i)))
-       'done)
+       '(let loop-i ((res-i (empty)) (i 0))
+          (if (= i 10)
+              (reverse res-i)
+              (let ((res-i (cons (display i) res-i)))
+                (loop-i res-i (+ 1 i))))))
+
+   (=? '(%eval/env '(for (i 0 10) i))
+       '(0 1 2 3 4 5 6 7 8 9))
+
    (=?o '(%eval/env '(for (i 0 10) (display i)))
        "0123456789")
 
    (=? '(for->let '(for (i 0 10) (for (j 0 2) (display (+ i j)))))
-       '(let loop-i ((i 0))
+       '(let loop-i ((res-i (empty)) (i 0))
           (if (= i 10) 
-              'done
-              (begin (for (j 0 2) (display (+ i j)))
-                     (loop-i (+ 1 i))))))
+              (reverse res-i)
+              (let ((res-i (cons (for (j 0 2) (display (+ i j))) res-i)))
+                (loop-i res-i (+ 1 i))))))
 
    (=?o '(%eval/env '(for (i 0 2) (for (j 0 2) (display (+ i j)))))
        "0112")
+
    ))
+
