@@ -243,4 +243,25 @@
    ;; let* to let, and make the evaluator handle the expansion when it
    ;; gets to the generated let-clause.
 
+   ;; 4.8 Named-let
+
+   (=? '(let? '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a))))) 'let)
+   (=? '(named-let? '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a))))) 'named-let)
+   (=? '(named-let-name '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a)))))
+       'foo)
+   (=? '(named-let-bindings '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a))))) 
+       '((a 1)))
+   (=? '(named-let-vars '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a))))) 
+       '(a))
+   (=? '(named-let-vals '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a))))) 
+       '(1))
+   (=? '(named-let-body '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a)))))
+       '((if (= a 10) (cons a "done") (foo (+ 1 a)))))
+   (=? '(named-let->seq '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a)))))
+       '(begin 
+           (define foo (lambda (a) (if (= a 10) (cons a "done") (foo (+ 1 a)))))
+           (foo 1)))
+
+   (=? '(%eval '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a)))) %base-env)
+       '(10 . "done"))
    ))

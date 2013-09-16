@@ -242,6 +242,7 @@
         (list 'null? null?)
         (list 'false? false?)
         (list 'display display)
+        (list '= =)
         (list '+ +)))
 
 (define (primitive-procedure-names) (map car primitive-procedures))
@@ -366,9 +367,10 @@
 (define (let-vars exp) (map car (let-bindings exp)))
 (define (let-vals exp) (map cadr (let-bindings exp)))
 (define (let->combination exp)
-  (cons (make-lambda (let-vars exp) (let-body exp)) 
-        (let-vals exp)))
-
+  (if (named-let? exp)
+      (named-let->seq exp)
+      (cons (make-lambda (let-vars exp) (let-body exp))
+            (let-vals exp))))
 
 ;; Ex. 4.7
 (define (let*? exp) (tagged-list? exp 'let*))
@@ -383,3 +385,24 @@
                                        (car (let-body exp))))))))
 (define (let*->combination exp)
   (let->combination (let*->nested-let exp)))
+
+;; Ex. 4.8
+(define (named-let? exp) (if (and (tagged-list? exp 'let)
+                                  (not (null? (cdr exp)))
+                                  (symbol? (cadr exp)))
+                             'named-let
+                             #f))
+
+(define (named-let-bindings exp) (let-bindings (cdr exp)))
+(define (named-let-body exp) (let-body (cdr exp)))
+(define (named-let-name exp) (cadr exp))
+(define (named-let-vals exp) (let-vals (cdr exp)))
+(define (named-let-vars exp) (let-vars (cdr exp)))
+(define (named-let->seq exp)
+   (list 'begin
+         (list 'define 
+               (named-let-name exp)
+               (make-lambda (named-let-vars exp)
+                            (named-let-body exp)))
+         (cons (named-let-name exp)
+               (named-let-vals exp))))
