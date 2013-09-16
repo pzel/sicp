@@ -298,5 +298,7 @@
    (=?o '(%eval/env '(for (i 0 2) (for (j 0 2) (display (+ i j)))))
        "0112")
 
+   (=? '(%eval/env '(for (i 0 2) (for (j 0 2) (+ i j))))
+       '((0 1) (1 2)))
    ))
 
