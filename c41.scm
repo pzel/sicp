@@ -418,12 +418,13 @@
 (define (for-end exp) (car (cddadr exp)))
 (define (for-body exp) (caddr exp))
 (define (for->let exp)
+  ;; Poor-man's hygiene
   (let ((loop-name (string->symbol (string-append "loop-" (symbol->string (for-var exp)))))
         (res-name  (string->symbol (string-append "res-" (symbol->string (for-var exp))))))
-    (list 'let loop-name
-          (list (list res-name '(empty))
-                (list (for-var exp) (for-start exp)))
-          (make-if `(= ,(for-var exp) ,(for-end exp))
-                   `(reverse ,res-name)
-                   `(let ((,res-name (cons ,(for-body exp) ,res-name)))
-                      (,loop-name ,res-name (+ 1 ,(for-var exp))))))))
+    `(let ,loop-name
+       ,(list `(,res-name (empty))
+              `( ,(for-var exp) ,(for-start exp)))
+       ,(make-if `(= ,(for-var exp) ,(for-end exp))
+                 `(reverse ,res-name)
+                 `(let ((,res-name (cons ,(for-body exp) ,res-name)))
+                    (,loop-name ,res-name (+ 1 ,(for-var exp))))))))
