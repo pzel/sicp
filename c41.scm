@@ -50,6 +50,7 @@
    (cons 'dor               (lambda(exp env) (eval-if (or->if exp) env)))
    (cons 'let               (lambda(exp env) (%eval (let->combination exp) env)))
    (cons 'let*              (lambda(exp env) (%eval (let*->nested-let exp) env)))
+   (cons 'for               (lambda(exp env) (%eval (for->let exp) env)))
    (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) (list-of-values (operands exp) env))))))
 
 ;; Application
@@ -303,7 +304,7 @@
   (or (first (lambda(f) (f exp))
              (list quoted? begin? self-evaluating? assignment? 
                    definition? if? cond? lambda? and? dand? or? dor? 
-                   let? let*?
+                   let? let*? for?
                    variable? application?))
       (error "could not determine the type of" exp)))
 
@@ -406,3 +407,22 @@
                             (named-let-body exp)))
          (cons (named-let-name exp)
                (named-let-vals exp))))
+
+;; Ex 4.9 Looping constructs
+;; A for loop
+(define (for? exp) (tagged-list? exp 'for))
+(define (for-var exp) (caadr exp))
+(define (for-start exp) (cadadr exp))
+(define (for-end exp) (car (cddadr exp)))
+(define (for-body exp) (caddr exp))
+(define (for->let exp)
+  (let ((loop-name 
+         (string->symbol (string-append "loop-" (symbol->string (for-var exp))))))
+    (list 'let loop-name
+          (list (list (for-var exp)
+                      (for-start exp)))
+          (make-if `(= ,(for-var exp) ,(for-end exp))
+                   '(quote done)
+                   (sequence->exp
+                    (list (for-body exp)
+                          `(,loop-name (+ 1 ,(for-var exp)))))))))

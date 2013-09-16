@@ -2,6 +2,9 @@
 (load "./c41-4.2b.scm") ;; Ex. 4.2b: Louis Reasoner's LISP-2-ish evaluator
 (load "./test.scm")
 
+; unit test helper method
+(define (%eval/env exp) (%eval exp %base-env))
+
 (run-tests
  '(
    ;; Unit tests
@@ -123,19 +126,19 @@
    ;; High-level Evaluation -- “acceptance” tests
    (=? '(%eval 3 %null-env) 3)
    (=? '(%eval '(begin 1 2 3 4)  %null-env) 4)
-   (=? '(%eval '(begin (define x 77) x) %base-env) 77)
-   (=? '(%eval '(quote x) %base-env) 'x)
-   (=? '(%eval '(begin (define x 77) (set! x 66) x) %base-env) 66)
-   (=? '(%eval '(false? %t) %base-env) %f)
-   (=? '(%eval '(if %t 'conseq dont-eval-me) %base-env) 'conseq)
-   (=? '(%eval '(if %f dont-eval-me 'alt) %base-env) 'alt)
-   (=? '(%eval '(cond (%f dont-eval1) (%f dont-eval2) (%t 'yes)) %base-env) 'yes)
-   (=? '(%eval '(lambda (x) x) %base-env) `(procedure (x) (x) ,%base-env))
-   (=? '(%eval '((lambda(x) x) 3) %base-env) 3)
-   (=? '(%eval '((lambda(x y) x) 1 2) %base-env) 1)
-   (=? '(%eval '(+ 2 2) %base-env) 4)
-   (=? '(%eval '(cons 2 (cons 3 '())) %base-env) '(2 3))
-   (=?e '(%eval '(list 1 2 3) %base-env) "Undefined variable: ")
+   (=? '(%eval/env '(begin (define x 77) x)) 77)
+   (=? '(%eval/env '(quote x)) 'x)
+   (=? '(%eval/env '(begin (define x 77) (set! x 66) x)) 66)
+   (=? '(%eval/env '(false? %t)) %f)
+   (=? '(%eval/env '(if %t 'conseq dont-eval-me)) 'conseq)
+   (=? '(%eval/env '(if %f dont-eval-me 'alt)) 'alt)
+   (=? '(%eval/env '(cond (%f dont-eval1) (%f dont-eval2) (%t 'yes))) 'yes)
+   (=? '(%eval  '(lambda (x) x) %base-env) `(procedure (x) (x) ,%base-env))
+   (=? '(%eval/env '((lambda(x) x) 3)) 3)
+   (=? '(%eval/env '((lambda(x y) x) 1 2)) 1)
+   (=? '(%eval/env '(+ 2 2)) 4)
+   (=? '(%eval/env '(cons 2 (cons 3 '()))) '(2 3))
+   (=?e '(%eval/env '(list 1 2 3)) "Undefined variable: ")
 
    ;; Ex. 4.1
    (=?o '(list-of-values '((display 1)(display 2)(display 3)) %base-env)
@@ -183,44 +186,44 @@
    (=? '(and? '(and #t #t)) 'and)
    (=? '(and? '(blah #t #t)) #f)
    (=? '(and-actions '(and a b)) '(a b))
-   (=? '(%eval '(and %t %t) %base-env) %t)
-   (=? '(%eval '(and %t %f) %base-env) %f)
-   (=?o '(%eval '(and (begin (display "1") %t)
+   (=? '(%eval/env '(and %t %t)) %t)
+   (=? '(%eval/env '(and %t %f)) %f)
+   (=?o '(%eval/env '(and (begin (display "1") %t)
                       (begin (display "2") %f)
-                      (begin (display "3") %t)) %base-env) "12")
+                      (begin (display "3") %t))) "12")
    ;; derived and
-   (=? '(%eval '(dand %t %t) %base-env) %t)
-   (=? '(%eval '(dand %t %f) %base-env) %f)
-   (=?o '(%eval '(dand (begin (display "1") %t)
+   (=? '(%eval/env '(dand %t %t)) %t)
+   (=? '(%eval/env '(dand %t %f)) %f)
+   (=?o '(%eval/env '(dand (begin (display "1") %t)
                        (begin (display "2") %f)
-                       (begin (display "3") %t)) %base-env) "12")
+                       (begin (display "3") %t))) "12")
 
    ;; ORs 
    (=? '(or? '(or #t #t)) 'or)
    (=? '(or? '(blah #t #t)) #f)
    (=? '(or-actions '(or a b)) '(a b))
-   (=? '(%eval '(or %t %t) %base-env) %t)
-   (=? '(%eval '(or %f %t) %base-env) %t)
-   (=? '(%eval '(or %f %f) %base-env) %f)
-   (=?o '(%eval '(or (begin (display "1") %f)
+   (=? '(%eval/env '(or %t %t)) %t)
+   (=? '(%eval/env '(or %f %t)) %t)
+   (=? '(%eval/env '(or %f %f)) %f)
+   (=?o '(%eval/env '(or (begin (display "1") %f)
                      (begin (display "2") %t)
-                     (begin (display "3") %f)) %base-env) "12")
+                     (begin (display "3") %f))) "12")
    ;;   derived or
-   (=? '(%eval '(dor %t %t) %base-env) %t)
-   (=? '(%eval '(dor %f %t) %base-env) %t)
-   (=? '(%eval '(dor %f %f) %base-env) %f)
-   (=?o '(%eval '(dor (begin (display "1") %f)
+   (=? '(%eval/env '(dor %t %t)) %t)
+   (=? '(%eval/env '(dor %f %t)) %t)
+   (=? '(%eval/env '(dor %f %f)) %f)
+   (=?o '(%eval/env '(dor (begin (display "1") %f)
                       (begin (display "2") %t)
-                      (begin (display "3") %f)) %base-env) "12")
+                      (begin (display "3") %f))) "12")
 
    ;; 4.5 Cond arrow syntax
    (=? '(arrow-syntax? '(=> grue)) #t)
    (=? '(arrow->exp '(cons 1 2) '(=> car)) '(car (cons 1 2)))
    (=? '(cond->if '(cond (a 1) (else 2))) '(if a 1 2))
    (=? '(cond->if '(cond ((cons 1 2) => car) (else 0))) '(if (cons 1 2) (car (cons 1 2)) 0))
-   (=? '(%eval '(cond ((cons 1 2) => cdr) (else %f)) %base-env) '2)
-   (=? '(%eval '(cond (%f => never-run) ((cons 2 3) => car) (else 0)) %base-env) '2)
-   (=? '(%eval '(cond (%f => never-run) (else 'exit)) %base-env) 'exit)
+   (=? '(%eval/env '(cond ((cons 1 2) => cdr) (else %f))) '2)
+   (=? '(%eval/env '(cond (%f => never-run) ((cons 2 3) => car) (else 0))) '2)
+   (=? '(%eval/env '(cond (%f => never-run) (else 'exit))) 'exit)
 
    ;; 4.6 Let-to-lambda
    (=? '(let? '(let ((a 1)) a)) 'let)
@@ -230,21 +233,20 @@
    (=? '(let-vals    '(let ((a 1) (b 2)) a)) '(1 2))
    (=? '(let->combination '(let ((a 1)) (f a))) '((lambda (a) (f a)) 1))
    (=? '(let->combination '(let ((a 1) (b 2)) (f a b))) '((lambda (a b) (f a b)) 1 2))
-   (=? '(%eval '(let ((a 11)) a) %base-env) 11)
-   (=? '(%eval '(let ((a 11) (b 22)) (+ a b)) %base-env) 33)
+   (=? '(%eval/env '(let ((a 11)) a)) 11)
+   (=? '(%eval/env '(let ((a 11) (b 22)) (+ a b))) 33)
 
    ;; 4.7 let*
    (=? '(let*? '(let* ((a 1) (b a)) b)) 'let*)
    (=? '(let*->nested-let '(let* ((a 1) (b a)) b))
        '(let ((a 1)) (let ((b a)) b)))
-   (=? '(%eval '(let* ((a 11) (b a) (c b)) 11) %base-env) 11)
+   (=? '(%eval/env '(let* ((a 11) (b a) (c b)) 11)) 11)
 
    ;; If the evaluator already supports let, then it's enough that we transform
    ;; let* to let, and make the evaluator handle the expansion when it
    ;; gets to the generated let-clause.
 
    ;; 4.8 Named-let
-
    (=? '(let? '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a))))) 'let)
    (=? '(named-let? '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a))))) 'named-let)
    (=? '(named-let-name '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a)))))
@@ -261,7 +263,34 @@
        '(begin 
            (define foo (lambda (a) (if (= a 10) (cons a "done") (foo (+ 1 a)))))
            (foo 1)))
-
-   (=? '(%eval '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a)))) %base-env)
+   (=? '(%eval/env '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a)))))
        '(10 . "done"))
+
+   ;; 4.9  For loop
+   ;; (for (i 0 10) (display i))
+   (=? '(for? '(for (i 0 10) (display i))) 'for)
+   (=? '(for-var '(for (i 0 10) (display i))) 'i)
+   (=? '(for-start '(for (i 0 10) (display i))) 0)
+   (=? '(for-end '(for (i 0 10) (display i))) 10)
+   (=? '(for-body '(for (i 0 10) (display i))) '(display i))
+   (=? '(for->let '(for (i 0 10) (display i)))
+       '(let loop-i ((i 0))
+          (if (= i 10) 
+              'done
+              (begin (display i)
+                     (loop-i (+ 1 i))))))
+   (=? '(%eval/env '(for (i 0 10) (display i)))
+       'done)
+   (=?o '(%eval/env '(for (i 0 10) (display i)))
+       "0123456789")
+
+   (=? '(for->let '(for (i 0 10) (for (j 0 2) (display (+ i j)))))
+       '(let loop-i ((i 0))
+          (if (= i 10) 
+              'done
+              (begin (for (j 0 2) (display (+ i j)))
+                     (loop-i (+ 1 i))))))
+
+   (=?o '(%eval/env '(for (i 0 2) (for (j 0 2) (display (+ i j)))))
+       "0112")
    ))
