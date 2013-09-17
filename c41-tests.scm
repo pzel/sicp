@@ -2,7 +2,7 @@
 (load "./c41-4.2b.scm") ;; Ex. 4.2b: Louis Reasoner's LISP-2-ish evaluator
 (load "./test.scm")
 
-; unit test helper method
+; helper method
 (define (%eval/env exp) (%eval exp %base-env))
 
 (run-tests

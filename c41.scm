@@ -96,6 +96,7 @@
 (define (cond->if exp) (expand-clauses (cond-clauses exp)))
 (define (arrow-syntax? exp) (and (pair? exp) (eq? '=> (car exp))))
 (define (arrow->exp pred func) (cons (cadr func) (list pred)))
+
 ;; EX 4.5
 (define (expand-clauses clauses)
   (if (null? clauses)
@@ -139,17 +140,17 @@
 
 ;; Environments
 (define %null-env '())
+(define (null-env? env) (eq? %null-env env))
 (define (define-variable! var val env)
   (let ((frame (first-frame env)))
     (define (scan vars vals)
-      (cond ((null? vars)
-             (add-binding-to-frame! var val frame))
-            ((eq? var (car vars))
-             (set-car! vals val))
+      (cond ((null? vars) (add-binding-to-frame! var val frame))
+            ((eq? var (car vars)) (set-car! vals val))
             (else (scan (cdr vars) (cdr vals)))))
-    (scan (frame-variables frame)
-          (frame-values frame))))
+    (scan (frame-variables frame) (frame-values frame))))
+
 (define (enclosing-environment env) (cdr env))
+
 (define (extend-environment vars vals env)
   (let [(nvars (length vars)) (nvals (length vals))]
     (if (= nvars nvals)
@@ -157,38 +158,29 @@
         (if (< nvars nvals)
             (error "extend-environment: too few variables")
             (error "extend-environment: too few values")))))
+
 (define (first-frame env) 
-  (if (null? env) 
+  (if (null-env? env) 
       (error "first-frame: NULL environment") 
       (car env)))
+
+(define (traverse-env var env f parent-loop)
+  (define (scan vars vals)
+    (cond ((null? vars) (parent-loop))
+          ((eq? var (car vars)) (f vals))
+          (else (scan (cdr vars) (cdr vals)))))
+  (if (null-env? env) (error "Undefined variable: " var)
+      (let ((frame (first-frame env)))
+        (scan (frame-variables frame) (frame-values frame)))))
+
 (define (lookup-variable-value var env)
-  (define (env-loop env)
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (env-loop (enclosing-environment env)))
-            ((eq? var (car vars))
-             (car vals))
-            (else (scan (cdr vars) (cdr vals)))))
-    (if (eq? env %null-env)
-        (error "Undefined variable: " var)
-        (let [(frame (first-frame env))]
-          (scan (frame-variables frame)
-                (frame-values frame)))))
-  (env-loop env))
+  (traverse-env var env 
+                car (lambda() (lookup-variable-value var (enclosing-environment env)))))
+
 (define (set-variable-value! var val env)
-  (define (env-loop env)
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (env-loop (enclosing-environment env)))
-            ((eq? var (car vars))
-             (set-car! vals val))
-            (else (scan (cdr vars) (cdr vals)))))
-    (if (eq? env %null-env)
-        (error "Undefined variable: " var)
-        (let [(frame (first-frame env))]
-          (scan (frame-variables frame)
-                (frame-values frame)))))
-  (env-loop env))
+  (traverse-env var env 
+                (lambda(vals) (set-car! vals val))
+                (lambda() (set-variable-value! var val (enclosing-environment env)))))
 
 ;; Frames
 (define (add-binding-to-frame! var val frame)
@@ -295,7 +287,7 @@
             (r-cons a b)
             (cons a b)))))
 
-                                        ; ex. 4.3
+;; Ex. 4.3
 (define (first pred l)
   (cond ((null? l) #f)
         (else (let ((el (car l)))
@@ -428,3 +420,7 @@
                  `(reverse ,res-name)
                  `(let ((,res-name (cons ,(for-body exp) ,res-name)))
                     (,loop-name ,res-name (+ 1 ,(for-var exp))))))))
+
+
+;; Ex. 4.10 TODO
+
