@@ -124,6 +124,7 @@
 (define (tagged-list? l tag) (if (and (pair? l) (eq? tag (car l)))
                                  tag
                                  #f))
+
 (define (text-of-quotation exp) (cadr exp))
 (define (variable? v) (and (symbol? v) 'variable))
 
@@ -141,16 +142,6 @@
 ;; Environments
 (define %null-env '())
 (define (null-env? env) (eq? %null-env env))
-(define (define-variable! var val env)
-  (let ((frame (first-frame env)))
-    (define (scan vars vals)
-      (cond ((null? vars) (add-binding-to-frame! var val frame))
-            ((eq? var (car vars)) (set-car! vals val))
-            (else (scan (cdr vars) (cdr vals)))))
-    (scan (frame-variables frame) (frame-values frame))))
-
-(define (enclosing-environment env) (cdr env))
-
 (define (extend-environment vars vals env)
   (let [(nvars (length vars)) (nvals (length vals))]
     (if (= nvars nvals)
@@ -172,6 +163,14 @@
   (if (null-env? env) (error "Undefined variable: " var)
       (let ((frame (first-frame env)))
         (scan (frame-variables frame) (frame-values frame)))))
+
+(define (enclosing-environment env) (cdr env))
+
+;; Ex. 4.12
+(define (define-variable! var val env)
+  (traverse-env var env
+                (lambda(vals) (set-car! vals val))
+                (lambda() (add-binding-to-frame! var val (first-frame env)))))
 
 (define (lookup-variable-value var env)
   (traverse-env var env 
