@@ -49,20 +49,8 @@
    (=? '(procedure-environment (make-procedure '(a b) '((f a b)) %base-env))
        %base-env)
 
-   ;; Environments
+   ;; Environments -- see Ex. 4.11
    (=? '%null-env '())
-   (=? '(make-frame '(a b) '(1 2)) '((a b) 1 2))
-   (=? '(frame-variables (make-frame '(a b) '(1 2))) '(a b))
-   (=? '(frame-values    (make-frame '(a b) '(1 2))) '(1 2))
-   (=? '(let [(f (make-frame '() '()))] (add-binding-to-frame! 'z 9 f) f)
-       (make-frame '(z) '(9)))
-   (=? '(extend-environment '(a) '(1) %null-env) '(((a) 1)))
-   (=?e '(extend-environment '(a) '() %null-env) "extend-environment: too few values")
-   (=?e '(extend-environment '() '(1) %null-env) "extend-environment: too few variables")
-   (=? '(first-frame (extend-environment '(a) '(1) %null-env)) '((a) 1))
-   (=? '(letrec [(e1 (extend-environment '(a) '(1) %null-env))
-                 (e2 (extend-environment '(b) '(2) e1))]
-          (enclosing-environment e2)) '(((a) 1)))
 
    ;; Lookups
    (=? '(lookup-variable-value 'test (extend-environment '(test) '(0) %null-env))
@@ -300,5 +288,29 @@
 
    (=? '(%eval/env '(for (i 0 2) (for (j 0 2) (+ i j))))
        '((0 1) (1 2)))
+
+   ;; Ex 4.10 -- TODO
+
+   ;; Ex 4.11
+
+   (=? '(make-aframe '(a) '(1)) '((a . 1)))
+   (=? '(make-aframe '(a b) '(1 2)) '((a . 1) (b . 2)))
+   (=? '(aframe-get (make-aframe '(a b) '(1 2)) 'a) 1)
+   (=? '(make-binding 'a 5) '(a . 5))
+   (=? '(let ((b (make-binding 'a 10)))
+          (set-binding-val! b 1) b)
+       (make-binding 'a 1))
+
+   (=? '(let [(f (make-aframe '(a) '(1)))] (add-binding-to-aframe! 'z 9 f) f)
+       (make-aframe '(z a) '(9 1)))
+   (=? '(extend-environment '(a) '(1) %null-env) (list (make-aframe '(a) '(1))))
+   (=?e '(extend-environment'(a) '() %null-env) "extend-environment: too few values")
+   (=?e '(extend-environment '() '(1) %null-env) "extend-environment: too few variables")
+   (=? '(first-frame (extend-environment '(x y ) '(5 7 ) %null-env)) '((x . 5) (y . 7)))
+   (=? '(letrec [(e1 (extend-environment '(a) '(1) %null-env))
+                 (e2 (extend-environment '(b) '(2) e1))]
+          (enclosing-environment e2)) '(((a . 1))))
+
+   ;; Ex. 4.12 refactoring -- uses existing tests.
    ))
 

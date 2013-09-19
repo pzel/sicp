@@ -1,4 +1,3 @@
-
 (define (%eval exp env) 
   (let ((m (get-eval-method (type-of exp) eval-methods)))
     (m exp env)))
@@ -51,7 +50,8 @@
    (cons 'let               (lambda(exp env) (%eval (let->combination exp) env)))
    (cons 'let*              (lambda(exp env) (%eval (let*->nested-let exp) env)))
    (cons 'for               (lambda(exp env) (%eval (for->let exp) env)))
-   (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) (list-of-values (operands exp) env))))))
+   (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) 
+                                                     (list-of-values (operands exp) env))))))
 
 ;; Application
 (define (application? exp) (and (pair? exp) 'application))
@@ -145,7 +145,7 @@
 (define (extend-environment vars vals env)
   (let [(nvars (length vars)) (nvals (length vals))]
     (if (= nvars nvals)
-        (cons (make-frame vars vals) env)
+        (cons (make-aframe vars vals) env)
         (if (< nvars nvals)
             (error "extend-environment: too few variables")
             (error "extend-environment: too few values")))))
@@ -155,39 +155,33 @@
       (error "first-frame: NULL environment") 
       (car env)))
 
-(define (traverse-env var env f parent-loop)
-  (define (scan vars vals)
-    (cond ((null? vars) (parent-loop))
-          ((eq? var (car vars)) (f vals))
-          (else (scan (cdr vars) (cdr vals)))))
+(define (traverse-env var env f enclosing-loop)
+  (define (scan frame)
+    (cond ((null? frame) (enclosing-loop))
+          ((eq? var (first-var frame)) (f (first-binding frame)))
+          (else (scan (next-binding frame)))))
   (if (null-env? env) (error "Undefined variable: " var)
       (let ((frame (first-frame env)))
-        (scan (frame-variables frame) (frame-values frame)))))
+        (scan frame))))
 
 (define (enclosing-environment env) (cdr env))
 
 ;; Ex. 4.12
 (define (define-variable! var val env)
   (traverse-env var env
-                (lambda(vals) (set-car! vals val))
-                (lambda() (add-binding-to-frame! var val (first-frame env)))))
+                (cute set-binding-val! <> val)
+                (lambda() (add-binding-to-aframe! var val (first-frame env)))))
 
 (define (lookup-variable-value var env)
   (traverse-env var env 
-                car (lambda() (lookup-variable-value var (enclosing-environment env)))))
+                cdr (lambda() (lookup-variable-value var (enclosing-environment env)))))
 
 (define (set-variable-value! var val env)
   (traverse-env var env 
-                (lambda(vals) (set-car! vals val))
+                (cute set-binding-val! <> val)
                 (lambda() (set-variable-value! var val (enclosing-environment env)))))
 
-;; Frames
-(define (add-binding-to-frame! var val frame)
-  (set-car! frame (cons var (car frame)))
-  (set-cdr! frame (cons val (cdr frame))))
-(define (frame-variables frame) (car frame))
-(define (frame-values frame) (cdr frame))
-(define (make-frame variables values) (cons variables values))
+;; Frames -- see Ex. 4.11
 
 ;; Ifs
 (define (if? exp) (tagged-list? exp 'if))
@@ -243,18 +237,6 @@
 (define (primitive-procedure-objects) 
   (map (lambda(proc) (list 'primitive (cadr proc)))
        primitive-procedures))
-
-;; Set the base environment for evaluation
-(define (setup-environment!)
-  (let [(initial-env
-         (extend-environment (primitive-procedure-names)
-                             (primitive-procedure-objects)
-                             %null-env))]
-    (define-variable! '%t #t initial-env)
-    (define-variable! '%f #f initial-env)
-    initial-env))
-
-(define %base-env (setup-environment!))
 
 ;; ex. 4.1
 ;; TODO: blog about this
@@ -423,3 +405,44 @@
 
 ;; Ex. 4.10 TODO
 
+;; Ex. 4.11
+(define (make-aframe vars vals) (map make-binding vars vals))
+(define (aframe-get af var)
+  (cond ((null? af) (error "undefined variable: " var))
+        ((eq? (first-var af) var) (first-val af))
+        (else
+         (aframe-get (cdr af var)))))
+
+(define (first-var af) (caar af))
+(define (first-val af) (cdar af))
+(define (first-binding af) (car af))
+(define (next-binding af) (cdr af))
+(define (make-binding var val) (cons var val))
+(define (set-binding-val! b val) (set-cdr! b val))
+(define (add-binding-to-aframe! var val af)
+  (let* ((old-head (car af))
+         (old-tail (cdr af))
+         (new-frame (cons (make-binding var val)
+                          (cons old-head old-tail)))) ;; NOTE: cons makes a new cell.
+    (set-car! af (car new-frame))
+    (set-cdr! af (cdr new-frame))))
+
+
+;; Ex. 4.12 See set-variable-value! & friends
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Set the base environment for evaluation
+;; Leave this at the end so all non-function bindings are visible.
+(define (setup-environment!)
+  (let [(initial-env
+         (extend-environment (primitive-procedure-names)
+                             (primitive-procedure-objects)
+                             %null-env))]
+    (define-variable! '%t #t initial-env)
+    (define-variable! '%f #f initial-env)
+    initial-env))
+
+(define %base-env (setup-environment!))

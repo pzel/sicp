@@ -131,8 +131,7 @@
         (begin (show-success total) (exit 0))
         (begin (show-errors errors total) (exit 1)))))
 
-(define (get-results l)
-  (map (lambda(exp) (test-eval exp 'hide-output)) l))
+(define (get-results l) (map (cute test-eval <> 'hide-output) l))
 
 (define (show-errors errors total)
   (map show-error errors)
