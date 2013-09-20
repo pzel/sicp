@@ -23,6 +23,9 @@
          (%eval (first-exp exps) env)
          (eval-sequence (rest-exps exps) env))))
 
+(define (eval-unbind exp env)
+  (unbind-variable! (unbound-var exp) env))
+
 (define (list-of-values exps env)
   (if (no-operands? exps) 
       '()
@@ -39,6 +42,7 @@
    (cons 'begin             (lambda(exp env) (eval-sequence (begin-actions exp) env)))
    (cons 'define            (lambda(exp env) (eval-definition exp env)))
    (cons 'set!              (lambda(exp env) (eval-assignment exp env)))
+   (cons 'make-unbound!     (lambda(exp env) (eval-unbind exp env)))
    (cons 'variable          (lambda(exp env) (lookup-variable-value exp env)))
    (cons 'if                (lambda(exp env) (eval-if exp env)))
    (cons 'cond              (lambda(exp env) (eval-if (cond->if exp) env)))
@@ -155,12 +159,12 @@
       (error "first-frame: NULL environment") 
       (car env)))
 
-(define (traverse-env var env f enclosing-loop)
+(define (traverse-env var env f enclosing-loop not-found)
   (define (scan frame)
     (cond ((null? frame) (enclosing-loop))
-          ((eq? var (first-var frame)) (f (first-binding frame)))
+          ((eq? var (first-var frame)) (f (first-binding frame) frame))
           (else (scan (next-binding frame)))))
-  (if (null-env? env) (error "Undefined variable: " var)
+  (if (null-env? env) (not-found)
       (let ((frame (first-frame env)))
         (scan frame))))
 
@@ -169,17 +173,27 @@
 ;; Ex. 4.12
 (define (define-variable! var val env)
   (traverse-env var env
-                (cute set-binding-val! <> val)
-                (lambda() (add-binding-to-aframe! var val (first-frame env)))))
+                (lambda(b _) (set-binding-val! b val))
+                (lambda() (add-binding-to-aframe! var val (first-frame env)))
+                (lambda() (error "DEFINE-VARIABLE: THIS CODE SHOULDNT BE REACHED"))))
 
 (define (lookup-variable-value var env)
   (traverse-env var env 
-                cdr (lambda() (lookup-variable-value var (enclosing-environment env)))))
+                (lambda(b _) (cdr b))
+                (lambda() (lookup-variable-value var (enclosing-environment env)))
+                (lambda() (error "Undefined variable: " var))))
+
+(define (unbind-variable! var env)
+  (traverse-env var env 
+                (lambda(_ f) (destroy-first-binding! f))
+                (lambda() (error "Variable not bound: " var))
+                (lambda() (error "UNBIND-VARIABLE: THIS CODE SHOULDNT BE REACHED"))))
 
 (define (set-variable-value! var val env)
   (traverse-env var env 
-                (cute set-binding-val! <> val)
-                (lambda() (set-variable-value! var val (enclosing-environment env)))))
+                (lambda(b _) (set-binding-val! b val))
+                (lambda() (set-variable-value! var val (enclosing-environment env)))
+                (lambda() (error "SET-VARIABLE-VALUE: THIS CODE SHOULDNT BE REACHED"))))
 
 ;; Frames -- see Ex. 4.11
 
@@ -278,8 +292,8 @@
 (define (type-of exp)
   (or (first (lambda(f) (f exp))
              (list quoted? begin? self-evaluating? assignment? 
-                   definition? if? cond? lambda? and? dand? or? dor? 
-                   let? let*? for?
+                   definition? unbinding? if? cond? lambda? and? dand? or? dor? 
+                   let? let*? for? 
                    variable? application?))
       (error "could not determine the type of" exp)))
 
@@ -427,10 +441,29 @@
     (set-car! af (car new-frame))
     (set-cdr! af (cdr new-frame))))
 
+(define (destroy-first-binding! af)
+  (cond ((null? af) (error "cannot remove binding from empty frame"))
+        ((null? (cdr af)) (set! af '()))
+        (else
+         (let* ((old-tail (cdr af))
+                (last-var? (null? old-tail))
+                (new-head (if last-var? '() (car old-tail)))
+                (new-tail (if last-var? '() (cdr old-tail)))
+                (new-frame (cons new-head new-tail)))
+          (set-car! af (car new-frame))
+          (set-cdr! af (cdr new-frame))))))
 
-;; Ex. 4.12 See set-variable-value! & friends
+
+;; Ex. 4.12 DONE. See set-variable-value! & friends
 
 
+;; Ex. 4.13 make-unbound!
+;; This will only remove the binding from the current environment.
+;; It is a serious violation of the principle of least surprise to
+;; remove bindings from parent environments.
+;; This operator is horrible all-around. All the more fun to write it!
+(define (unbinding? exp) (tagged-list? exp 'make-unbound!))
+(define (unbound-var exp) (cadr exp))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

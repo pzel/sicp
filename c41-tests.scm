@@ -293,6 +293,7 @@
 
    ;; Ex 4.11
 
+   (=? '(make-aframe '() '()) '())
    (=? '(make-aframe '(a) '(1)) '((a . 1)))
    (=? '(make-aframe '(a b) '(1 2)) '((a . 1) (b . 2)))
    (=? '(aframe-get (make-aframe '(a b) '(1 2)) 'a) 1)
@@ -312,5 +313,14 @@
           (enclosing-environment e2)) '(((a . 1))))
 
    ;; Ex. 4.12 refactoring -- uses existing tests.
-   ))
+
+   ;; Ex. 4.13 make-unbound!
+  (=? '(unbinding? '(make-unbound! a)) 'make-unbound!)
+  (=? '(unbound-var '(make-unbound! a)) 'a)
+  (=? '(%eval/env '(begin (define x 3)
+                          (let ((blah 3)) (define x 4) (make-unbound! x) x)))
+      3)
+  (=?e '(%eval/env '(make-unbound! ghost-var)) "Variable not bound: ")
+
+  ))
 
