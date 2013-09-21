@@ -318,7 +318,7 @@
   (=? '(unbinding? '(make-unbound! a)) 'make-unbound!)
   (=? '(unbound-var '(make-unbound! a)) 'a)
   (=? '(%eval/env '(begin (define x 3)
-                          (let ((blah 3)) (define x 4) (make-unbound! x) x)))
+                          (let ((not 'used)) (define x 4) (make-unbound! x) x)))
       3)
   (=?e '(%eval/env '(make-unbound! ghost-var)) "Variable not bound: ")
 
