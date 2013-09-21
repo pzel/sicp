@@ -465,6 +465,13 @@
 (define (unbinding? exp) (tagged-list? exp 'make-unbound!))
 (define (unbound-var exp) (cadr exp))
 
+
+;; Ex. 4.14 defining map
+;; Our evaluator cannot use the underlying scheme's `map`,
+;; because our abstracted procedures cannot be applied
+;; in the underlying scheme.
+;; We must define `map` in the frontend.
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set the base environment for evaluation
