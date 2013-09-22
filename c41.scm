@@ -472,6 +472,45 @@
 ;; in the underlying scheme.
 ;; We must define `map` in the frontend.
 
+;; Ex. 4.15 the halting problem
+;; Assuming we have the halts? operator
+#|
+
+> (define (run-forever) (run-forever))
+> (define (try p)     
+    (if (halts? p p)  ← b.
+        (run-forever) ← c.
+        'halted))     ← d.
+
+> (try try) ← a.
+
+Case A:
+-------
+a. halts
+
+If a. halts then b. returns c.
+b. returns c. therefore a. keeps running forever
+a. does not halt, but this goes against the first statement (a. halts)
+
+Ergo: (try try) cannot produce a consistent answer.
+
+Case B:
+-------
+a. runs forever
+
+If a. runs forever, then b. returns d.
+b. returns d., and halts the computation
+a. halts, but this goes against the first statement (a. runs forever)
+
+Ergo: (try try) cannot produce a consistent answer.
+
+
+(try try) demonstrates that a referentially-transparent halts? predicate cannot exist.
+
+|#
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set the base environment for evaluation
