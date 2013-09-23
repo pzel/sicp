@@ -39,7 +39,7 @@
    (=? '(lambda-body '(lambda (x y) (f x y))) '((f x y)))
    (=? '(make-lambda '(x y) '((+ x y))) '(lambda (x y) (+ x y)))
    
-   ;; Procedures
+  ;;  ;; Procedures
    (=? '(make-procedure '(a b) '((f a b)) %base-env)
        `(procedure (a b) ((f a b)) ,%base-env))
    (=? '(procedure-parameters (make-procedure '(a b) '((f a b)) %base-env))
@@ -57,6 +57,11 @@
        0)
    (=?e '(lookup-variable-value 'not-here (extend-environment '(test) '(0) %null-env))
         "Undefined variable: ")
+
+   ;; Ex. 4.16 a
+   (=?e '(lookup-variable-value 'test (extend-environment '(test) '(%unassigned) %null-env))
+        "Undefined variable: ")
+   
    ;; Quotes
    (=? '(text-of-quotation '(quote t1)) 't1)
 
@@ -221,6 +226,7 @@
    (=? '(let-vals    '(let ((a 1) (b 2)) a)) '(1 2))
    (=? '(let->combination '(let ((a 1)) (f a))) '((lambda (a) (f a)) 1))
    (=? '(let->combination '(let ((a 1) (b 2)) (f a b))) '((lambda (a b) (f a b)) 1 2))
+   (=? '(%eval/env '(let () 3)) 3)
    (=? '(%eval/env '(let ((a 11)) a)) 11)
    (=? '(%eval/env '(let ((a 11) (b 22)) (+ a b))) 33)
 
@@ -257,7 +263,6 @@
    ;; 4.9  For loop
    ;; We'll need an empty-list
    (=? '(%eval/env '(empty)) '())
-   ;; (for (i 0 10) i)
    (=? '(for? '(for (i 0 10) i)) 'for)
    (=? '(for-var '(for (i 0 10) i)) 'i)
    (=? '(for-start '(for (i 0 10) i)) 0)
@@ -293,9 +298,9 @@
 
    ;; Ex 4.11
 
-   (=? '(make-aframe '() '()) '())
-   (=? '(make-aframe '(a) '(1)) '((a . 1)))
-   (=? '(make-aframe '(a b) '(1 2)) '((a . 1) (b . 2)))
+   (=? '(make-aframe '() '()) (list %NF))
+   (=? '(make-aframe '(a) '(1)) (list '(a . 1) %NF))
+   (=? '(make-aframe '(a b) '(1 2)) (list '(a . 1) '(b . 2) %NF))
    (=? '(aframe-get (make-aframe '(a b) '(1 2)) 'a) 1)
    (=? '(make-binding 'a 5) '(a . 5))
    (=? '(let ((b (make-binding 'a 10)))
@@ -307,20 +312,57 @@
    (=? '(extend-environment '(a) '(1) %null-env) (list (make-aframe '(a) '(1))))
    (=?e '(extend-environment'(a) '() %null-env) "extend-environment: too few values")
    (=?e '(extend-environment '() '(1) %null-env) "extend-environment: too few variables")
-   (=? '(first-frame (extend-environment '(x y ) '(5 7 ) %null-env)) '((x . 5) (y . 7)))
+   (=? '(first-frame (extend-environment '(x y ) '(5 7 ) %null-env)) 
+       (list '(x . 5) '(y . 7) %NF))
    (=? '(letrec [(e1 (extend-environment '(a) '(1) %null-env))
                  (e2 (extend-environment '(b) '(2) e1))]
-          (enclosing-environment e2)) '(((a . 1))))
+          (enclosing-environment e2)) `(((a . 1) ,%NF)))
 
    ;; Ex. 4.12 refactoring -- uses existing tests.
 
    ;; Ex. 4.13 make-unbound!
   (=? '(unbinding? '(make-unbound! a)) 'make-unbound!)
   (=? '(unbound-var '(make-unbound! a)) 'a)
+  (=?e '(let ((f (make-aframe '() '())))
+          (destroy-first-binding! f))
+       "cannot remove binding from empty frame")
+  (=? '(let ((f (make-aframe '(a) '(1))))
+         (destroy-first-binding! f)
+         f)
+      (make-aframe '() '()))
   (=? '(%eval/env '(begin (define x 3)
                           (let ((not 'used)) (define x 4) (make-unbound! x) x)))
       3)
   (=?e '(%eval/env '(make-unbound! ghost-var)) "Variable not bound: ")
+
+  ;; Ex. 4.16 b
+  (=? '(find-defines '((define (f x) (blaf)) (hello world) (define (g x) (blag))))
+      '((define (f x) (blaf)) (define (g x) (blag))))
+  (=? '(filter-out-defines '((define (f x) (blaf)) (hello world) (define (g x) (blag)) (f (g 3))))
+      '((hello world) (f (g 3))))
+  (=? '(scan-out-defines '((define (g x) (+ 2 x)) (+ (g a) b)))
+      '((let ((g '%unassigned))
+           (set! g (lambda (x) (+ 2 x)))
+           (+ (g a) b))))
+  (=? '(scan-out-defines '((define (g x) (+ 2 x)) (define (h y) (+ (g y) 7)) (+ (g a) (h 2))))
+      '((let ((g '%unassigned)
+             (h '%unassigned))
+           (set! g (lambda (x) (+ 2 x)))
+           (set! h (lambda (y) (+ (g y) 7)))
+           (+ (g a) (h 2)))))
+  ;; This is pretty low-level...
+  (=? '(make-procedure '(x)
+                       '((define (f y) (g y))
+                         (define (g z) (* 2 z))
+                         (f x))
+                       %null-env)
+      '(procedure (x)
+                  ((let ((f '%unassigned)
+                         (g '%unassigned))
+                     (set! f (lambda (y) (g y)))
+                     (set! g (lambda (z) (* 2 z)))
+                     (f x)))
+                  ()))
 
   ))
 

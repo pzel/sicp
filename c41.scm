@@ -161,7 +161,7 @@
 
 (define (traverse-env var env f enclosing-loop not-found)
   (define (scan frame)
-    (cond ((null? frame) (enclosing-loop))
+    (cond ((null-frame? frame) (enclosing-loop))
           ((eq? var (first-var frame)) (f (first-binding frame) frame))
           (else (scan (next-binding frame)))))
   (if (null-env? env) (not-found)
@@ -178,10 +178,11 @@
                 (lambda() (error "DEFINE-VARIABLE: THIS CODE SHOULDNT BE REACHED"))))
 
 (define (lookup-variable-value var env)
+  (define (err)(error "Undefined variable: " var))
   (traverse-env var env 
-                (lambda(b _) (cdr b))
+                (lambda(b _) (if (eq? '%unassigned (cdr b)) (err) (cdr b)))
                 (lambda() (lookup-variable-value var (enclosing-environment env)))
-                (lambda() (error "Undefined variable: " var))))
+                err))
 
 (define (unbind-variable! var env)
   (traverse-env var env 
@@ -213,7 +214,8 @@
 (define (make-lambda parameters body) (cons 'lambda (cons parameters body)))
 
 ;; Procedures
-(define (make-procedure params body env) (list 'procedure params body env))
+(define (make-procedure params body env) 
+  (list 'procedure params (scan-out-defines body) env))
 (define (procedure-parameters proc) (cadr proc))
 (define (procedure-body proc) (caddr proc))
 (define (procedure-environment proc) (cadddr proc))
@@ -420,9 +422,18 @@
 ;; Ex. 4.10 TODO
 
 ;; Ex. 4.11
-(define (make-aframe vars vals) (map make-binding vars vals))
+
+(define %null-frame (cons '%end-of-frame '%unassigned))
+(define %NF %null-frame)
+(define (null-frame? af) 
+  (cond ((null? af) (error "expected NULL FRAME, got empty list"))
+        (else       (equal? %null-frame (car af)))))
+(define (make-aframe vars vals)
+  (append (map make-binding vars vals) (list %null-frame)))
+
 (define (aframe-get af var)
-  (cond ((null? af) (error "undefined variable: " var))
+  (cond ((null-frame? af)
+         (error "undefined variable: " var))
         ((eq? (first-var af) var) (first-val af))
         (else
          (aframe-get (cdr af var)))))
@@ -430,7 +441,11 @@
 (define (first-var af) (caar af))
 (define (first-val af) (cdar af))
 (define (first-binding af) (car af))
-(define (next-binding af) (cdr af))
+(define (next-binding af) 
+  (cond ((null-frame? af)
+         (error "cannot get next binding of empty frame"))
+        (else 
+         (cdr af))))
 (define (make-binding var val) (cons var val))
 (define (set-binding-val! b val) (set-cdr! b val))
 (define (add-binding-to-aframe! var val af)
@@ -442,17 +457,15 @@
     (set-cdr! af (cdr new-frame))))
 
 (define (destroy-first-binding! af)
-  (cond ((null? af) (error "cannot remove binding from empty frame"))
-        ((null? (cdr af)) (set! af '()))
-        (else
-         (let* ((old-tail (cdr af))
-                (last-var? (null? old-tail))
-                (new-head (if last-var? '() (car old-tail)))
-                (new-tail (if last-var? '() (cdr old-tail)))
-                (new-frame (cons new-head new-tail)))
-          (set-car! af (car new-frame))
-          (set-cdr! af (cdr new-frame))))))
-
+  (if (null-frame? af) 
+      (error "cannot remove binding from empty frame")
+      (let* ((old-tail (cdr af))
+             (last-var? (null? old-tail))
+             (new-head (if last-var? '() (car old-tail)))
+             (new-tail (if last-var? '() (cdr old-tail)))
+             (new-frame (cons new-head new-tail)))
+        (set-car! af (car new-frame))
+        (set-cdr! af (cdr new-frame)))))
 
 ;; Ex. 4.12 DONE. See set-variable-value! & friends
 
@@ -464,7 +477,6 @@
 ;; This operator is horrible all-around. All the more fun to write it!
 (define (unbinding? exp) (tagged-list? exp 'make-unbound!))
 (define (unbound-var exp) (cadr exp))
-
 
 ;; Ex. 4.14 defining map
 ;; Our evaluator cannot use the underlying scheme's `map`,
@@ -510,6 +522,37 @@ Ergo: (try try) cannot produce a consistent answer.
 |#
 
 
+;; Ex. 4.16
+(define (filter p l)
+  (cond ((null? l)  '())
+        ((p (car l)) (cons (car l) (filter p (cdr l))))
+        (else        (filter p (cdr l)))))
+
+(define (find-defines exp)
+  (filter (lambda(s)(eq? (type-of s) 'define)) exp))
+
+(define (filter-out-defines exp)
+  (filter (lambda(s)(not (eq? (type-of s) 'define))) exp))
+
+(define (make-undefined-vars exp-body)
+  (map (lambda(def) (list (definition-variable def) '(quote %unassigned)))
+       (find-defines exp-body)))
+
+(define (make-set!-vars exp-body)
+  (map (lambda(def) 
+         (list 'set! (definition-variable def) (definition-value def)))
+       (find-defines exp-body)))
+
+(define (has-defines? exp-body)
+  (not (null? (find-defines exp-body))))
+
+(define (scan-out-defines exp-body)
+  (if (has-defines? exp-body)
+      (let ((head (list 'let (make-undefined-vars exp-body))))
+        (list (append head
+                      (make-set!-vars exp-body)
+                      (filter-out-defines exp-body))))
+      exp-body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
