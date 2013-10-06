@@ -554,6 +554,32 @@ Ergo: (try try) cannot produce a consistent answer.
                       (filter-out-defines exp-body))))
       exp-body))
 
+;; Ex. 4.17 TODO
+
+#| Ex. 4.18 
+
+Let's consider both cases.
+(lambda 〈vars〉
+  (let ((u ’*unassigned*)
+        (v ’*unassigned*))
+    (set! u 〈e1〉)
+    (set! v 〈e2〉)
+    〈e3〉))
+
+(lambda 〈vars〉
+  (let ((u ’*unassigned*)
+        (v ’*unassigned*))
+    (let ((a 〈e1〉)
+          (b 〈e2〉))
+      (set! u a)
+      (set! v b))
+    〈e3〉))
+
+
+
+
+|#
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set the base environment for evaluation
