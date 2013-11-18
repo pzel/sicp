@@ -46,12 +46,14 @@
    (cons 'variable          (lambda(exp env) (lookup-variable-value exp env)))
    (cons 'if                (lambda(exp env) (eval-if exp env)))
    (cons 'cond              (lambda(exp env) (eval-if (cond->if exp) env)))
-   (cons 'lambda            (lambda(exp env) (make-procedure (lambda-parameters exp) (lambda-body exp) env)))
+   (cons 'lambda            (lambda(exp env) (make-procedure (lambda-parameters exp)
+                                                             (lambda-body exp) env)))
    (cons 'and               (lambda(exp env) (eval-and (and-actions exp) env)))
    (cons 'dand              (lambda(exp env) (eval-if (and->if exp) env)))
    (cons 'or                (lambda(exp env) (eval-or (or-actions exp) env)))
    (cons 'dor               (lambda(exp env) (eval-if (or->if exp) env)))
    (cons 'let               (lambda(exp env) (%eval (let->combination exp) env)))
+   (cons 'letrec            (lambda(exp env) (%eval (letrec->let exp) env)))
    (cons 'let*              (lambda(exp env) (%eval (let*->nested-let exp) env)))
    (cons 'for               (lambda(exp env) (%eval (for->let exp) env)))
    (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) 
@@ -247,6 +249,7 @@
         (list 'display display)
         (list 'empty (lambda() (list)))
         (list '= =)
+        (list '- -)
         (list '+ +)))
 
 (define (primitive-procedure-names) (map car primitive-procedures))
@@ -295,7 +298,7 @@
   (or (first (lambda(f) (f exp))
              (list quoted? begin? self-evaluating? assignment? 
                    definition? unbinding? if? cond? lambda? and? dand? or? dor? 
-                   let? let*? for? 
+                   let? let*? letrec? for? 
                    variable? application?))
       (error "could not determine the type of" exp)))
 
@@ -559,26 +562,61 @@ Ergo: (try try) cannot produce a consistent answer.
 #| Ex. 4.18 
 
 Let's consider both cases.
-(lambda 〈vars〉
-  (let ((u ’*unassigned*)
-        (v ’*unassigned*))
-    (set! u 〈e1〉)
-    (set! v 〈e2〉)
-    〈e3〉))
+(define (solve f y0 dt)
+  (define y (integral (delay dy) y0 dt))
+  (define dy (stream-map f y))
+  y)
 
-(lambda 〈vars〉
-  (let ((u ’*unassigned*)
-        (v ’*unassigned*))
-    (let ((a 〈e1〉)
-          (b 〈e2〉))
-      (set! u a)
-      (set! v b))
-    〈e3〉))
+; 'The method in the text'
+(lambda (f y0 dt)
+  (let ((y ’*unassigned*)
+        (dy ’*unassigned*))
+    (set! y (integral (delay dy) y0 dt))
+    (set! dy (stream-map f y))
+    y))
 
-
-
+; The method from 4.18
+(lambda (f y0 dt)
+  (let ((y ’*unassigned*)
+        (dy ’*unassigned*))
+    (let ((uniq1 (integral (delay dy) y0 dt))
+          (uniq2 (stream-map f y))) 
+      (set! y uniq1)
+      (set! dy uniq2))
+    y))  ===
+(lambda (f y0 dt)
+  (let ((y ’*unassigned*)
+        (dy ’*unassigned*))
+    ((lambda (uniq1 uniq2)
+      (set! y uniq1)
+      (set! dy uniq2)
+      y)
+     (integral (delay dy) y0 dt) 
+     (stream-map f y))))         <- `y` is still unassigned
 
 |#
+
+;; Ex 4.19 skip
+
+;; Ex 4.20
+(define (letrec? exp) (tagged-list? exp 'letrec))
+(define (letrec->let exp)
+  (cons 'let
+        (cons (letrec-vars exp)
+              (append (letrec-assignments exp) (letrec-body exp)))))
+(define (extract-vars exp)
+  (map car (cadr exp)))
+(define (letrec-body exp)
+  (cddr exp))
+(define (letrec-vars exp)
+  (map (lambda(var) (list var (quote '*unassigned*)))
+       (extract-vars exp)))
+(define (letrec-assignments exp)
+  (map (lambda (var body) (list 'set! var body))
+       (extract-vars exp)
+       (extract-bodies exp)))
+(define (extract-bodies exp) 
+  (map cadr (cadr exp)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

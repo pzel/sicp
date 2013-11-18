@@ -364,7 +364,40 @@
                      (f x)))
                   ()))
 
-  ;; Ex. 4.18
+  ;; Ex. 4.18 -- see source
 
+  ;; Ex. 4.19 Skip
+
+  ;; Ex. 4.20
+  (=? '(%eval/env '(begin (define (f x)
+                            (define (even? x) (if (= x 0) %t (odd? (- x 1))))
+                            (define (odd? x) (if (= x 0) %f (even? (- x 1))))
+                            (even? x))
+                          (f 8)))
+       %t)
+  (=? '(extract-vars '(letrec ((f (f-body)) (g (g-body))) (f (g 1))))
+      '(f g))
+  (=? '(extract-bodies '(letrec ((f (f-body)) (g (g-body))) (f (g 1))))
+       '((f-body) (g-body)))
+  (=? '(letrec-vars '(letrec ((f (f-body)) (g (g-body))) (f (g 1))))
+       '((f '*unassigned*) (g '*unassigned*)))
+  (=? '(letrec-assignments '(letrec ((f (f-body)) (g (g-body))) (f (g 1))))
+       '((set! f (f-body))
+         (set! g (g-body))))
+  (=? '(letrec-body '(letrec ((f (f-body)) (g (g-body))) (f (g 1))))
+       '((f (g 1))))
+  (=? '(letrec->let '(letrec ((f (f-body)) (g (g-body))) (f (g 1))))
+      '(let ((f '*unassigned*)
+             (g '*unassigned*))
+         (set! f (f-body))
+         (set! g (g-body))
+         (f (g 1))))
+
+  (=? '(%eval/env '(begin (define (f x)
+                            (letrec ((even? (lambda(x) (if (= x 0) %t (odd? (- x 1)))))
+                                     (odd? (lambda(x) (if (= x 0) %f (even? (- x 1))))))
+                              (even? x)))
+                          (f 8)))
+       %t)
   ))
 
