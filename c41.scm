@@ -618,6 +618,9 @@ Let's consider both cases.
 (define (extract-bodies exp) 
   (map cadr (cadr exp)))
 
+;; Ex 4.21 -- see c41-tests.scm:404
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set the base environment for evaluation

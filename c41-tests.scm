@@ -399,5 +399,16 @@
                               (even? x)))
                           (f 8)))
        %t)
+  
+  ;; Ex 4.21
+  (=? '(%eval/env '(begin (define (f x)
+                            ((lambda (even? odd?) (even? even? odd? x))
+                             (lambda (ev? od? n)
+                               (if (= n 0) %t (od? ev? od? (- n 1))))
+                             (lambda (ev? od? n)
+                               (if (= n 0) %f (ev? ev? od? (- n 1))))))
+                           (f 11)))
+        %f)
+                           
   ))
 
