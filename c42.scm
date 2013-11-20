@@ -70,8 +70,7 @@
 (define (no-operands? exp) (null? exp))
 (define (first-operand exp) (car exp))
 (define (rest-operands exp) (cdr exp))
-(define (actual-value exp env)
-  (force-it (%eval exp env)))
+(define (actual-value exp env) (force-it (%eval exp env)))
 
 ;; Thunks
 (define (force-it obj)

@@ -71,5 +71,36 @@
 		      (let ((x (a))) (+ x x x))))
         "a")
 
-  ))
 
+  ;; Ex. 4.27
+  (=?o '(%eval/env 
+	 '(begin
+	    (define count 0)
+	    (define (id x) (set! count (+ count 1)) x)
+	    (define w (id (id 10)))
+	    (display count) (display " ")
+	    (display w) (display " ")
+	    (display count)))
+       "1 10 2")
+
+  ;; Ex. 4.28 ; this will break if apply does not receive an (actual-value)'d operator
+  (=? '(%eval/env 
+	'(begin
+	   (define (ap f arg)
+                      ;; f is a thunk at this point. (before ap's body is exec'd)
+	     (f arg)) ;; f must be strictly evaluated at this point in the body,
+	              ;; because the apply-*-procedure functions cannot work with a thunk
+	   (ap (lambda(x) (+ 1 x)) 1)))
+      2)
+  
+  ;; Ex. 4.29
+  (=?o '(%eval/env 
+	 '(begin
+	    (define count 0)
+	    (define (id x) (set! count (+ count 1)) x)
+	    (define (square x) (* x x))
+	    (display (square (id 10))) (display " ")
+	    (display count)))
+       "100 1")
+
+  ))
