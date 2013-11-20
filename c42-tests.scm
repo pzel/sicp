@@ -103,4 +103,28 @@
 	    (display count)))
        "100 1")
 
+  ;; Ex. 4.30
+  ;; I agree with the proposed modification. If we need a sequence of statements,
+  ;; it means the statements below depend on those on top. If the statements need 
+  ;; not be executed in order 
+  ;; let(*) should be used instead.
+  (=?o '(%eval/env
+	 '(begin
+	    (define (p2 x) (define (p e) e x) 
+	      (p (begin (display "i ") (set! x (cons x '(2))) (display "ran "))))
+	    (display (p2 1))))
+       "i ran (1 2)")
+
+  (=? '(%eval/env 
+	'(begin
+	   (define (nonseq-statements x y)
+	     (let* ((square-x (* x x))
+		    (square-y (* y y))
+		    (sum-of-squares (+ square-x square-y)))
+	       sum-of-squares))
+	   (nonseq-statements 1 2)))
+       5)
+
+  ;; Ex. 4.31 skip
+
   ))
