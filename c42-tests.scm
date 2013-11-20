@@ -2,7 +2,7 @@
 (load "./test.scm")
 
 ; helper method
-(define (%eval/env exp) (%eval exp %base-env))
+(define (%eval/env exp) (actual-value exp %base-env))
 
 (run-tests
  '(
@@ -20,7 +20,7 @@
    (=? '(%eval/env '((lambda(x y) x) 1 2)) 1)
    (=? '(%eval/env '(+ 2 2)) 4)
    (=? '(%eval/env '(cons 2 (cons 3 '()))) '(2 3))
-   (=?e '(%eval/env '(list 1 2 3)) "Undefined variable: ")
+   (=?e '(%eval/env '(undef 1 2 3)) "Undefined variable: ")
    (=? '(%eval/env '(and %t %t)) %t)
    (=? '(%eval/env '(and %t %f)) %f)
    (=?o '(%eval/env '(and (begin (display "1") %t)
@@ -41,12 +41,12 @@
    (=? '(%eval/env '(let* ((a 11) (b a) (c b)) 11)) 11)
    (=? '(%eval/env '(let foo ((a 1))(if (= a 10) (cons a "done") (foo (+ 1 a)))))
        '(10 . "done"))
-  (=? '(%eval/env '(begin (define (f x)
+   (=? '(%eval/env '(begin (define (f x)
                             (define (even? x) (if (= x 0) %t (odd? (- x 1))))
                             (define (odd? x) (if (= x 0) %f (even? (- x 1))))
                             (even? x)) (f 8)))
       %t)
-  (=? '(%eval/env '(begin (define (f x)
+   (=? '(%eval/env '(begin (define (f x)
                        (letrec ((even? (lambda(x) (if (= x 0) %t (odd? (- x 1)))))
                                 (odd? (lambda(x) (if (= x 0) %f (even? (- x 1))))))
                          (even? x))) (f 8)))
@@ -61,8 +61,15 @@
   ;; Ex. 4.26
   ;; transform (unless c a b) -> (if (not c) a b)
 
+  ;;  Lazy application
+  (=? '(%eval/env '(begin (define (try a b) (if (= 0 a) 1 b)) (try 0 (/ 1 0))))
+      1)
 
+  ;; ;; Memoization  
+  (=?o '(%eval/env '(begin
+		      (define (a) (display "a") 1)
+		      (let ((x (a))) (+ x x x))))
+        "a")
 
-                           
   ))
 

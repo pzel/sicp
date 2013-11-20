@@ -13,7 +13,7 @@
     env))
 
 (define (eval-if exp env)
-  (if (true? (%eval (if-predicate exp) env))
+  (if (true? (actual-value (if-predicate exp) env))
       (%eval (if-consequent exp) env)
       (%eval (if-alternative exp) env)))
 
@@ -28,6 +28,19 @@
       '()
       (cons (%eval (first-operand exps) env)
             (list-of-values (rest-operands exps) env))))
+
+(define (list-of-arg-values exps env)
+  (if (no-operands? exps)
+      '()
+      (cons (actual-value (first-operand exps) env)
+            (list-of-arg-values (rest-operands exps) 
+                                env))))
+(define (list-of-delayed-args exps env)
+  (if (no-operands? exps)
+      '()
+      (cons (delay-it (first-operand exps) env)
+            (list-of-delayed-args (rest-operands exps)
+                                  env))))
 
 (define eval-methods
   (list
@@ -46,8 +59,9 @@
    (cons 'let               (lambda(exp env) (%eval (let->combination exp) env)))
    (cons 'letrec            (lambda(exp env) (%eval (letrec->let exp) env)))
    (cons 'let*              (lambda(exp env) (%eval (let*->nested-let exp) env)))
-   (cons 'application       (lambda(exp env) (%apply (%eval (operator exp) env) 
-                                                     (list-of-values (operands exp) env))))))
+   (cons 'application       (lambda(exp env) (%apply (actual-value (operator exp) env)
+                                                     (operands exp) env)))
+   ))
 
 ;; Application
 (define (application? exp) (and (pair? exp) 'application))
@@ -56,15 +70,37 @@
 (define (no-operands? exp) (null? exp))
 (define (first-operand exp) (car exp))
 (define (rest-operands exp) (cdr exp))
+(define (actual-value exp env)
+  (force-it (%eval exp env)))
 
-(define (%apply proc arguments)
+;; Thunks
+(define (force-it obj)
+  (cond ((thunk? obj)
+	 (let ((result (actual-value (thunk-exp obj) (thunk-env obj))))
+	   (set-car! obj 'evaluated-thunk)
+	   (set-car! (cdr obj) result)
+	   (set-cdr! (cdr obj) %null-env)
+	   result))
+	((evaluated-thunk? obj)
+	 (thunk-value obj))
+	(else
+	 obj)))
+(define (delay-it exp env) (list 'thunk exp env))
+(define (evaluated-thunk? obj) (tagged-list? obj 'evaluated-thunk))
+(define (thunk? obj) (tagged-list? obj 'thunk))
+(define (thunk-exp t) (cadr t))
+(define (thunk-env t) (caddr t))
+(define (thunk-value et) (thunk-exp et))
+
+(define (%apply proc arguments env)
   (cond ((primitive-procedure? proc)
-         (apply-primitive-procedure proc arguments))
+         (apply-primitive-procedure proc 
+                                    (list-of-arg-values arguments env)))
         ((compound-procedure? proc)
          (eval-sequence
           (procedure-body proc)
           (extend-environment (procedure-parameters proc) 
-                              arguments
+                              (list-of-delayed-args arguments env)
                               (procedure-environment proc))))
         (else (error "%apply does not support" proc))))
 
@@ -174,7 +210,6 @@
                 (lambda() (set-variable-value! var val (enclosing-environment env)))
                 (lambda() (error "SET-VARIABLE-VALUE: THIS CODE SHOULDNT BE REACHED"))))
 
-
 (define (if? exp) (tagged-list? exp 'if))
 (define (if-predicate exp) (cadr exp))
 (define (if-consequent exp) (caddr exp))
@@ -213,6 +248,7 @@
   (list (list 'car car)
         (list 'cdr cdr)
         (list 'cons cons)
+	(list 'list list)
         (list 'null? null?)
         (list 'reverse reverse)
         (list 'false? false?)
@@ -220,7 +256,10 @@
         (list 'empty (lambda() (list)))
         (list '= =)
         (list '- -)
-        (list '+ +)))
+        (list '+ +)
+        (list '* *)
+        (list '/ /)
+        ))
 
 (define (primitive-procedure-names) (map car primitive-procedures))
 (define (primitive-procedure-objects) 
@@ -393,6 +432,21 @@
 (define (extract-bodies exp) 
   (map cadr (cadr exp)))
 
+
+(define (define-prelude! env)
+  (%eval '(begin
+	    (define (map f l)
+	      (if (null? l) (empty) (cons (f (car l)) (map f (cdr l)))))
+
+	    ) 
+	 env))
+
+(define mapf (make-procedure 
+	      '(f l) 
+	      '(if (null? l)
+		   (empty)
+		   (cons (f (car l)) (mapf f (cdr l)))) %null-env))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Set the base environment for evaluation
@@ -404,6 +458,7 @@
                              %null-env))]
     (define-variable! '%t #t initial-env)
     (define-variable! '%f #f initial-env)
+    (define-prelude! initial-env)
     initial-env))
 
 (define %base-env (setup-environment!))

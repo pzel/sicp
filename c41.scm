@@ -153,8 +153,8 @@
     (if (= nvars nvals)
         (cons (make-aframe vars vals) env)
         (if (< nvars nvals)
-            (error "extend-environment: too few variables")
-            (error "extend-environment: too few values")))))
+            (error "extend-environment: too few variables: " vars vals)
+            (error "extend-environment: too few values: " vars vals)))))
 
 (define (first-frame env) 
   (if (null-env? env) 
