@@ -76,7 +76,7 @@
       (if (= k i)
         (/ (n i) (d i))
         (/ (n i) (d-operation (d i)
-                     (iter (+ 1 i))))))
+			      (iter (+ 1 i))))))
   (iter 1))
 
 
@@ -101,7 +101,7 @@
 (define (euler-denom i)
   (if (<= i 2) 
       i
-      (letrec ((ii (- i 2))
+      (let* ((ii (- i 2))
                (mod3  (modulo ii 3))
                (div3  (quotient ii 3)))
         (if (/= 0 mod3)

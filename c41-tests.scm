@@ -314,8 +314,8 @@
    (=?e '(extend-environment '() '(1) %null-env) "extend-environment: too few variables: ")
    (=? '(first-frame (extend-environment '(x y ) '(5 7 ) %null-env)) 
        (list '(x . 5) '(y . 7) %NF))
-   (=? '(letrec [(e1 (extend-environment '(a) '(1) %null-env))
-                 (e2 (extend-environment '(b) '(2) e1))]
+   (=? '(let* [(e1 (extend-environment '(a) '(1) %null-env))
+	       (e2 (extend-environment '(b) '(2) e1))]
           (enclosing-environment e2)) `(((a . 1) ,%NF)))
 
    ;; Ex. 4.12 refactoring -- uses existing tests.

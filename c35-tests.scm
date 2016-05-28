@@ -57,7 +57,7 @@
         (list 100 112 134))
 
    ; ex. 3.51 : lazy evaluation w/ memoization
-   (=?o '(letrec ((show (lambda(x) (display x) x))
+   (=?o '(let* ((show (lambda(x) (display x) x))
                   (s (s-map show (s-enumerate-interval 0 10))))
            (s-ref 5 s)
            (s-ref 7 s))

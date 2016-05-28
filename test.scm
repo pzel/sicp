@@ -124,9 +124,9 @@
 
 ; TEST RUNNER + DISPLAY
 (define (run-tests l)
-  (letrec ((total (length l))
-           (r (get-results l))
-           (errors (test-philter (lambda(x) (not (equal? (car x) #t))) r)))
+  (let* ((total (length l))
+         (r (get-results l))
+         (errors (test-philter (lambda(x) (not (equal? (car x) #t))) r)))
     (if (null? errors)
         (begin (show-success total) (exit 0))
         (begin (show-errors errors total) (exit 1)))))
@@ -135,8 +135,8 @@
 
 (define (show-errors errors total)
   (map show-error errors)
-  (letrec ((err (length errors))
-           (ok (- total err)))
+  (let* ((err (length errors))
+         (ok (- total err)))
     (display (format "~n * Failed: ~s\tPassed: ~s\t Total: ~s.~n" err ok total))
   #f))
 

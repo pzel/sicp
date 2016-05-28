@@ -6,7 +6,7 @@
    (=?  '(abs  2) 2)
    (=?  '(abs  0) 0)
    (=?~ '(half-interval-method sin 2.0 4.0) 
-        3.1415)
+	3.1415)
    (=?~ '(half-interval-method (lambda(x) (- (* x x x) (* 2 x) 3)) 1.0 2.0) 
         1.8930)
    (=?~ '(fixed-point cos 0.1)

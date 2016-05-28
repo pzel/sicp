@@ -84,7 +84,7 @@
           ((world 'lookup) 'eu 'switzerland))
        #f)
 
-   (=? '(letrec ((good-enuff? (lambda(x y) (< (abs (- x y)) 0.1)))
+   (=? '(let* ((good-enuff? (lambda(x y) (< (abs (- x y)) 0.1)))
                 (loose-table (make-table-comp good-enuff?)))
           ((loose-table 'insert!) 1.0 2.0 3)
           ((loose-table 'lookup) 1.001 2.0009))
@@ -180,7 +180,7 @@
        1)
 
    (=? '(run-simulation 
-          (letrec ((in (make-wire))
+          (let* ((in (make-wire))
                    (out (make-wire))
                    (inv (inverter in out)))
             (set-signal! in 0)
@@ -189,7 +189,7 @@
        1)
 
    (=? '(run-simulation
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (and-g (and-gate in1 in2 out)))
@@ -199,7 +199,7 @@
        0)
 
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (and-g (and-gate in1 in2 out)))
@@ -209,7 +209,7 @@
        0)
 
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (and-g (and-gate in1 in2 out)))
@@ -221,7 +221,7 @@
 
    ; ex. 3.28
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                   (in2 (make-wire))
                   (out (make-wire))
                   (or-g (or-gate in1 in2 out)))
@@ -230,7 +230,7 @@
        0)
 
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (or-g (or-gate in1 in2 out)))
@@ -240,7 +240,7 @@
        1)
 
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (or-g (or-gate in1 in2 out)))
@@ -250,7 +250,7 @@
        1)
 
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (or-g (or-gate in1 in2 out)))
@@ -261,7 +261,7 @@
        1)
 
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (nand-g (nand-gate in1 in2 out)))
@@ -269,7 +269,7 @@
           (get-signal out)))
        1)
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (nand-g (nand-gate in1 in2 out)))
@@ -278,7 +278,7 @@
           (get-signal out)))
        1)
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (nand-g (nand-gate in1 in2 out)))
@@ -287,7 +287,7 @@
           (get-signal out)))
        1)
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (nand-g (nand-gate in1 in2 out)))
@@ -299,7 +299,7 @@
    ; ex. 3.29
    ; slow implementation, takes 2* NAND gate delay
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (or-g (or-gate-on-nand in1 in2 out)))
@@ -308,7 +308,7 @@
        0)
 
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (or-g (or-gate-on-nand in1 in2 out)))
@@ -318,7 +318,7 @@
        1)
 
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (or-g (or-gate-on-nand in1 in2 out)))
@@ -328,7 +328,7 @@
        1)
 
    (=? '(run-simulation 
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (or-g (or-gate-on-nand in1 in2 out)))
@@ -339,7 +339,7 @@
        1)
 
    (=? '(run-simulation 
-         (letrec ((a (make-wire))
+         (let* ((a (make-wire))
                  (b (make-wire))
                  (sum (make-wire))
                  (carry (make-wire))
@@ -350,7 +350,7 @@
        (list 1 0))
 
    (=? '(run-simulation 
-         (letrec ((a (make-wire))
+         (let* ((a (make-wire))
                   (b (make-wire))
                   (sum (make-wire))
                   (carry (make-wire))
@@ -361,7 +361,7 @@
        (list 1 0))
 
    (=? '(run-simulation 
-         (letrec ((a (make-wire))
+         (let* ((a (make-wire))
                   (b (make-wire))
                   (sum (make-wire))
                   (carry (make-wire))
@@ -373,7 +373,7 @@
        (list 0 1))
    
    (=? '(run-simulation 
-         (letrec ((a (make-wire))
+         (let* ((a (make-wire))
                   (b (make-wire))
                   (carry-in (make-wire))
                   (carry-out (make-wire))
@@ -385,7 +385,7 @@
        (list 1 0))
 
    (=? '(run-simulation 
-         (letrec ((a (make-wire))
+         (let* ((a (make-wire))
                   (b (make-wire))
                   (carry-in (make-wire))
                   (carry-out (make-wire))
@@ -398,7 +398,7 @@
        (list 0 1))
 
    (=? '(run-simulation 
-         (letrec ((a (make-wire))
+         (let* ((a (make-wire))
                   (b (make-wire))
                   (carry-in (make-wire))
                   (carry-out (make-wire))
@@ -410,7 +410,7 @@
        (list 1 0))
    
    (=? '(run-simulation 
-         (letrec ((a (make-wire))
+         (let* ((a (make-wire))
                   (b (make-wire))
                   (carry-in (make-wire))
                   (carry-out (make-wire))
@@ -441,7 +441,7 @@
        (list 'x 'x 'x 'x))
 
    (=? '(run-simulation 
-         (letrec ((a (make-wires (list 0)))
+         (let* ((a (make-wires (list 0)))
                  (b (make-wires (list 1)))
                  (c (make-wire))
                  (sum (make-wires (list 0)))
@@ -451,7 +451,7 @@
        (list 1))
    
    (=? '(run-simulation 
-         (letrec ((a (make-wires (list 0 1 1 1 0)))
+         (let* ((a (make-wires (list 0 1 1 1 0)))
                  (b (make-wires (list 0 0 0 1 0)))
                  (c (make-wire))
                  (sum (make-wires (list 0 0 0 0 0)))
@@ -462,7 +462,7 @@
 
    ; probes
    (=?o '(run-simulation
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                   (in2 (make-wire))
                   (sum (make-wire))
                   (carry (make-wire))
@@ -475,7 +475,7 @@
 
 
    (=?o '(run-simulation
-         (letrec ((in1 (make-wire))
+         (let* ((in1 (make-wire))
                   (in2 (make-wire))
                   (sum (make-wire))
                   (carry (make-wire))
@@ -491,7 +491,7 @@
 
    ; Celsius-Fahrenheit converter
    (=?o '(run-simulation
-         (letrec ((c (make-connector))
+         (let* ((c (make-connector))
                   (f (make-connector)))
            (celsius-fahrenheit-converter c f)
            (probe-connector "fahrenheit temperature" f)
@@ -499,7 +499,7 @@
        "Probe: fahrenheit temperature = 77\n")
 
    (=?e '(run-simulation
-          (letrec ((c (make-connector))
+          (let* ((c (make-connector))
                    (f (make-connector)))
             (celsius-fahrenheit-converter c f)
             (probe-connector "fahrenheit temperature" f)
@@ -508,7 +508,7 @@
         '("contradiction" 77 888))
 
    (=?o '(run-simulation
-         (letrec ((c (make-connector))
+         (let* ((c (make-connector))
                   (f (make-connector)))
            (celsius-fahrenheit-converter c f)
            (probe-connector "fahrenheit temperature" f)
@@ -517,7 +517,7 @@
        "Probe: fahrenheit temperature = 77\nProbe: fahrenheit temperature = ?\n")
 
    (=?o '(run-simulation
-         (letrec ((c (make-connector))
+         (let* ((c (make-connector))
                   (f (make-connector)))
            (celsius-fahrenheit-converter c f)
            (probe-connector "celsius temperature" c)
@@ -528,7 +528,7 @@
 
    ; ex. 3.33
    (=?o '(run-simulation
-         (letrec ((a (make-connector))
+         (let* ((a (make-connector))
                   (b (make-connector))
                   (avg (make-connector)))
            (averager a b avg)
@@ -541,7 +541,7 @@
    ; The two a's represent the same wire, but (multiplier) is 
    ; implemented in a way that requires its three connectors to be unique.
    (=?o '(run-simulation
-         (letrec ((a (make-connector))
+         (let* ((a (make-connector))
                   (b (make-connector)))
            (squarer34 a b)
            (probe-connector "sqrt" a)
@@ -550,14 +550,14 @@
            ; information doesn't reach conn a 
 
    ; ex. 3.35 
-   (=?e '(letrec ((a (make-connector))
+   (=?e '(let* ((a (make-connector))
                  (b (make-connector)))
           (squarer a b)
           (set-value! b -5 'user))
        '("squarer: square less than 0:" -5))
 
    (=?o '(run-simulation
-         (letrec ((a (make-connector))
+         (let* ((a (make-connector))
                   (b (make-connector)))
            (squarer a b)
            (probe-connector "sqrt" a)
@@ -565,7 +565,7 @@
        "Probe: sqrt = 5.0\n") 
 
    (=?o '(run-simulation
-         (letrec ((a (make-connector))
+         (let* ((a (make-connector))
                   (b (make-connector)))
            (squarer a b)
            (probe-connector "square" b)
@@ -573,7 +573,7 @@
        "Probe: square = 4\n") 
 
    (=?o '(run-simulation
-         (letrec ((a (make-connector))
+         (let* ((a (make-connector))
                   (b (make-connector)))
            (squarer a b)
            (probe-connector "square" b)
@@ -586,7 +586,7 @@
 
    ; ex 3.37
    (=?o '(run-simulation
-         (letrec ((c (make-connector))
+         (let* ((c (make-connector))
                   (f (celsius->fahrenheit-converter c)))
            (probe-connector "fahrenheit" f)
            (set-value! c 25 'user)))
