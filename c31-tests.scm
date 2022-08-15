@@ -1,5 +1,6 @@
-(load "./c31.scm")
-(load "./test.scm")
+(import (scheme small))
+(include "./c31.scm")
+(include "./test.scm")
 
 (run-tests
  '(

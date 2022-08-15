@@ -1,3 +1,4 @@
+(import (scheme small))
 ; ex. 3.1
 
 (define (make-accumulator a)

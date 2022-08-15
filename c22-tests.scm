@@ -1,5 +1,6 @@
-(load "./c22.scm")
-(load "./test.scm")
+(import (scheme small))
+(include "./c22.scm")
+(include "./test.scm")
 (run-tests '(
         ; ex. 2.2
         (=? '(y-point (make-point 1 9)) 9)

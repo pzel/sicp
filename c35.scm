@@ -1,5 +1,6 @@
+(import (scheme small))
 ; use prime.scm for prime-sum-pairs-s
-(load "./prime.scm")
+(include "./prime.scm")
 
 (define-syntax s-cons
   (syntax-rules ()

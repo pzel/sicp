@@ -1,5 +1,6 @@
-(load "./c33.scm")
-(load "./test.scm")
+(import (scheme small))
+(include "./c33.scm")
+(include "./test.scm")
 
 ; for testing stateful simulations
 (define-syntax run-simulation

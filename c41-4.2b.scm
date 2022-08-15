@@ -1,3 +1,4 @@
+(import (scheme small))
 ;; See module exports at the bottom of the file
 
 (define %eval42b #f)

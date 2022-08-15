@@ -1,4 +1,5 @@
-(load "./c42.scm")
+(import (scheme small))
+(include "./c42.scm")
 
 (define (prompt-for-input) (display "ƛ: "))
 (define (announce-output) (display "> "))

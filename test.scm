@@ -1,12 +1,12 @@
 ;------------------------------------------
 ; A simple test suite.
-; Copyright 2010-13 pzel (Simon Zelazny)
+; Copyright 2010-22 pzel (Simon Zelazny)
 ; This code is licenced under the MIT licence
 ;------------------------------------------
 ;
 ; USAGE:
 ;  (run-tests *list-of-test-cases*)
-; 
+;
 ; The *list-of-test-cases* contains n sexps
 ; with the following structure
 ; (<TEST-MATCHER> '(<EXPR>) <EXPECTED-RESULT>)
@@ -22,9 +22,13 @@
 ;  ))
 ;
 ; Tested in:
-; * CHICKEN Version 4.7.0 linux-unix-gnu-x86 [ manyargs dload ptables ]
+; * chibi-scheme 0.10.0 "neon" (chibi r7rs ratios complex uvector threads
+;                               full-unicode modules dynamic-loading linux
+;                               little-endian)
 
 ; TEST MATCHERS
+(import (scheme small))
+
 (define (=? is should)
   (test-compare is should equal?))
 
@@ -42,10 +46,10 @@
 
 (define (pend is should)
   (list #f 'pending should is))
-  
+
 ; INTERNALS
 (define (catch proc)
-  (call/cc 
+  (call/cc
    (lambda(k)
      (with-exception-handler
       (lambda(exn) (k (mk-error exn)))
@@ -54,14 +58,10 @@
 (define (cmp-error e1 should)
   (equal? (cadr e1) should))
 
-(define dev/null
-  (make-output-port (lambda(in) #t)
-                    (lambda(close) #t)))
-
 (define (mk-error exn)
-  (list 'error
-        ((condition-property-accessor 'exn 'message) exn)
-        ((condition-property-accessor 'exn 'arguments) exn)))
+  (list 'error exn))
+;        ((condition-property-accessor 'exn 'message) exn)
+;        ((condition-property-accessor 'exn 'arguments) exn)))
 
 (define (test-compare is should matcher)
   (let ((result (catch (lambda() (test-eval is 'hide-output)))))
@@ -84,18 +84,28 @@
           should
           is)))
 
+(define (with-output-discarded thunk)
+  (let ((throwaway-port (open-output-string)))
+    (call-with-port throwaway-port thunk)))
+
+(define (with-output-to-string thunk)
+  (let* ((string-port (open-output-string))
+         (result (call-with-port string-port thunk)))
+    (get-output-string string-port)))
+
+
 (define (test-eval exp io)
   (cond  ((eq? io 'hide-output)
-          (with-output-to-port dev/null 
-            (lambda() (eval exp (interaction-environment)))))
+          (with-output-discarded
+            (lambda(_port) (eval exp (interaction-environment)))))
          ((eq? io 'capture-output)
-          (with-output-to-string 
-            (lambda() (eval exp (interaction-environment)))))
+          (with-output-to-string
+            (lambda(_port) (eval exp (interaction-environment)))))
          ((eq? io 'debug-output)
             (eval exp (interaction-environment)))
          (else
           (error "test.scm: test-eval doesn't know how to treat output"))))
-    
+
 (define (test-close-enough? a b)
   (< (abs (- a b)) 0.001))
 
@@ -131,13 +141,18 @@
         (begin (show-success total) (exit 0))
         (begin (show-errors errors total) (exit 1)))))
 
-(define (get-results l) (map (cute test-eval <> 'hide-output) l))
+(define (get-results l)
+  (map (lambda (exp) (test-eval exp 'hide-output))
+       l))
 
 (define (show-errors errors total)
   (map show-error errors)
   (let* ((err (length errors))
          (ok (- total err)))
-    (display (format "~n * Failed: ~s\tPassed: ~s\t Total: ~s.~n" err ok total))
+    (newline)
+    (display "Failed: ") (display err) (display "\t")
+    (display "Passed: ") (display ok) (display "\t")
+    (display "Total: ") (display total) (display "\n")
   #f))
 
 (define (show-error l)
@@ -145,10 +160,12 @@
   (display " * In expression:    ")
   (display (cadddr l))  (newline)
   (display "   Expected:         ")
-  (display (caddr l))  (newline)  
+  (display (caddr l))  (newline)
   (display "   Got:              ")
   (display (cadr l)) (newline))
 
 (define (show-success n)
-  (display  (format " * All tests OK (~s)~n" n))
+  (display " * All tests OK (")
+  (display n)
+  (display ")\n")
   #t)

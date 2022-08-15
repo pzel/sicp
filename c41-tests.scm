@@ -1,6 +1,7 @@
-(load "./c41.scm")
-(load "./c41-4.2b.scm") ;; Ex. 4.2b: Louis Reasoner's LISP-2-ish evaluator
-(load "./test.scm")
+(import (scheme small))
+(include "./c41.scm")
+(include "./c41-4.2b.scm") ;; Ex. 4.2b: Louis Reasoner's LISP-2-ish evaluator
+(include "./test.scm")
 
 ; helper method
 (define (%eval/env exp) (%eval exp %base-env))

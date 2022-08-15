@@ -1,3 +1,4 @@
+(import (scheme small))
 ;; SICP chapter 2
 (use srfi-13) ; string methods (for displaying objects)
 (define dsp (lambda(x) (display x)(display " ")))
@@ -463,7 +464,7 @@
 
 ; 2.40
 ; prerequisites
-(load "prime.scm")
+(include "prime.scm")
 
 (define (flatmap f seq)
   (foldr append '() (map f seq)))

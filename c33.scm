@@ -1,3 +1,4 @@
+(import (scheme small))
 (define show
   (lambda args
     (map (lambda(a) (begin (display a) (display "\t"))) args)

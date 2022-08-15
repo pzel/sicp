@@ -1,5 +1,6 @@
-(load "./c42.scm")
-(load "./test.scm")
+(import (scheme small))
+(include "./c42.scm")
+(include "./test.scm")
 
 ; helper method
 (define (%eval/env exp) (actual-value exp %base-env))

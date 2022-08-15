@@ -1,5 +1,6 @@
+(import (scheme small))
 ;; SICP chapter 3.4 -- Concurrency
 
-(load "./parallel-execute.scm")
+(include "./parallel-execute.scm")
 
 

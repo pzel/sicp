@@ -1,3 +1,4 @@
+(import (scheme small))
 (define (%eval exp env) 
   (let ((m (get-eval-method (type-of exp) eval-methods)))
     (m exp env)))

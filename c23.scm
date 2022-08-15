@@ -1,3 +1,4 @@
+(import (scheme small))
 (use srfi-1)
 
 (define (memq? sym x)

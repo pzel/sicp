@@ -1,3 +1,5 @@
+(import (scheme small))
+
 ; SICP, chapter 1
 (define (decr x)
   (- x 1))
@@ -61,14 +63,14 @@
         (try next (+ steps 1)))))
   (try first-guess 0))
 
-(define log1000 (log 1000))                                
+(define log1000 (log 1000))
 
 (define (f136-nodamp)
   (fixed-point (lambda(y) (/ log1000 (abs (log y)))) 0.1))
 
 (define (f136-damp)
   (fixed-point (lambda(y) (average y (/ log1000 (abs (log y))))) 0.1))
-   
+
 (define golden-mean 1.61803)
 
 (define (cont-frac n d d-operation k)
@@ -84,22 +86,22 @@
   (define (iter i res)
     (if (= 1 i)
         res
-        (iter (decr i) 
-              (/ (n i) 
+        (iter (decr i)
+              (/ (n i)
                  (d-operation (d i) res)))))
-  (iter k (/ (n k) 
+  (iter k (/ (n k)
              (d k))))
 
 
 (define E 2.71828)
 ;ii:         1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21
 ;ii/3        0  0  1  1  1  2  2  2  3  3  3  4  4  4  5  5  5  6  6  6  7
-;(ii/3)-2         -1        0        1        2        3        4        5  
-;ii/3 * 3          3        6        9        12       15       18       21 
+;(ii/3)-2         -1        0        1        2        3        4        5
+;ii/3 * 3          3        6        9        12       15       18       21
 ;want:       1  1  4  1  1  6  1  1  8  1  1  10 1  1  12 1  1  14 1  1  16
 
 (define (euler-denom i)
-  (if (<= i 2) 
+  (if (<= i 2)
       i
       (let* ((ii (- i 2))
                (mod3  (modulo ii 3))
@@ -144,7 +146,7 @@
                             1))
 
 (define (cubic a b c)
-  (lambda(x) 
+  (lambda(x)
     (+ (* x x x)
        (* a (* x x))
        (* b x)
@@ -163,5 +165,5 @@
         ((= times 1) (lambda(x) (f x)))
         (#t
          (lambda(x) ((compose f
-                              (repeated f (decr times))) 
+                              (repeated f (decr times)))
                      x)))))
