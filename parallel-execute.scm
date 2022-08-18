@@ -1,8 +1,8 @@
-(use srfi-18)
-
+;; works on chez
 ;; Exports: parallel-execute, random-wait, ramda, rset!
 
-(define (random-wait) (thread-sleep! (/ 1 (+ 1 (random 99)))))
+(define (random-wait)
+  (sleep (make-time 'time-duration (random (/ 100000000 100)) 0)))
 
 ;; A lambda with a random execution delay
 (define-syntax rambda
@@ -20,15 +20,26 @@
 
 ;; Parallel execution of threads
 (define (parallel-execute . thunks)
-  (define (ensure-end ts)
-    (cond ((null? ts) 'done)
-          ((memq (thread-state (car ts)) '(terminated dead))
-           (begin (thread-join! (car ts)) (ensure-end (cdr ts))))
-          (else
-           (ensure-end (append (cdr ts) (list (car ts)))))))
+  (define thread-count (length thunks))
+  (define finished-count 0)
+  (define parallel-execute-mutex (make-mutex 'parallel-execute-mutex))
 
-    (let ((threads (map make-thread thunks)))
-      (for-each thread-start! threads)
-      (ensure-end threads)))
-  
+  (define (ensure-end)
+    (let ((finished (with-mutex parallel-execute-mutex finished-count)))
+      (if (eq? thread-count finished)
+          #t
+          (begin
+            ;;(display (list 'waiting thread-count finished))
+            ;; (newline)
+            (ensure-end)))))
 
+  (for-each (lambda(thunk)
+         (fork-thread
+          (lambda() (begin
+                      (thunk) ; run the thunk, then bump counter
+                      (with-mutex parallel-execute-mutex
+                        ;;(display "finished") (newline)
+                        (set! finished-count (+ 1 finished-count)))))))
+
+         thunks)
+  (ensure-end))

@@ -1,4 +1,3 @@
-(import (scheme small))
 (define show
   (lambda args
     (map (lambda(a) (begin (display a) (display "\t"))) args)
@@ -90,7 +89,7 @@
              (loop (cdr l)))))
     (loop l)))
 ; Benchmarking & tests  for ex. 3.18 & 3.19
-(use srfi-1)
+
 (define l1 (iota 1000))
 (make-cyclical! l1)
 ; Check it out for various sizes of l1
@@ -107,7 +106,7 @@
 (define (make-queue) (cons '() '()))
 (define (front-queue q)
   (if (empty-queue? q)
-      (error "FRONT called for empty queue")
+      (error 'front-queue "FRONT called for empty queue" q)
       (car (front-p q))))
 
 (define (insert-queue! q el)
@@ -125,7 +124,7 @@
 
 (define (delete-queue! q)
   (cond ((empty-queue? q)
-         (error "DELETE called for empty queue"))
+         (error 'delete-queue! "DELETE called for empty queue" q))
         (else
          (begin
            (set-front-p! q (cdr (front-p q)))
@@ -175,7 +174,7 @@
     (define (dispatch m)
       (cond ((eq? m 'lookup) lkp)
             ((eq? m 'insert!) ins!)
-            (else (error "Unknown option -- TABLE"))))
+            (else (error 'make-table-comp "Unknown option -- TABLE" local-table))))
     dispatch))
 
 (define (make-v-table-obj)
@@ -187,7 +186,7 @@
     (define (dispatch m)
       (cond ((eq? m 'lookup) lkp)
             ((eq? m 'insert!) ins!)
-            (else (error "Unknown option -- V-TABLE"))))
+            (else (error 'make-v-table-obj "Unknown option -- V-TABLE" local-table))))
     dispatch))
 
 (define (v-insert! comp t keys val)
@@ -233,7 +232,7 @@
       (cond ((eq? m 'get-signal) signal-value)
             ((eq? m 'set-signal!) set-my-signal!)
             ((eq? m 'add-action!) accept-action-procedure)
-            (else (error (list "wire: unknown message" m)))))
+            (else (error 'make-wire "unknown message" m))))
     dispatch))
 
 (define (inverter input output)
@@ -358,12 +357,19 @@
 (define (num->bool x)
   (cond ((= x 0) #f)
         ((= x 1) #t)
-        (else (error (list "num->bool: not binary digit" x)))))
+        (else (error 'num->bool "not binary digit" x))))
 
 (define (bool->num x)
   (cond ((eq? x #t) 1)
         ((eq? x #f) 0)
-        (else (error (list "bool->num: not boolean" x)))))
+        (else (error 'bool->num "not boolean" x))))
+
+(define (zip . args)
+  (cond ((exists (lambda (arg) (null? arg)) args)
+         '())
+        (#t
+         (cons (map car args)
+               (apply zip (map cdr args))))))
 
 (define (make-n-wires n)
   (repeat n make-wire))
@@ -396,7 +402,11 @@
 (define (segment-time s) (car s))
 (define (segment-queue s) (cdr s))
 
+
+(define (get-current-agenda) *current-agenda*)
 (define (make-agenda) (list 0))
+(set! *current-agenda* (make-agenda))
+
 (define (current-time agenda) (car agenda))
 (define (set-current-time! agenda time)
   (set-car! agenda time))
@@ -439,7 +449,7 @@
 
 (define (first-agenda-item agenda)
   (if (empty-agenda? agenda)
-      (error "first-agenda-item: empty agenda")
+      (error 'first-agenda-item "empty agenda" agenda)
       (let ((first-seg (head-segment agenda)))
         (set-current-time! agenda (segment-time first-seg))
         (front-queue (segment-queue first-seg)))))
@@ -491,7 +501,7 @@
           ((eq? msg 'I-lost-my-value)
            (process-forget-value))
           (else
-           (error (list "adder received unknown message" msg)))))
+           (error 'adder "received unknown message" msg))))
   (connect a1 me)
   (connect a2 me)
   (connect sum me)
@@ -522,7 +532,7 @@
           ((eq? msg 'I-lost-my-value)
            (process-forget-value))
           (else
-           (error (list "multiplier received unknown message" msg)))))
+           (error 'multiplier "received unknown message" msg))))
   (connect m1 me)
   (connect m2 me)
   (connect product me)
@@ -530,7 +540,7 @@
 
 (define (constant value conn)
   (define (me msg)
-    (error (list "constant received message" msg)))
+    (error 'constant "received message" msg))
   (connect conn me)
   (set-value! conn value me)
   me)
@@ -552,7 +562,7 @@
           ((eq? msg 'I-lost-my-value)
            (process-forget-value))
           (else
-           (error (list "probe received unknown message" msg)))))
+           (error 'probe "received unknown message" msg))))
   (connect conn me)
   me)
 
@@ -566,7 +576,7 @@
                                      inform-about-value
                                      constraints)))
             ((not (= value newval))
-             (error (list "contradiction" value newval)))
+             (error 'make-connector "contradiction" value newval))
             (else #f)))
     (define (forget-my-value retractor)
       (if (eq? retractor informant)
@@ -588,7 +598,7 @@
             ((eq? msg 'set-value!) set-my-value)
             ((eq? msg 'forget) forget-my-value)
             ((eq? msg 'connect) connect)
-            (else (error (list "connector received unknown message" msg)))))
+            (else (error 'connector "received unknown message" msg))))
     me))
 
 (define (for-each-except exception proc list)
@@ -629,7 +639,7 @@
   (define (process-new-value)
     (if (has-value? b)
         (if (< (get-value b) 0)
-            (error (list "squarer: square less than 0:" (get-value b)))
+            (error 'squarer "square less than 0:" (get-value b))
             (set-value! a (sqrt (get-value b)) me)))
     (if (has-value? a)
         (set-value! b (* (get-value a) 
@@ -645,7 +655,7 @@
           ((eq? msg 'I-lost-my-value)
            (process-forget-value))
           (else
-           (error (list "squarer received unknown message" msg)))))
+           (error 'squarer "received unknown message" msg))))
   (connect a me)
   (connect b me)
   me)

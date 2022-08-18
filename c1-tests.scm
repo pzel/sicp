@@ -1,5 +1,3 @@
-(import (scheme small))
-
 (include "./c1.scm")
 (include "./test.scm")
 

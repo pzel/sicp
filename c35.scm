@@ -1,4 +1,3 @@
-(import (scheme small))
 ; use prime.scm for prime-sum-pairs-s
 (include "./prime.scm")
 
@@ -10,7 +9,10 @@
 (define ES '())
 (define s-null? null?)
 (define (s-car s) (car s))
-(define (s-cdr s) (force (cdr s)))
+(define (s-cdr s)
+  (if (procedure? (cdr s))
+      (force (cdr s))
+      (error 's-cdr "not a procedure, check me out" s)))
 
 (define (s-ref n s)
   (if (<= n 0)
@@ -21,7 +23,7 @@
 (define (s-map f . ss)
   (if (s-null? (car ss))
       ES
-      (s-cons 
+      (s-cons
        (apply f (map s-car ss))
        (apply s-map
               (cons f (map s-cdr ss))))))
@@ -29,12 +31,12 @@
 (define (s-for-each f s)
   (if (s-null? s)
       #t
-      (begin 
+      (begin
         (f (s-car s))
         (s-for-each f (s-cdr s)))))
 
 (define (s-display s)
-  (s-for-each (lambda(line) (display line) (newline)) 
+  (s-for-each (lambda(line) (display line) (newline))
               s))
 
 (define (s-take n s)
@@ -42,7 +44,7 @@
       ES
       (s-cons (s-car s)
               (s-take (- n 1) (s-cdr s)))))
-      
+
 (define (s-enumerate-interval low high)
   (if (> low high)
       ES
@@ -55,7 +57,7 @@
          (s-cons (s-car s) (s-filter p (s-cdr s))))
         (else
          (s-filter p (s-cdr s)))))
-         
+
 (define (integers-from n)
   (s-cons n (integers-from (+ n 1))))
 
@@ -172,7 +174,7 @@
      (length args)))
 
 (define (sqrt-improve guess x)
-  (avg guess 
+  (avg guess
        (/ x guess)))
 
 (define (sqrt-s x)
@@ -198,7 +200,7 @@
                (/ (square (- s2 s1))
                   (+ s2 (- s0 (* 2 s1)))))
             (euler-t (s-cdr s)))))
-            
+
 (define (make-tableau t s)
   (s-cons s
           (make-tableau t (t s))))
@@ -212,7 +214,7 @@
   (if (< (abs (- (s-car s) (s-car (s-cdr s)))) delta)
       (s-car (s-cdr s))
       (s-limit delta (s-cdr s))))
-           
+
 (define (sqrt_ x tolerance)
   (s-limit tolerance (sqrt-s x)))
 
@@ -234,7 +236,7 @@
   (s-cons (mk-pair (s-car s1) (s-car s2))
           (interleave (s-map (lambda(x) (mk-pair (s-car s1) x)) (s-cdr s2))
                       (pairs-s (s-cdr s1)
-                               (s-cdr s2)))))         
+                               (s-cdr s2)))))
 
 (define (interleave s1 s2)
   (if (s-null? s1)
@@ -253,7 +255,7 @@
            #f)
           ((matcher (s-car s))
            count)
-          (else 
+          (else
             (iter (s-cdr s) (+ 1 count)))))
   (iter s 0))
 
@@ -261,7 +263,7 @@
 (define (all-pairs-s s1 s2)
   (s-cons (mk-pair (s-car s1) (s-car s2))
           (interleave (s-map (lambda(x) (mk-pair (s-car s1) x)) (s-cdr s2))
-                      (interleave (s-map (lambda(x) (mk-pair x (s-car s1))) 
+                      (interleave (s-map (lambda(x) (mk-pair x (s-car s1)))
                                          (s-cdr s2))
                                   (all-pairs-s (s-cdr s1) (s-cdr s2))))))
 
@@ -291,14 +293,14 @@
  (let ((a (s-car s))
        (b (s-car t))
        (c (s-car u)))
-   (s-cons 
+   (s-cons
     (list a b c)
     (interleave3
      (s-map (lambda(b* c*) (list a b* c*)) t         (s-cdr u))
      (s-map (lambda(b* c*) (list a b* c*)) (s-cdr t) (s-cdr u))
      (triples-s (s-cdr s) (s-cdr t) (s-cdr u))))))
-                      
-(define p-triples-s 
+
+(define p-triples-s
   (s-filter p-triple? (triples-s integers integers integers)))
 
 ; for testing

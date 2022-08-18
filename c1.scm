@@ -1,5 +1,3 @@
-(import (scheme small))
-
 ; SICP, chapter 1
 (define (decr x)
   (- x 1))
@@ -40,7 +38,7 @@
           ((and (negative? b-value) (positive? a-value))
            (search f b a))
           (else
-           (error "Function values have the same sign.")))))
+           (error "Function values have the same sign." 0)))))
 
 (define tolerance 0.00001)
 (define (fixed-point f first-guess)

@@ -1,4 +1,3 @@
-(import (scheme small))
 (include "./c35.scm")
 (include "./test.scm")
 (include "./prime.scm")
@@ -22,7 +21,7 @@
    (=?s '(let ((s1 (s-cons 10 (s-cons 20 ES))))
            (s-map (lambda(x) (* x x)) s1))
         (s-cons 100 (s-cons 400 ES)))
- 
+
   (=? '(let ((res (cons 'result '())))
           (s-for-each (lambda(x) (set-cdr! res (cons x (cdr res))))
                       (s-cons 10 (s-cons 20 ES)))
@@ -46,7 +45,7 @@
         (list 3))
 
    (=?s '(s-take 2 (s-filter
-                  prime? 
+                  prime?
                   (s-enumerate-interval 10000 1000000)))
         (list 10007 10009))
 
@@ -70,16 +69,16 @@
            (define sum 0)
            (define (accum x) (set! sum (+ x sum)) sum)
            (define seq (s-map accum (s-enumerate-interval 1 20)))
-           (d sum) 
+           (d sum)
 
            (define y (s-filter even? seq))
-           (d sum) 
+           (d sum)
 
            (define z (s-filter (lambda(x) (= (remainder x 5) 0)) seq))
-           (d sum) 
+           (d sum)
 
            (s-ref 7 y)
-           (d sum) 
+           (d sum)
 
            (with-output-to-string (lambda() (s-display z))) ; don't print
            (d sum))
@@ -100,11 +99,11 @@
 
    (=? '(s-ref 5 fibs_)
        5)
-   
+
    ; lazy self-referential primes
    (=? '(s-ref 50 primes_)
        233)
-   
+
    ; Ex. 3.53 will return powers of two
    (=? '(begin
           (define s (s-cons 1 (add-streams s s)))
@@ -142,7 +141,7 @@
 
    (=? '(s-to-list 5 (s-scale 2 integers))
         (list 2 4 6 8 10))
-        
+
    (=? '(s-to-list 20 hamming)
        (list 1 2 3 4 5 6 8 9 10 12 15 16 18 20 24 25 27 30 32 36))
 
@@ -172,7 +171,7 @@
         3.1415927140337)
 
    ; ex. 3.63
-   ; This implementation has to map the lambda(guess) function for all 
+   ; This implementation has to map the lambda(guess) function for all
    ; previous elelments of the stream every time stream-cdr is called.
    ; The performance hit would remain if the implementation of delay was not
    ;  memoized.
@@ -201,7 +200,7 @@
 
   (=? '(s-to-list 8 prime-sum-pairs-s)
     '( (1 . 1) (1 . 2) (2 . 3) (1 . 4) (1 . 6) (3 . 4) (2 . 5) (1 . 10 )))
-    
+
   ; ex. 3.66
   (=? '(s-find (lambda(x) (= x -1)) (s-take 10 integers))
         #f)
@@ -225,27 +224,27 @@
   (=? '(p-triple? (list 3 4 5)) #t)
   (=? '(p-triple? (list 4 3 5)) #f)
   (=? '(p-triple? (list 5 4 3)) #f)
-      
+
   (=? '(s-to-list 9 (interleave3 integers (s-repeat 99) integers))
       '( 1 99 1 2 99 2 3 99 3))
 
-  (=? '(s-find (lambda(x) (equal? x (list 2 1 2))) 
+  (=? '(s-find (lambda(x) (equal? x (list 2 1 2)))
                (s-take 100 (triples-s integers integers integers)))
       #f)
 
-  (=? '(s-find (lambda(x) (equal? x (list 2 3 2))) 
+  (=? '(s-find (lambda(x) (equal? x (list 2 3 2)))
                (s-take 100 (triples-s integers integers integers)))
       #f)
 
-  (=? '(s-find (lambda(x) (equal? x (list 3 2 1))) 
+  (=? '(s-find (lambda(x) (equal? x (list 3 2 1)))
                (s-take 100 (triples-s integers integers integers)))
       #f)
 
-  (=? '(s-find (lambda(x) (equal? x (list 1 1 2))) 
+  (=? '(s-find (lambda(x) (equal? x (list 1 1 2)))
                (s-take 100 (triples-s integers integers integers)))
       1)
 
-  (=? '(s-find (lambda(x) (equal? x (list 1 2 3))) 
+  (=? '(s-find (lambda(x) (equal? x (list 1 2 3)))
                (s-take 100 (triples-s integers integers integers)))
       4)
 
@@ -299,14 +298,13 @@
  (=? '(s-to-list 4 (s-zip integers integers))
      '( (1 . 1) (2 . 2) (3 . 3) (4 . 4)))
 
- (=? '(s-to-list 
-       4 
+ (=? '(s-to-list
+       4
        (s-zip (s-map (lambda(l) (sum-of-squares (car l))) square-triplets)
               square-triplets))
      '((325 (10 . 15) (6 . 17) (1 . 18))
-       (425 (13 . 16) (8 . 19) (5 . 20)) 
-       (650 (17 . 19) (11 . 23) (5 . 25)) 
+       (425 (13 . 16) (8 . 19) (5 . 20))
+       (650 (17 . 19) (11 . 23) (5 . 25))
        (725 (14 . 23) (10 . 25) (7 . 26))))
 
    ))
-

@@ -1,6 +1,6 @@
 .PHONY: test repl repl-lazy
 #SCHEME='csi -qnb'
-SCHEME=chibi-scheme
+SCHEME=chez-scheme
 test:
 	@if [ -z "$$c" ] ;then set -e; \
 	for f in `ls c*tests.scm`; \

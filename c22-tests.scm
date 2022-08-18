@@ -1,4 +1,3 @@
-(import (scheme small))
 (include "./c22.scm")
 (include "./test.scm")
 (run-tests '(

@@ -1,4 +1,3 @@
-(import (scheme small))
 (include "./c31.scm")
 (include "./test.scm")
 
@@ -10,7 +9,7 @@
        		
    (=? '(let ((m-sqrt (make-monitored sqrt))) 
    				(list (m-sqrt 16) (m-sqrt 'show-n)))
-       	(list 4.0 1))
+       	(list 4 1))
    (=? '(let ((m-list (make-monitored list))) 
    				(list (m-list 1 2 3) (m-list 'show-n)))
        (list (list 1 2 3) 1))

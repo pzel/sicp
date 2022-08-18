@@ -1,5 +1,3 @@
-(import (scheme small))
-(use srfi-1)
 
 (define (memq? sym x)
   (cond ((null? x) #f)
@@ -162,7 +160,7 @@
 
 ; buildup to 2.61
 (define (oset . xs)
-  (sort xs <))
+  (sort_ xs <))
 
 (define (elem-of-oset? x oset)
   (cond ((null? oset) #f)
@@ -237,7 +235,7 @@
 ;; Trees from Figure 2.16
 (define (make-leaf x)
   (make-tree x '() '()))
-  
+
 (define tree216-1
   (make-tree 7
              (make-tree 3
@@ -249,12 +247,12 @@
 (define tree216-2
   (make-tree 3
              (make-leaf 1)
-             (make-tree 7 
+             (make-tree 7
                          (make-leaf 5)
                          (make-tree 9
                                     '()
                                     (make-leaf 11)))))
-                         
+
 (define tree216-3
   (make-tree 5
              (make-tree 3
@@ -269,7 +267,7 @@
 ;; Ex. 2.63
 
 (define (tree->list1 tree)
-  (if (null? tree) 
+  (if (null? tree)
       '()
       (append (tree->list1 (left-branch tree))
               (cons (entry tree)
@@ -288,7 +286,7 @@
   (make-tree this l r))
 
 (define (list->bbtree elements)
-  (car (partial-tree (sort elements <) (length elements))))
+  (car (partial-tree (sort_ elements <) (length elements))))
 
 (define (partial-tree elts n)
   (if (= n 0)
@@ -305,8 +303,18 @@
                 (cons (make-tree1 this-entry left-tree right-tree)
                       remaining-elts))))))))
 
+(define (delete-duplicates input-list)
+  (define (worker input output)
+    (cond ((null? input) (reverse output))
+          ((member (car input) output)
+           (worker (cdr input) output))
+          (#t
+           (worker (cdr input) (cons (car input) output)))))
+  (worker input-list '()))
+
+
 (define (bset xs)
-  (list->bbtree (sort (delete-duplicates xs)
+  (list->bbtree (sort_ (delete-duplicates xs)
                       <)))
 
 (define (union-bset t1 t2)
@@ -317,6 +325,8 @@
   (bset (intersection-oset (tree->list1 t1)
                            (tree->list1 t2))))
 
+;; for use in r6rs (chez)
+(define (sort_ list op)  (sort op list))
 
 ; 2.67
 (define (key x) x)
@@ -329,7 +339,7 @@
         ((eq? given-key (key (entry btree)))
          (entry btree))
         (else
-         (error "could not complete lookup"))))
+         (error "could not complete lookup" 0))))
 
 
 ;; 2.3.4 Huffman trees
@@ -353,11 +363,11 @@
 (define (h-left-branch tree) (car tree))
 (define (h-right-branch tree) (cadr tree))
 (define (h-symbols tree)
-  (if (h-leaf? tree) 
+  (if (h-leaf? tree)
       (list (h-symbol-leaf tree))
       (caddr tree)))
 (define (h-weight tree)
-  (if (h-leaf? tree) 
+  (if (h-leaf? tree)
       (h-weight-leaf tree)
       (cadddr tree)))
 (define (h-decode bits tree)
@@ -432,7 +442,7 @@
          (h-make-tree (cadr xs) (car xs)))
         (else
          (successive-merge (cons (h-make-tree (cadr xs) (car xs)) (cddr xs))))))
-                                              
+
 (define sample-pairs
   '((A 4)
     (B 2)
@@ -454,7 +464,7 @@
 (define song-tree (generate-h-tree song-pairs))
 
 (define song-symbols
-  '( get a job 
+  '( get a job
      sha na na na na na na na na
      get a job
      sha na na na na na na na na

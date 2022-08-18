@@ -27,7 +27,6 @@
 ;                               little-endian)
 
 ; TEST MATCHERS
-(import (scheme small))
 
 (define (=? is should)
   (test-compare is should equal?))
@@ -56,12 +55,13 @@
       proc))))
 
 (define (cmp-error e1 should)
-  (equal? (cadr e1) should))
+;;  (display (list "e1" e1))
+;;  (display (list "should " should))
+  (equal? e1 should))
 
 (define (mk-error exn)
-  (list 'error exn))
-;        ((condition-property-accessor 'exn 'message) exn)
-;        ((condition-property-accessor 'exn 'arguments) exn)))
+  (cons (condition-message exn)
+        (condition-irritants exn)))
 
 (define (test-compare is should matcher)
   (let ((result (catch (lambda() (test-eval is 'hide-output)))))
@@ -85,26 +85,19 @@
           is)))
 
 (define (with-output-discarded thunk)
-  (let ((throwaway-port (open-output-string)))
-    (call-with-port throwaway-port thunk)))
-
-(define (with-output-to-string thunk)
-  (let* ((string-port (open-output-string))
-         (result (call-with-port string-port thunk)))
-    (get-output-string string-port)))
-
+  (thunk))
 
 (define (test-eval exp io)
   (cond  ((eq? io 'hide-output)
           (with-output-discarded
-            (lambda(_port) (eval exp (interaction-environment)))))
+            (lambda() (eval exp (interaction-environment)))))
          ((eq? io 'capture-output)
           (with-output-to-string
-            (lambda(_port) (eval exp (interaction-environment)))))
+            (lambda() (eval exp (interaction-environment)))))
          ((eq? io 'debug-output)
             (eval exp (interaction-environment)))
          (else
-          (error "test.scm: test-eval doesn't know how to treat output"))))
+          (error "test.scm: test-eval doesn't know how to treat output" 0))))
 
 (define (test-close-enough? a b)
   (< (abs (- a b)) 0.001))
@@ -112,12 +105,17 @@
 (define (test-error-equal? e msg)
   (cmp-error e msg))
 
+; stream/list-agnostic cdr
+(define (fcdr l)
+  (cond ((procedure? (cdr l)) (force (cdr l)))
+        (#t (cdr l))))
+
 (define (test-stream-equal? s1 s2)
   (cond ((and (null? s1) (null? s2)) #t)
         ((or (null? s1) (null? s2)) #f)
         ((eq? (car s1) (car s2))
-         (test-stream-equal? (force (cdr s1))
-                             (force (cdr s2))))
+         (test-stream-equal? (fcdr s1)
+                             (fcdr s2)))
         (else #f)))
 
 (define (test-string-equal? s1 s2)

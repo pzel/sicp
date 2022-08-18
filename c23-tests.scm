@@ -1,4 +1,3 @@
-(import (scheme small))
 (include "c23.scm")
 (include "test.scm")
 

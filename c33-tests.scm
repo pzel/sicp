@@ -1,4 +1,3 @@
-(import (scheme small))
 (include "./c33.scm")
 (include "./test.scm")
 
@@ -7,8 +6,7 @@
   (syntax-rules ()
     ((run-simulation <body>)
      (begin
-       (define a (make-agenda))
-       (define get-current-agenda (lambda() a))
+       (set! *current-agenda* (make-agenda))
        <body>)
      )))
 
@@ -30,7 +28,7 @@
    (=? '(is-cyclical-f (list 1 2 2 3)) #f)
    (=? '(is-cyclical-f l1) #t)
    (=? '(is-cyclical-f 316-pathological-3) #t)
-   
+
    ;ex 3.21
    (=? '(let ((q1 (make-queue)))
           (insert-queue! q1 'a))
@@ -52,14 +50,14 @@
        "Queue []")
 
   ;tables
-   
+
    (=? '(make-table)
        (list 'Table))
 
    (=? '(let ((t1 (make-table)))
           (lookup 'some-key t1))
        #f)
-             
+
    (=? '(let ((eu (make-table)))
           (insert! 'poland 'warsaw eu)
           (lookup 'poland eu))
@@ -99,14 +97,14 @@
 
    ;one item in list makes a key in current table
    (=? '(let ((t (make-table)))
-          (v-insert! eq? t (list 'one) 'hello) 
+          (v-insert! eq? t (list 'one) 'hello)
           t)
        (list 'Table (cons 'one 'hello)))
 
    ;using insert on the same key overwrites the value
    (=? '(let ((t (make-table)))
-          (v-insert! eq? t (list 'one) 'hello) 
-          (v-insert! eq? t (list 'one) 'hello-world) 
+          (v-insert! eq? t (list 'one) 'hello)
+          (v-insert! eq? t (list 'one) 'hello-world)
           t)
        (list 'Table (cons 'one 'hello-world)))
 
@@ -127,19 +125,19 @@
 
    ; empty lookup list always returns false, no matter the table
    (=? '(let ((t (make-table)))
-          (v-insert! eq? t '() 'hello) 
+          (v-insert! eq? t '() 'hello)
           (v-lookup eq? t '()))
        #f)
 
    ; simple case
    (=? '(let ((t (make-table)))
-          (v-insert! eq? t (list 'one) 'value) 
+          (v-insert! eq? t (list 'one) 'value)
           (v-lookup eq? t (list 'one)))
        'value)
 
    ; lookup only returns the value if it is atomic
    (=? '(let ((t (make-table)))
-          (v-insert! eq? t (list 'world 'africa 'mozambique) 'maputo) 
+          (v-insert! eq? t (list 'world 'africa 'mozambique) 'maputo)
           (v-lookup eq? t (list 'world)))
        #f)
 
@@ -152,13 +150,13 @@
 
    ; lookup returns the value if it atomic in deeply nested tables
    (=? '(let ((t (make-table)))
-          (v-insert! eq? t (list 'world 'africa 'mozambique) 'maputo) 
+          (v-insert! eq? t (list 'world 'africa 'mozambique) 'maputo)
           (v-lookup eq? t (list 'world 'africa 'mozambique)))
        'maputo)
 
    ; insert overwrited deep table entries
    (=? '(let ((t (make-table)))
-          (v-insert! eq? t (list 'world 'africa 'madagascar) 'antanananarivo) 
+          (v-insert! eq? t (list 'world 'africa 'madagascar) 'antanananarivo)
           (v-insert! eq? t (list 'world 'africa 'madagascar) 'antananarivo)
           (v-lookup eq? t (list 'world 'africa 'madagascar)))
        'antananarivo)
@@ -180,7 +178,7 @@
           (w 'get-signal))
        1)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
           (let* ((in (make-wire))
                    (out (make-wire))
                    (inv (inverter in out)))
@@ -199,7 +197,7 @@
           (get-signal out)))
        0)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -209,7 +207,7 @@
           (get-signal out)))
        0)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -221,7 +219,7 @@
        1)
 
    ; ex. 3.28
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                   (in2 (make-wire))
                   (out (make-wire))
@@ -230,7 +228,7 @@
           (get-signal out)))
        0)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -240,7 +238,7 @@
           (get-signal out)))
        1)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -250,7 +248,7 @@
           (get-signal out)))
        1)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -261,15 +259,15 @@
           (get-signal out)))
        1)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
                  (nand-g (nand-gate in1 in2 out)))
-           (propagate)                 
+           (propagate)
           (get-signal out)))
        1)
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -278,7 +276,7 @@
           (propagate)
           (get-signal out)))
        1)
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -287,7 +285,7 @@
           (propagate)
           (get-signal out)))
        1)
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -299,7 +297,7 @@
        0)
    ; ex. 3.29
    ; slow implementation, takes 2* NAND gate delay
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -308,7 +306,7 @@
            (get-signal out)))
        0)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -318,7 +316,7 @@
           (get-signal out)))
        1)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -328,7 +326,7 @@
           (get-signal out)))
        1)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((in1 (make-wire))
                  (in2 (make-wire))
                  (out (make-wire))
@@ -339,7 +337,7 @@
           (get-signal out)))
        1)
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((a (make-wire))
                  (b (make-wire))
                  (sum (make-wire))
@@ -350,7 +348,7 @@
           (list (get-signal sum) (get-signal carry))))
        (list 1 0))
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((a (make-wire))
                   (b (make-wire))
                   (sum (make-wire))
@@ -361,7 +359,7 @@
           (list (get-signal sum) (get-signal carry))))
        (list 1 0))
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((a (make-wire))
                   (b (make-wire))
                   (sum (make-wire))
@@ -372,8 +370,8 @@
            (propagate)
           (list (get-signal sum) (get-signal carry))))
        (list 0 1))
-   
-   (=? '(run-simulation 
+
+   (=? '(run-simulation
          (let* ((a (make-wire))
                   (b (make-wire))
                   (carry-in (make-wire))
@@ -385,7 +383,7 @@
            (list (get-signal sum) (get-signal carry-out))))
        (list 1 0))
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((a (make-wire))
                   (b (make-wire))
                   (carry-in (make-wire))
@@ -398,7 +396,7 @@
            (list (get-signal sum) (get-signal carry-out))))
        (list 0 1))
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((a (make-wire))
                   (b (make-wire))
                   (carry-in (make-wire))
@@ -409,8 +407,8 @@
            (propagate)
            (list (get-signal sum) (get-signal carry-out))))
        (list 1 0))
-   
-   (=? '(run-simulation 
+
+   (=? '(run-simulation
          (let* ((a (make-wire))
                   (b (make-wire))
                   (carry-in (make-wire))
@@ -425,13 +423,13 @@
          (list 1 1))
 
    ; ex. 3.30
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let ((wires (make-wires (list 1 0 0))))
            (propagate)
            (get-signals wires)))
          (list 1 0 0))
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let ((wires (make-wires (list 1 0 0))))
           (set-signals! wires (list 0 1 1))
           (propagate)
@@ -441,7 +439,7 @@
    (=? '(repeat 4 (lambda() 'x))
        (list 'x 'x 'x 'x))
 
-   (=? '(run-simulation 
+   (=? '(run-simulation
          (let* ((a (make-wires (list 0)))
                  (b (make-wires (list 1)))
                  (c (make-wire))
@@ -450,8 +448,8 @@
            (propagate)
            (get-signals sum)))
        (list 1))
-   
-   (=? '(run-simulation 
+
+   (=? '(run-simulation
          (let* ((a (make-wires (list 0 1 1 1 0)))
                  (b (make-wires (list 0 0 0 1 0)))
                  (c (make-wire))
@@ -536,10 +534,10 @@
            (probe-connector "average" avg)
            (set-value! a 3 'user)
            (set-value! b 0 'user)))
-       "Probe: average = 1.5\n")
+       "Probe: average = 3/2\n")
 
    ; ex. 3.34
-   ; The two a's represent the same wire, but (multiplier) is 
+   ; The two a's represent the same wire, but (multiplier) is
    ; implemented in a way that requires its three connectors to be unique.
    (=?o '(run-simulation
          (let* ((a (make-connector))
@@ -547,15 +545,15 @@
            (squarer34 a b)
            (probe-connector "sqrt" a)
            (set-value! b 25 'user)))
-       "") ; no cond predicate is satisfied inside the multiplier, 
-           ; information doesn't reach conn a 
+       "") ; no cond predicate is satisfied inside the multiplier,
+           ; information doesn't reach conn a
 
-   ; ex. 3.35 
+   ; ex. 3.35
    (=?e '(let* ((a (make-connector))
-                 (b (make-connector)))
+                (b (make-connector)))
           (squarer a b)
           (set-value! b -5 'user))
-       '("squarer: square less than 0:" -5))
+       '("square less than 0:" -5))
 
    (=?o '(run-simulation
          (let* ((a (make-connector))
@@ -563,7 +561,7 @@
            (squarer a b)
            (probe-connector "sqrt" a)
            (set-value! b 25 'user)))
-       "Probe: sqrt = 5.0\n") 
+       "Probe: sqrt = 5\n")
 
    (=?o '(run-simulation
          (let* ((a (make-connector))
@@ -571,7 +569,7 @@
            (squarer a b)
            (probe-connector "square" b)
            (set-value! a 2 'user)))
-       "Probe: square = 4\n") 
+       "Probe: square = 4\n")
 
    (=?o '(run-simulation
          (let* ((a (make-connector))
@@ -580,7 +578,7 @@
            (probe-connector "square" b)
            (set-value! a 2 'user)
            (forget-value! a 'user)))
-       "Probe: square = 4\nProbe: square = ?\n") 
+       "Probe: square = 4\nProbe: square = ?\n")
 
    ; ex 3.36
    ; skipped
@@ -591,8 +589,8 @@
                   (f (celsius->fahrenheit-converter c)))
            (probe-connector "fahrenheit" f)
            (set-value! c 25 'user)))
-       "Probe: fahrenheit = 77.0\n")
+       "Probe: fahrenheit = 77\n")
 
 ;   (=? '(car x) "unbound variable")
-   
+
 ))

@@ -1,4 +1,3 @@
-(import (scheme small))
 (include "./c41.scm")
 
 (define (prompt-for-input) (display "ε: "))

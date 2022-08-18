@@ -1,6 +1,4 @@
-(import (scheme small))
 ;; SICP chapter 2
-(use srfi-13) ; string methods (for displaying objects)
 (define dsp (lambda(x) (display x)(display " ")))
 (define nl newline)
 
@@ -28,6 +26,15 @@
   (car p))
 (define (y-point p)
   (cdr p))
+
+(define (string-join strings joiner)
+  (cond ((null? strings) "")
+        ((null? (cdr strings))
+         (car strings))
+        (#t
+         (string-append (car strings)
+                        joiner
+                        (string-join (cdr strings) joiner)))))
 
 (define (showpoint p)
   (let ((x (number->string (x-point p)))
@@ -430,7 +437,7 @@
 
 (define (matrix-*-matrix m1 m2)
   (let ((cols (transpose m2)))
-    (map (lambda(row) 
+    (map (lambda(row)
            (matrix-*-vector cols row))
          m1)))
 
@@ -520,7 +527,7 @@
 
 ; 2.42
 (define (all pred seq)
-  (if (= (length seq) 
+  (if (= (length seq)
          (length (filter_ pred seq)))
       #t
       #f))
@@ -533,7 +540,7 @@
          '()
          seq))
 
-(define empty-board '())      
+(define empty-board '())
 (define (mk-p row col) (cons row col))
 (define p-row car)
 (define p-col cdr)
@@ -570,12 +577,12 @@
                (all-rows (cdr ps)))))
 
 (define (safe-up? col ps)
-  (safe-next col 
+  (safe-next col
              (next-up (car ps))
              ps))
 
 (define (safe-down? col ps)
-  (safe-next col 
+  (safe-next col
              (next-down (car ps))
              ps))
 
@@ -605,7 +612,7 @@
 
 (define (draw-board board)
   (define (draw-col y)
-    (cond 
+    (cond
      ((= y 1) (display "X⬝⬝⬝⬝⬝⬝⬝"))
      ((= y 2) (display "⬝X⬝⬝⬝⬝⬝⬝"))
      ((= y 3) (display "⬝⬝X⬝⬝⬝⬝⬝"))
@@ -614,9 +621,9 @@
      ((= y 6) (display "⬝⬝⬝⬝⬝X⬝⬝"))
      ((= y 7) (display "⬝⬝⬝⬝⬝⬝X⬝"))
      ((= y 8) (display "⬝⬝⬝⬝⬝⬝⬝X"))))
-  
+
   (for-each_ (lambda(y) (draw-col (p-col y))(nl))
-             (sort board (lambda (p q) (< (p-row p) 
+             (sort board (lambda (p q) (< (p-row p)
                                           (p-row q)))))
   (nl))
 
